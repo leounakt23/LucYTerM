@@ -7,15 +7,21 @@ allow = [
     "Apache-2.0",
     "BSD-2-Clause",
     "BSD-3-Clause",
+    "BSL-1.0",
     "ISC",
     "Unicode-3.0",
     "Zlib",
-    "CDLA-Permissive-2.0",
 ]
-# libudev (serialport) is dynamically linked at runtime on Linux and never
-# distributed inside our binary; it is reviewed per tech_stack risk R8.
+# BSL-1.0 (OSI-approved, permissive) covers the Windows clipboard shims:
+# clipboard-win and error-code, pulled via copypasta 0.10 and iced_winit
+# (both pinned in the authoritative stack).
 exceptions = [
-    { allow = ["LGPL-2.1"], crate = "libudev-sys" },
+    # hexf-parse (CC0-1.0) is naga's hex-float parser inside the pinned
+    # wgpu/iced renderer; no replacement within the pinned GUI stack.
+    { allow = ["CC0-1.0"], crate = "hexf-parse" },
+    # option-ext (MPL-2.0, file-scoped weak copyleft, Windows-only) comes
+    # via dirs-sys from the pinned directories 5.0 crate.
+    { allow = ["MPL-2.0"], crate = "option-ext" },
 ]
 
 [bans]

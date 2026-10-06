@@ -202,6 +202,40 @@ async fn proxy_one_x11(_stream: X11Stream) {
     tracing::warn!("x11 channel dropped: forwarding is only supported on unix");
 }
 
+/// ssh-agent authentication (`SSH_AUTH_SOCK`): offer every agent
+/// identity in turn; the first the server accepts wins. Shared by the
+/// interactive SSH session and the SFTP subsystem (which dials its own
+/// transport but runs the same handshake).
+pub async fn authenticate_via_agent<H>(
+    handle: &mut russh::client::Handle<H>,
+    user: &str,
+) -> Result<bool, ConnError>
+where
+    H: russh::client::Handler,
+{
+    use russh::keys::agent::client::AgentClient;
+    let mut agent = AgentClient::connect_env()
+        .await
+        .map_err(|error| ConnError::Key(format!("ssh-agent unavailable: {error}")))?;
+    let identities = agent
+        .request_identities()
+        .await
+        .map_err(|error| ConnError::Key(format!("ssh-agent listed no identities: {error}")))?;
+    tracing::debug!(count = identities.len(), "ssh-agent identities offered");
+    for key in identities {
+        let (back, result) = handle.authenticate_future(user, key, agent).await;
+        agent = back;
+        match result {
+            Ok(true) => return Ok(true),
+            Ok(false) => continue, // server declined this identity; try the next
+            Err(error) => {
+                return Err(ConnError::Key(format!("ssh-agent signing failed: {error}")));
+            },
+        }
+    }
+    Ok(false)
+}
+
 #[async_trait]
 impl Connection for SshConn {
     async fn start(&mut self, auth: ConnectionAuth, size: TerminalSize) -> Result<(), ConnError> {
@@ -270,9 +304,7 @@ impl Connection for SshConn {
                     }
                 }
             },
-            ConnectionAuth::Agent => {
-                return Err(ConnError::Unsupported("ssh-agent authentication"))
-            },
+            ConnectionAuth::Agent => authenticate_via_agent(&mut handle, &user).await?,
         };
         if !authenticated {
             return Err(ConnError::AuthRejected);

@@ -263,7 +263,9 @@ async fn dial_sftp(spec: SessionSpec, auth: ConnectionAuth) -> Result<SftpSessio
                 }
             }
         },
-        ConnectionAuth::Agent => return Err(SftpError::Ssh("ssh-agent authentication".into())),
+        ConnectionAuth::Agent => mbxt_connections::ssh::authenticate_via_agent(&mut handle, &user)
+            .await
+            .map_err(|err| SftpError::Ssh(err.to_string()))?,
     };
     if !authenticated {
         return Err(SftpError::Ssh("server rejected authentication".into()));

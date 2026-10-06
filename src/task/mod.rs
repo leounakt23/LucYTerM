@@ -207,15 +207,22 @@ mod tests {
         let mut rx = manager.subscribe();
         let id = manager.next_id();
 
+        // `recv_until`, not a bare recv: the bus is process-wide, so
+        // events from parallel tests must be skipped like the sibling
+        // tests do (a bare recv flaked on another test's `Started`).
         manager.progress(id, 1.7, "over");
         assert_eq!(
-            recv_with_timeout(&mut rx).await,
+            recv_until(&mut rx, |e| *e
+                == TaskEvent::Progress(id, 1.0, "over".to_string()))
+            .await,
             TaskEvent::Progress(id, 1.0, "over".to_string())
         );
 
         manager.progress(id, -0.5, "under");
         assert_eq!(
-            recv_with_timeout(&mut rx).await,
+            recv_until(&mut rx, |e| *e
+                == TaskEvent::Progress(id, 0.0, "under".to_string()))
+            .await,
             TaskEvent::Progress(id, 0.0, "under".to_string())
         );
     }

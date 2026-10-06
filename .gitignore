@@ -1,5 +1,7 @@
 /target
 /fuzz/target
+/book
+/docs/book
 **/*.rs.bk
 /dist
 Cargo.lock.bak

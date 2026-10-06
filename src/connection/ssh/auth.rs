@@ -807,4 +807,52 @@ mod tests {
         #[cfg(not(feature = "gssapi"))]
         assert!(matches!(outcome, Err(AuthError::Unavailable(_))));
     }
+
+    /// Serializes the `SSH_AUTH_SOCK` mutation below; the agent
+    /// provider is the only reader of that variable.
+    static AGENT_ENV_GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    fn with_agent_socket<R>(value: Option<&str>, run: impl FnOnce() -> R) -> R {
+        let _guard = AGENT_ENV_GUARD.lock().unwrap();
+        let saved = std::env::var_os("SSH_AUTH_SOCK");
+        match value {
+            Some(path) => std::env::set_var("SSH_AUTH_SOCK", path),
+            None => std::env::remove_var("SSH_AUTH_SOCK"),
+        }
+        let result = run();
+        match saved {
+            Some(path) => std::env::set_var("SSH_AUTH_SOCK", path),
+            None => std::env::remove_var("SSH_AUTH_SOCK"),
+        }
+        result
+    }
+
+    #[test]
+    fn agent_selected_when_enabled_with_socket() {
+        // Selection only checks availability; no agent is dialed here.
+        with_agent_socket(Some("/tmp/mbxt-test-agent.sock"), || {
+            let mut context = ctx(vec![AuthMethod::Agent { forward: false }]);
+            context.use_agent = true;
+            let mut provider = AgentProvider;
+            let credential =
+                futures_block_on(provider.acquire(&mut context, PromptBridge::shared()))
+                    .expect("agent offered");
+            assert_eq!(credential.method_name(), "agent");
+        });
+    }
+
+    #[test]
+    fn agent_without_socket_falls_through() {
+        with_agent_socket(None, || {
+            let mut context = ctx(vec![
+                AuthMethod::Agent { forward: false },
+                AuthMethod::KeyboardInteractive,
+            ]);
+            context.use_agent = true;
+            context.challenge_response = Some(Box::new(|_| "000000".to_string()));
+            let outcome =
+                futures_block_on(negotiate(&mut context, PromptBridge::shared())).unwrap();
+            assert_eq!(outcome.credential.method_name(), "keyboard-interactive");
+        });
+    }
 }
