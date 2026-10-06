@@ -399,8 +399,11 @@ fn handle_connection(
             #[cfg(feature = "ssh")]
             {
                 crate::connection::sftp::SftpManager::shared().note_ssh_disconnected(id);
-                crate::connection::x11::X11Manager::shared().note_ssh_disconnected(id);
                 crate::connection::forward::ForwardManager::shared().note_ssh_disconnected(id);
+            }
+            #[cfg(feature = "x11")]
+            {
+                crate::connection::x11::X11Manager::shared().note_ssh_disconnected(id);
             }
             #[cfg(feature = "vnc")]
             {
@@ -429,7 +432,7 @@ fn handle_connection(
             // X11 forwarding (Prompt 4.1): register the forwarder alongside
             // the shell when the session asked for it; warn when the local
             // X server is not accessible instead of failing the connect.
-            #[cfg(feature = "ssh")]
+            #[cfg(feature = "x11")]
             {
                 let wants_x11 = app.session(id).is_some_and(|s| {
                     s.spec.x11_forwarding
@@ -520,11 +523,14 @@ fn handle_connection(
             #[cfg(feature = "ssh")]
             {
                 crate::connection::sftp::SftpManager::shared().note_ssh_disconnected(id);
-                crate::connection::x11::X11Manager::shared().note_ssh_disconnected(id);
                 crate::connection::forward::ForwardManager::shared().note_ssh_disconnected(id);
                 // Stale listings must never survive a reconnect.
                 app.browser_cache.invalidate_session(id);
                 app.browsers.remove(&id);
+            }
+            #[cfg(feature = "x11")]
+            {
+                crate::connection::x11::X11Manager::shared().note_ssh_disconnected(id);
             }
             Ok(iced::Task::none())
         },
@@ -539,8 +545,11 @@ fn handle_connection(
             #[cfg(feature = "ssh")]
             {
                 crate::connection::sftp::SftpManager::shared().note_ssh_disconnected(id);
-                crate::connection::x11::X11Manager::shared().note_ssh_disconnected(id);
                 crate::connection::forward::ForwardManager::shared().note_ssh_disconnected(id);
+            }
+            #[cfg(feature = "x11")]
+            {
+                crate::connection::x11::X11Manager::shared().note_ssh_disconnected(id);
             }
             app.notify(Level::Error, "Connection failed", &reason);
             Ok(iced::Task::none())

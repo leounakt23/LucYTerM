@@ -190,9 +190,9 @@ telnet = ["mbxt-connections/telnet"]
 serial = ["mbxt-connections/serial", "dep:serialport"]
 rdp = ["mbxt-connections/rdp"]
 vnc = ["ssh", "mbxt-connections/vnc", "dep:des", "dep:cipher"]
-x11 = ["mbxt-connections/x11"]
+x11 = ["ssh", "mbxt-connections/x11"]
 # Kerberos/GSSAPI auth (optional; provider returns Unavailable when off).
-gssapi = []
+gssapi = ["mbxt-connections/gssapi"]
 
 [dependencies]
 mbxt-core = { workspace = true }

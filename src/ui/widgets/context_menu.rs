@@ -7,6 +7,7 @@
 //! maps each item to its label and target message; background vs entry menus
 //! differ exactly as a native menu would.
 
+#[cfg(feature = "ssh")]
 use crate::app::messages::{Message, SftpMsg};
 
 /// One menu item.

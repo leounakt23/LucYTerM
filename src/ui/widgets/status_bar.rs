@@ -42,7 +42,7 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
     .spacing(12);
     // X11 status indicator (Prompt 4.1): ⚡ while forwarding is up, ⚠ when
     // the session wants it but the local display is unreachable.
-    #[cfg(feature = "ssh")]
+    #[cfg(feature = "x11")]
     if let Some(segment) = x11_segment(app) {
         bar = bar.push(text(segment).size(12).width(150));
     }
@@ -60,7 +60,7 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
 }
 
 /// X11 indicator for the active session, if it requested forwarding.
-#[cfg(feature = "ssh")]
+#[cfg(feature = "x11")]
 fn x11_segment(app: &AppState) -> Option<String> {
     let id = app.active_session_id?;
     let session = app.session(id)?;

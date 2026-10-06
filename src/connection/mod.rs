@@ -15,8 +15,9 @@ pub mod ssh;
 pub mod sftp;
 
 /// X11 forwarding (prompt 4.1): display detection, byte proxy, per-session
-/// forwarder lifecycle. Rides SSH like SFTP (same auth, `x11` channels).
-#[cfg(feature = "ssh")]
+/// forwarder lifecycle. Rides SSH channels like SFTP, but ships behind its
+/// own feature so minimal builds stay lean.
+#[cfg(feature = "x11")]
 pub mod x11;
 
 /// Port forwarding & tunneling (Prompt 5.3): local/remote/dynamic loops

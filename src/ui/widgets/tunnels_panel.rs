@@ -5,7 +5,9 @@
 //! snapshots (status/stats/logs). Without the `ssh` feature this renders a
 //! placeholder (same build matrix as the SFTP stack).
 
-use iced::widget::{column, container, text};
+#[cfg(feature = "ssh")]
+use iced::widget::column;
+use iced::widget::{container, text};
 
 use crate::app::messages::Message;
 use crate::app::state::AppState;

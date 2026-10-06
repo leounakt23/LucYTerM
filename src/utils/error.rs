@@ -156,7 +156,7 @@ impl From<crate::utils::crypto::CryptoError> for AppError {
     }
 }
 
-#[cfg(feature = "ssh")]
+#[cfg(feature = "x11")]
 impl From<crate::connection::x11::X11Error> for AppError {
     fn from(err: crate::connection::x11::X11Error) -> Self {
         match err {

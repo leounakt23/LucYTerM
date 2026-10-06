@@ -15,6 +15,7 @@ serial = ["dep:serialport"]
 rdp = []
 vnc = []
 x11 = []
+gssapi = []
 
 [dependencies]
 mbxt-core = { workspace = true }

@@ -18,6 +18,8 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
     for (group, sessions) in grouped_sessions(app) {
         list = list.push(text(group).size(12).width(iced::Fill));
         for (id, name, connected, x11) in sessions {
+            #[cfg(not(feature = "x11"))]
+            let _ = x11;
             let label = if connected {
                 format!("● {name}")
             } else {
@@ -31,7 +33,9 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             .spacing(4);
             // X11 forwarding toggle (Prompt 4.1 checkbox equivalent; only
             // SSH-family sessions honour it — others reject the toggle).
-            #[cfg(feature = "ssh")]
+            // Without the `x11` feature the button is hidden and the flag
+            // stays inert data.
+            #[cfg(feature = "x11")]
             {
                 let bolt = if crate::connection::x11::X11Manager::shared().is_active(id) {
                     " ⚡"
