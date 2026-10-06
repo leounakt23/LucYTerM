@@ -1,0 +1,25 @@
+(
+    id: "550e8400-e29b-41d4-a716-446655440003",
+    name: "Disk usage by directory",
+    description: Some("Top-level directory sizes with a host template"),
+    tags: ["linux", "diagnostics"],
+    created_secs: 1700000000,
+    updated_secs: 1700000000,
+    steps: [
+        Comment(text: "Runs du on the target path"),
+        SendInput(data: "du -xh --max-depth=1 {{path}}\n"),
+        WaitForPattern(pattern: "$ ", timeout_ms: 30000),
+    ],
+    variables: [
+        (
+            name: "path",
+            default_value: Some("/"),
+            description: Some("Directory to measure"),
+            secret: false,
+            required: true,
+        ),
+    ],
+    target_protocol: None,
+    author: Some("built-in"),
+    hotkey: None,
+)

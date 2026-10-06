@@ -1,0 +1,16 @@
+(
+    id: "550e8400-e29b-41d4-a716-446655440002",
+    name: "List Docker containers",
+    description: Some("Running containers with names and status"),
+    tags: ["linux", "docker"],
+    created_secs: 1700000000,
+    updated_secs: 1700000000,
+    steps: [
+        SendInput(data: "docker ps --format 'table {{.Names}}\\t{{.Status}}\\t{{.Image}}'\n"),
+        WaitForPattern(pattern: "$ ", timeout_ms: 10000),
+    ],
+    variables: [],
+    target_protocol: None,
+    author: Some("built-in"),
+    hotkey: None,
+)

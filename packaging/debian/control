@@ -1,0 +1,8 @@
+Package: remote-app
+Section: net
+Priority: optional
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libdbus-1-3, libudev1
+Description: Secure native remote computing client
+ Remote App provides SSH, SFTP, Telnet, VNC, RDP, serial, and terminal
+ workflows in a native Linux application.

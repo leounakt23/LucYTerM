@@ -1,0 +1,58 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  dependency-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev jq
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit,cargo-deny,cargo-geiger
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: security-${{ hashFiles('Cargo.lock') }}
+      - name: Audit advisories
+        run: |
+          set +e
+          cargo audit --json > audit.json
+          status=$?
+          jq '{version:"2.1.0",runs:[{tool:{driver:{name:"cargo-audit",informationUri:"https://rustsec.org",rules:[]}},results:[.vulnerabilities.list[]? | {ruleId:.advisory.id,level:"error",message:{text:(.advisory.title + " in " + .package.name + " " + .package.version)},locations:[{physicalLocation:{artifactLocation:{uri:"Cargo.lock"}}}]}]}]}' audit.json > audit.sarif
+          exit "$status"
+      - name: Dependency and license policy
+        if: always()
+        run: cargo deny --config deny.toml check
+      - name: Unsafe code report
+        if: always()
+        run: cargo geiger --all-features --all-targets | tee geiger.txt
+      - name: Upload SARIF
+        if: always() && hashFiles('audit.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: audit.sarif
+          category: cargo-audit
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            audit.json
+            audit.sarif
+            geiger.txt
+          if-no-files-found: ignore

@@ -1,0 +1,6 @@
+---
+source: tests/snapshots.rs
+expression: export_lines(&lines, "txt")
+---
+hello
+failed

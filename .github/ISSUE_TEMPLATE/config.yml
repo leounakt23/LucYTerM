@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Feature requests and roadmap voting
+    url: https://github.com/LucYTerM/mbxt/discussions
+    about: Propose and vote on features in GitHub Discussions.
+  - name: Questions and support
+    url: https://github.com/LucYTerM/mbxt/discussions
+    about: Ask usage questions in GitHub Discussions.
+  - name: Private security report
+    url: https://github.com/LucYTerM/mbxt/security/advisories/new
+    about: Report vulnerabilities privately. Do not open a public issue.

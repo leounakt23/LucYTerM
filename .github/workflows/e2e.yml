@@ -1,0 +1,46 @@
+name: End-to-end
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ssh-sftp-forwarding:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      MBXT_SFTP_TEST_ADDR: 127.0.0.1:2222
+      MBXT_SFTP_TEST_USER: test
+      MBXT_SFTP_TEST_PASSWORD: test
+      MBXT_FORWARD_TEST_ADDR: 127.0.0.1:2222
+      MBXT_FORWARD_TEST_USER: test
+      MBXT_FORWARD_TEST_PASSWORD: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: e2e-${{ hashFiles('Cargo.lock') }}
+      - name: Start disposable services
+        run: docker compose -f docker/compose.e2e.yml up -d --wait
+      - name: Run live integration tests
+        run: |
+          cargo test --locked --all-features --test sftp_integration -- --ignored --nocapture
+          cargo test --locked --all-features --test forward_integration -- --ignored --nocapture
+      - name: Service logs
+        if: failure()
+        run: docker compose -f docker/compose.e2e.yml logs
+      - name: Stop services
+        if: always()
+        run: docker compose -f docker/compose.e2e.yml down --volumes

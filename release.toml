@@ -1,0 +1,11 @@
+allow-branch = ["main"]
+consolidate-commits = true
+dependent-version = "upgrade"
+enable-all-features = true
+pre-release-commit-message = "chore(release): prepare {{version}}"
+post-release-commit-message = "chore(release): start next development cycle"
+tag-name = "v{{version}}"
+tag-message = "Remote App {{version}}"
+push = false
+publish = false
+verify = true

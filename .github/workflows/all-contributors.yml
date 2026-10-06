@@ -1,0 +1,34 @@
+name: Contributors table check
+
+on:
+  pull_request:
+    paths:
+      - CONTRIBUTORS.md
+      - .all-contributorsrc
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contributors-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate contributors table matches .all-contributorsrc
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('.all-contributorsrc').read_text(encoding='utf-8'))
+          table = Path('CONTRIBUTORS.md').read_text(encoding='utf-8')
+          missing = [c['login'] for c in data.get('contributors', []) if c['login'] not in table]
+          if missing:
+              raise SystemExit(f"CONTRIBUTORS.md is missing entries for: {', '.join(missing)}")
+          print(f"checked {len(data.get('contributors', []))} contributor(s): table in sync")
+          PY

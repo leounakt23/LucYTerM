@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Remote App
+GenericName=Remote Computing Client
+Comment=SSH, Telnet, RDP, VNC and serial client for Linux
+Exec=remote-app
+Icon=remote-app
+Terminal=false
+Categories=Network;RemoteAccess;System;TerminalEmulator;
+Keywords=ssh;terminal;remote;sftp;telnet;serial;vnc;rdp;
+StartupWMClass=remote-app

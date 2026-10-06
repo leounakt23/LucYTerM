@@ -1,0 +1,49 @@
+[package]
+name = "remote-app-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+remote-app = { path = ".." }
+mbxt-terminal = { path = "../crates/terminal" }
+ron = "0.8"
+
+[[bin]]
+name = "ping_parser"
+path = "fuzz_targets/ping_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "subnet_parser"
+path = "fuzz_targets/subnet_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "vte_parser"
+path = "fuzz_targets/vte_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "config_parser"
+path = "fuzz_targets/config_parser.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "macro_parser"
+path = "fuzz_targets/macro_parser.rs"
+test = false
+doc = false
+bench = false

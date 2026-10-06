@@ -1,0 +1,13 @@
+services:
+  ssh:
+    image: atmoz/sftp:alpine
+    command: test:test:1001::upload
+    ports:
+      - "2222:22"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 22"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+    tmpfs:
+      - /home/test/upload

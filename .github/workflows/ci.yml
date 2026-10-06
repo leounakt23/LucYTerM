@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  linux:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu 22.04
+            image: ubuntu:22.04
+            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libudev-dev libdbus-1-dev ca-certificates git
+          - name: Ubuntu 24.04
+            image: ubuntu:24.04
+            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libudev-dev libdbus-1-dev ca-certificates git
+          - name: Fedora 40
+            image: fedora:40
+            install: dnf install -y curl gcc gcc-c++ make pkgconf-pkg-config systemd-devel dbus-devel git
+          - name: Arch Linux
+            image: archlinux:base-devel
+            install: pacman -Syu --noconfirm curl pkgconf systemd dbus git
+    steps:
+      - name: Install system dependencies
+        run: ${{ matrix.install }}
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ matrix.name }}-${{ hashFiles('Cargo.lock') }}
+      - name: Build
+        run: cargo build --locked --workspace --all-features
+      - name: Test
+        run: cargo test --locked --workspace --all-features
+      - name: Stage binaries
+        run: |
+          mkdir -p dist
+          cp target/debug/remote-app target/debug/remote-app-headless dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: remote-app-${{ matrix.name }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7

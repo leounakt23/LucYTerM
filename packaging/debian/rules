@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cargo build --release --locked
+	packaging/scripts/generate-icons.sh
+
+override_dh_auto_install:
+	install -Dm755 target/release/remote-app debian/remote-app/usr/bin/remote-app
+	install -Dm644 assets/remote-app.desktop debian/remote-app/usr/share/applications/remote-app.desktop
+	install -Dm644 assets/remote-app.metainfo.xml debian/remote-app/usr/share/metainfo/remote-app.metainfo.xml
+	install -Dm644 docs/remote-app.1 debian/remote-app/usr/share/man/man1/remote-app.1
+	install -Dm644 assets/icon.svg debian/remote-app/usr/share/icons/hicolor/scalable/apps/remote-app.svg
+	for size in 48 128 256 512; do install -Dm644 target/package-icons/$${size}x$${size}/remote-app.png debian/remote-app/usr/share/icons/hicolor/$${size}x$${size}/apps/remote-app.png; done

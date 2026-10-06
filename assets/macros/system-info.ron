@@ -1,0 +1,20 @@
+(
+    id: "550e8400-e29b-41d4-a716-446655440001",
+    name: "System info",
+    description: Some("Kernel, uptime, and root disk summary"),
+    tags: ["linux", "diagnostics"],
+    created_secs: 1700000000,
+    updated_secs: 1700000000,
+    steps: [
+        SendInput(data: "uname -a\n"),
+        WaitForPattern(pattern: "$ ", timeout_ms: 5000),
+        SendInput(data: "uptime\n"),
+        WaitForPattern(pattern: "$ ", timeout_ms: 5000),
+        SendInput(data: "df -h /\n"),
+        WaitForPattern(pattern: "$ ", timeout_ms: 5000),
+    ],
+    variables: [],
+    target_protocol: None,
+    author: Some("built-in"),
+    hotkey: None,
+)

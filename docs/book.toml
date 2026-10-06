@@ -1,0 +1,15 @@
+[book]
+title = "Remote App Guide"
+authors = ["LucYTerM maintainers"]
+description = "User and developer documentation for Remote App"
+language = "en"
+src = "src"
+
+[build]
+create-missing = false
+
+[output.html]
+preferred-dark-theme = "navy"
+edit-url-template = "https://github.com/LucYTerM/mbxt/edit/main/docs/src/{path}"
+
+[output.html.search]

@@ -1,0 +1,31 @@
+# cargo-deny policy: permissive licenses only (tech_stack constraint C4) and
+# multiple-versions tolerance tuned down as the graph matures.
+[licenses]
+version = 2
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    "CDLA-Permissive-2.0",
+]
+# libudev (serialport) is dynamically linked at runtime on Linux and never
+# distributed inside our binary; it is reviewed per tech_stack risk R8.
+exceptions = [
+    { allow = ["LGPL-2.1"], crate = "libudev-sys" },
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[advisories]
+version = 2
+yanked = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

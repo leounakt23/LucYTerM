@@ -1,0 +1,85 @@
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping shape Remote App. Describe the problem before the solution and do not include credentials, host details, terminal content, or other private data.
+
+        Reactions and comments provide public demand evidence. More than 50 thumbs-up reactions guarantees triage in a quarterly planning round, not implementation or a release date.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or workflow
+      description: Who has this problem, what are they trying to accomplish, and how often?
+      placeholder: When I ..., I need ..., because ...
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: User value
+      description: What measurable improvement would a solution provide?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful behavior. Mockups or examples are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+      description: What do users do today, and why is it insufficient?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Terminal and tabs
+        - Sessions and imports
+        - SSH and authentication
+        - File transfer
+        - Other protocols
+        - Desktop integration
+        - Team workflows
+        - CLI, API, or plugins
+        - Accessibility
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: security
+    attributes:
+      label: Security, privacy, and compatibility
+      description: Could this handle credentials or user content, execute commands, use a network service, or change persisted data?
+      placeholder: State known concerns or "None known."
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Demand evidence
+      description: Link related Discussions or issues and summarize beta/user feedback without private data.
+  - type: textarea
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Can you test, document, design, or implement this? This does not affect prioritization.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing Discussions, issues, and the public roadmap for duplicates.
+          required: true
+        - label: I removed credentials, host details, terminal content, and other private data.
+          required: true
+        - label: I understand that discussion, votes, or roadmap placement do not promise implementation or a release date.
+          required: true

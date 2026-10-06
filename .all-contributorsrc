@@ -1,0 +1,19 @@
+{
+  "projectName": "Remote App",
+  "projectOwner": "LucYTerM",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["CONTRIBUTORS.md"],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "LucYTerM",
+      "name": "LucYTerM",
+      "avatar_url": "https://github.com/LucYTerM.png",
+      "profile": "https://github.com/LucYTerM",
+      "contributions": ["code", "tool", "doc", "security", "infra"]
+    }
+  ],
+  "contributorsPerLine": 7
+}

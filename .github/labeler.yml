@@ -1,0 +1,21 @@
+area/ci:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', '.cargo/**', 'Cross.toml']
+area/docs:
+  - changed-files:
+      - any-glob-to-any-file: ['docs/**', '*.md']
+area/packaging:
+  - changed-files:
+      - any-glob-to-any-file: ['packaging/**', 'docker/**', 'Dockerfile', '.dockerignore']
+area/terminal:
+  - changed-files:
+      - any-glob-to-any-file: ['crates/terminal/**', 'src/terminal/**']
+area/connections:
+  - changed-files:
+      - any-glob-to-any-file: ['crates/connections/**', 'src/connection/**']
+area/security:
+  - changed-files:
+      - any-glob-to-any-file: ['src/utils/crypto.rs', 'src/utils/secure_storage.rs', 'SECURITY.md', 'deny.toml']
+area/tests:
+  - changed-files:
+      - any-glob-to-any-file: ['tests/**', 'fuzz/**', 'benches/**']

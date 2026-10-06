@@ -1,0 +1,25 @@
+[net]
+retry = 2
+
+[build]
+# Keep local builds responsive when the workspace is compiled alongside the UI.
+jobs = 2
+
+[alias]
+xtask = "run --package xtask --"
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-Wl,--as-needed"]
+
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-Wl,--as-needed"]
+
+[target.x86_64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.aarch64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[resolver]
+# Keep Cargo.lock MSRV-aware (workspace rust-version = 1.80, pinned toolchain 1.85.1).
+incompatible-rust-versions = "fallback"

@@ -1,0 +1,9 @@
+.git
+.github
+target
+dist
+fuzz/artifacts
+fuzz/corpus
+docs/book
+*.log
+.env

@@ -1,0 +1,30 @@
+title: "[Show and tell]: "
+labels:
+  - show-and-tell
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share workflows, guides, themes, talks, or videos. No private data,
+        and mark experimental builds clearly when you used them.
+  - type: textarea
+    id: share
+    attributes:
+      label: What are you sharing?
+      description: Link or describe it and who it helps.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Version tested, environment notes, follow-up links.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed credentials, host details, terminal content, and other private data.
+          required: true
+        - label: I understand showcase posts do not imply maintainer endorsement.
+          required: true

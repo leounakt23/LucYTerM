@@ -1,0 +1,24 @@
+.TH REMOTE-APP 1 "2026-01-01" "remote-app 0.1.0" "User Commands"
+.SH NAME
+remote-app \- secure native remote computing client
+.SH SYNOPSIS
+.B remote-app
+.br
+.B remote-app-headless
+.RI [ COMMAND ]
+.SH DESCRIPTION
+Remote App provides native terminal, SSH, SFTP, Telnet, VNC, RDP, serial, and
+port-forwarding workflows. Credentials are stored only in the encrypted
+session store when explicitly saved.
+.SH FILES
+.I ~/.config/remote-app/
+contains encrypted sessions, configuration, and logs.
+.SH SECURITY
+SSH host keys are checked against known_hosts. Do not approve an unknown or
+changed key without verifying its fingerprint through an independent channel.
+.SH ENVIRONMENT
+.B RUST_LOG
+controls structured logging verbosity.
+.SH SEE ALSO
+.BR ssh (1),
+.BR sftp (1)

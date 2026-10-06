@@ -1,0 +1,24 @@
+version: 1
+script:
+  - cargo build --release --locked
+AppDir:
+  path: AppDir
+  app_info:
+    id: com.github.LucYTerM.remote-app
+    name: remote-app
+    icon: remote-app
+    version: 0.1.0
+    exec: usr/bin/remote-app
+  apt:
+    arch: amd64
+    sources:
+      - sourceline: deb http://archive.ubuntu.com/ubuntu/ jammy main universe
+    include: [libdbus-1-3, libudev1]
+  files:
+    include:
+      - target/release/remote-app: usr/bin/remote-app
+      - assets/remote-app.desktop: usr/share/applications/remote-app.desktop
+      - assets/remote-app.metainfo.xml: usr/share/metainfo/remote-app.metainfo.xml
+      - assets/icon.svg: usr/share/icons/hicolor/scalable/apps/remote-app.svg
+AppImage:
+  update-information: zsync|https://github.com/LucYTerM/mbxt/releases/latest/download/remote-app-x86_64.AppImage.zsync

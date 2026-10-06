@@ -1,0 +1,39 @@
+name: Stale issues
+
+on:
+  schedule:
+    - cron: '41 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: stale-issues
+  cancel-in-progress: false
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9
+        with:
+          days-before-issue-stale: 83
+          days-before-issue-close: 7
+          stale-issue-label: stale
+          stale-issue-message: >-
+            This issue has had no activity for 83 days. It will close after
+            seven more days unless new reproduction details, a current use
+            case, or other actionable information is added. Closing is
+            housekeeping, not a rejection; an updated report can be reopened.
+          close-issue-message: >-
+            Closing after 90 days without activity. If this still affects a
+            supported release, comment with current reproduction details and
+            maintainers can reopen it.
+          exempt-issue-labels: confirmed,security,P0,pinned,roadmap,lts,in-progress
+          remove-issue-stale-when-updated: true
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+          operations-per-run: 100

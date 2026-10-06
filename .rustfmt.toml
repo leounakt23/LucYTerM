@@ -1,0 +1,9 @@
+# Rustfmt — standard settings, stable-channel-safe options only.
+edition = "2021"
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+use_small_heuristics = "Default"
+match_block_trailing_comma = true
+reorder_imports = true

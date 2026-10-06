@@ -1,0 +1,80 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '23 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - name: Install system and package dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev libfuse2 flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: nightly-${{ hashFiles('Cargo.lock') }}
+      - name: Test and build
+        run: |
+          cargo test --locked --workspace --all-features
+          MBXT_DEFAULT_CHANNEL=nightly cargo build --locked --release --package remote-app --all-features
+      - name: Create tarball and AppImage
+        run: |
+          mkdir -p dist AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/metainfo AppDir/usr/share/icons/hicolor/scalable/apps
+          cp target/release/remote-app target/release/remote-app-headless dist/
+          tar -czf "dist/remote-app-nightly-${GITHUB_SHA::7}-x86_64.tar.gz" -C target/release remote-app remote-app-headless
+          cp target/release/remote-app target/release/remote-app-headless AppDir/usr/bin/
+          cp assets/remote-app.desktop AppDir/usr/share/applications/
+          cp assets/remote-app.metainfo.xml AppDir/usr/share/metainfo/
+          cp assets/icon.svg AppDir/usr/share/icons/hicolor/scalable/apps/remote-app.svg
+          cp assets/icon.svg AppDir/remote-app.svg
+          cp assets/remote-app.desktop AppDir/remote-app.desktop
+          printf '#!/bin/sh\nexec "$APPDIR/usr/bin/remote-app" --channel nightly "$@"\n' > AppDir/AppRun
+          chmod +x AppDir/AppRun
+          curl -fsSLo appimagetool.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          echo "${{ vars.APPIMAGETOOL_SHA256 }}  appimagetool.AppImage" | sha256sum --check --strict
+          chmod +x appimagetool.AppImage
+          ARCH=x86_64 ./appimagetool.AppImage --appimage-extract-and-run AppDir "dist/remote-app-nightly-${GITHUB_SHA::7}-x86_64.AppImage"
+      - name: Build Flatpak bundle
+        run: |
+          flatpak-builder --user --force-clean --repo=flatpak-repo flatpak-build packaging/flatpak/com.github.LucYTerM.remote-app.yml
+          flatpak build-bundle flatpak-repo "dist/remote-app-nightly-${GITHUB_SHA::7}.flatpak" com.github.LucYTerM.remote-app
+      - uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Sign artifacts
+        run: |
+          cd dist
+          sha256sum remote-app-* > SHA256SUMS
+          gpg --batch --yes --armor --detach-sign SHA256SUMS
+      - name: Publish nightly pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="nightly-$(date -u +%Y%m%d)-${GITHUB_SHA::7}-${GITHUB_RUN_ID}"
+          gh release create "$tag" dist/* --prerelease --target "$GITHUB_SHA" --title "Nightly ${GITHUB_SHA::7}" --notes "Automated, unsupported build from main. Start with --channel nightly. Telemetry and crash reporting remain off by default."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ github.sha }}
+          path: dist/
+          retention-days: 14

@@ -1,0 +1,285 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/core",
+    "crates/terminal",
+    "crates/connections",
+    "crates/storage",
+    "crates/system",
+    "crates/cli",
+    "xtask",
+]
+exclude = ["fuzz"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/LucYTerM/mbxt"
+authors = ["LucYTerM"]
+
+[workspace.dependencies]
+# Internal crates
+mbxt-core = { version = "0.1.0", path = "crates/core" }
+mbxt-terminal = { version = "0.1.0", path = "crates/terminal" }
+mbxt-connections = { version = "0.1.0", path = "crates/connections", default-features = false }
+mbxt-storage = { version = "0.1.0", path = "crates/storage" }
+mbxt-system = { version = "0.1.0", path = "crates/system" }
+mbxt-cli = { version = "0.1.0", path = "crates/cli" }
+
+# Async runtime & ecosystem
+tokio = { version = "1.44", features = [
+    "rt-multi-thread",
+    "macros",
+    "sync",
+    "net",
+    "time",
+    "io-util",
+    "signal",
+    "fs",
+    "process",
+] }
+async-trait = "0.1.83"
+
+# Serialization
+serde = { version = "1.0.219", features = ["derive"] }
+ron = "0.8.0"
+rmp-serde = "1.3.0"
+
+# Terminal / GUI stack
+iced = { version = "0.13.1", features = ["tokio", "advanced"] }
+wgpu = "24.0.0"
+vte = "0.13.0"
+bytemuck = { version = "1.14", features = ["derive"] }
+
+# Networking
+russh = "0.45.0"
+russh-sftp = "2.0"
+hickory-resolver = "0.24.1"
+
+# System integration
+nix = "0.29.0"
+directories = "5.0.1"
+serialport = { version = "4.7.2", default-features = false }
+dbus = { version = "0.9.7", features = ["vendored"] }
+
+# Cryptography & security
+aes-gcm = "0.10.3"
+argon2 = "0.5.3"
+cipher = "0.4"
+des = "0.8"
+ed25519-dalek = "2.1.0"
+sha2 = "0.10"
+getrandom = "0.2.15"
+subtle = "2.6"
+memsec = "0.7"
+zeroize = { version = "1.8.1", features = ["derive"] }
+secrecy = "0.10.3"
+keyring = { version = "3.2.0", features = [
+    "windows-native",
+    "apple-native",
+    "sync-secret-service",
+] }
+
+# Persistence
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+
+# Errors & logging
+thiserror = "2.0.12"
+anyhow = "1.0.97"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-appender = "0.2.3"
+
+# CLI
+clap = { version = "4.5.23", default-features = false, features = [
+    "std",
+    "help",
+    "usage",
+    "error-context",
+    "suggestions",
+    "string",
+] }
+clap_complete = "4.5.23"
+rstest = "0.23"
+proptest = "1.6"
+mockall = "0.13"
+insta = "1.42"
+
+# Misc
+futures = "0.3"
+criterion = "0.5"
+tracing-flame = "0.2"
+puffin = "0.19"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+copypasta = "0.10.1"
+rpassword = "7.3"
+human-panic = "2.0"
+fluent-bundle = "0.15"
+unic-langid = "0.9"
+serde_json = "1.0"
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "native-tls"] }
+sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "native-tls"] }
+minidumper = "0.8"
+symbolic = "12"
+
+# Low-level
+libc = "0.2.170"
+
+[workspace.lints.clippy]
+module_name_repetitions = "allow"
+similar_names = "allow"
+
+# ---------------------------------------------------------------------------
+# Main application crate: binaries `remote-app` (GUI) and
+# `remote-app-headless` (CLI), plus the MVU application logic.
+# ---------------------------------------------------------------------------
+[package]
+name = "remote-app"
+description = "Linux-native remote computing application (MobaXterm parity)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+default-run = "remote-app"
+build = "build.rs"
+
+[package.metadata.deb]
+maintainer = "LucYTerM maintainers <maintainers@example.com>"
+copyright = "2026 LucYTerM"
+section = "net"
+priority = "optional"
+assets = [
+    ["target/release/remote-app", "usr/bin/", "755"],
+    ["assets/remote-app.desktop", "usr/share/applications/", "644"],
+    ["assets/remote-app.metainfo.xml", "usr/share/metainfo/", "644"],
+    ["docs/remote-app.1", "usr/share/man/man1/", "644"],
+    ["assets/icon.svg", "usr/share/icons/hicolor/scalable/apps/remote-app.svg", "644"],
+    ["target/package-icons/48x48/remote-app.png", "usr/share/icons/hicolor/48x48/apps/", "644"],
+    ["target/package-icons/128x128/remote-app.png", "usr/share/icons/hicolor/128x128/apps/", "644"],
+    ["target/package-icons/256x256/remote-app.png", "usr/share/icons/hicolor/256x256/apps/", "644"],
+    ["target/package-icons/512x512/remote-app.png", "usr/share/icons/hicolor/512x512/apps/", "644"],
+]
+depends = "$auto"
+maintainer-scripts = "packaging/debian"
+
+[lib]
+name = "remote_app"
+path = "src/lib.rs"
+
+[[bin]]
+name = "remote-app"
+path = "src/main.rs"
+
+[[bin]]
+name = "remote-app-headless"
+path = "src/bin/cli.rs"
+
+[features]
+default = ["ssh", "telnet"]
+profiling = ["dep:tracing-flame", "dep:puffin"]
+feedback-network = ["dep:reqwest"]
+crash-reporting = ["feedback-network", "dep:sentry", "dep:minidumper", "dep:symbolic"]
+# Protocol gates (P0/P1 matrix rows). `sftp` rides the `ssh` connection.
+ssh = ["mbxt-connections/ssh", "dep:russh", "dep:russh-sftp"]
+sftp = ["ssh"]
+telnet = ["mbxt-connections/telnet"]
+serial = ["mbxt-connections/serial", "dep:serialport"]
+rdp = ["mbxt-connections/rdp"]
+vnc = ["ssh", "mbxt-connections/vnc", "dep:des", "dep:cipher"]
+x11 = ["mbxt-connections/x11"]
+# Kerberos/GSSAPI auth (optional; provider returns Unavailable when off).
+gssapi = []
+
+[dependencies]
+mbxt-core = { workspace = true }
+mbxt-terminal = { workspace = true }
+mbxt-connections = { workspace = true }
+mbxt-storage = { workspace = true }
+mbxt-system = { workspace = true }
+mbxt-cli = { workspace = true }
+
+iced = { workspace = true }
+wgpu = { workspace = true }
+bytemuck = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+directories = { workspace = true }
+libc = { workspace = true }
+async-trait = { workspace = true }
+
+# Serialization (config/session schemas)
+serde = { workspace = true }
+ron = { workspace = true }
+rmp-serde = { workspace = true }
+
+# Crypto stack (utils/crypto, secure_storage, credential cache)
+aes-gcm = { workspace = true }
+argon2 = { workspace = true }
+getrandom = { workspace = true }
+subtle = { workspace = true }
+memsec = { workspace = true }
+secrecy = { workspace = true }
+zeroize = { workspace = true }
+ed25519-dalek = { workspace = true }
+sha2 = { workspace = true }
+
+russh = { workspace = true, optional = true }
+russh-sftp = { workspace = true, optional = true }
+des = { workspace = true, optional = true }
+cipher = { workspace = true, optional = true }
+serialport = { workspace = true, optional = true }
+
+uuid = { workspace = true }
+futures = { workspace = true }
+hickory-resolver = { workspace = true }
+copypasta = { workspace = true }
+rpassword = { workspace = true }
+human-panic = { workspace = true }
+fluent-bundle = { workspace = true }
+unic-langid = { workspace = true }
+tracing-appender = { workspace = true }
+tracing-flame = { workspace = true, optional = true }
+puffin = { workspace = true, optional = true }
+clap = { workspace = true }
+clap_complete = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true, optional = true }
+sentry = { workspace = true, optional = true }
+minidumper = { workspace = true, optional = true }
+symbolic = { workspace = true, optional = true }
+
+[dev-dependencies]
+tempfile = "3.10"
+criterion = { workspace = true }
+rstest = { workspace = true }
+proptest = { workspace = true }
+mockall = { workspace = true }
+insta = { workspace = true }
+
+[build-dependencies]
+mbxt-cli = { workspace = true }
+clap_complete = { workspace = true }
+clap = { workspace = true }
+
+[lints]
+workspace = true
+
+[workspace.lints.rust]
+unsafe_code = "allow" # isolated mlock/termios usage in `mbxt-system`; reviewed per-PR
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = "z"
+strip = "symbols"
+
+# Faster iteration for dev builds of heavy deps (wgpu/rusqlite-bundled).
+[profile.dev.package."*"]
+opt-level = 1

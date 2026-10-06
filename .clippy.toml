@@ -1,0 +1,4 @@
+# Clippy configuration (lint allows live in Cargo.toml [workspace.lints]).
+msrv = "1.80"
+too-many-arguments-threshold = 12
+cognitive-complexity-threshold = 40

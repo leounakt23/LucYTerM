@@ -1,0 +1,25 @@
+[package]
+name = "mbxt-storage"
+description = "Encrypted persistence: sessions (SQLite+AES-GCM), config (RON), crypto vault"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+mbxt-core = { workspace = true }
+rusqlite = { workspace = true }
+ron = { workspace = true }
+rmp-serde = { workspace = true }
+serde = { workspace = true }
+aes-gcm = { workspace = true }
+argon2 = { workspace = true }
+getrandom = { workspace = true }
+zeroize = { workspace = true }
+secrecy = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true

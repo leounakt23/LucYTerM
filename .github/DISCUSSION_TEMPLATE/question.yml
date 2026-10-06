@@ -1,0 +1,30 @@
+title: "[Question]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask usage questions here. Do not include credentials, private keys,
+        host details, terminal content, or other private data.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to do, and what did you try?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Version, distribution, install format, protocol.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing Discussions, issues, and docs first.
+          required: true
+        - label: I removed all private data from this post.
+          required: true

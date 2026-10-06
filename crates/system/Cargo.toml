@@ -1,0 +1,29 @@
+[package]
+name = "mbxt-system"
+description = "System integration: signals, keyring, clipboard, notifications"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+mbxt-core = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+libc = { workspace = true }
+
+# Desktop keyring (Secret Service on Linux; native backends elsewhere)
+keyring = { workspace = true }
+# Clipboard access (X11/Wayland/Windows/OSX)
+copypasta = { workspace = true }
+
+# Unix syscalls / desktop bus (unused-by-skeleton; wired in implementation prompts)
+[target.'cfg(unix)'.dependencies]
+nix = { workspace = true }
+[target.'cfg(target_os = "linux")'.dependencies]
+dbus = { workspace = true }
+
+[lints]
+workspace = true

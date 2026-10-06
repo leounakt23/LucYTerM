@@ -1,0 +1,39 @@
+[package]
+name = "mbxt-connections"
+description = "Transport trait, protocol implementations, factory, auth strategies"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = ["ssh", "telnet"]
+ssh = ["dep:russh", "dep:russh-sftp"]
+telnet = []
+serial = ["dep:serialport"]
+rdp = []
+vnc = []
+x11 = []
+
+[dependencies]
+mbxt-core = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+zeroize = { workspace = true }
+
+# SSH/SFTP (pure Rust, feature-gated)
+russh = { workspace = true, optional = true }
+russh-sftp = { workspace = true, optional = true }
+
+# Serial (cross-platform `serialport` backend; Linux links system libudev
+# dynamically — not redistributed, see tech_stack R8)
+serialport = { workspace = true, optional = true }
+
+[target.'cfg(unix)'.dependencies]
+nix = { workspace = true }
+
+[lints]
+workspace = true

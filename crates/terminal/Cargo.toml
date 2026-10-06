@@ -1,0 +1,20 @@
+[package]
+name = "mbxt-terminal"
+description = "Terminal emulation: vte parser front-end, grid model, wgpu renderer"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+mbxt-core = { workspace = true }
+vte = { workspace = true }
+wgpu = { workspace = true } # renderer widget lands with the staged plan (tech_stack R3)
+serde = { workspace = true }
+bytemuck = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true

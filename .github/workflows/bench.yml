@@ -1,0 +1,64 @@
+name: Benchmarks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bench-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  criterion:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: bench-${{ hashFiles('Cargo.lock') }}
+      - name: Run Criterion benchmarks
+        run: cargo bench --locked --bench performance -- --noplot --output-format bencher | tee benchmark.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-output
+          path: benchmark.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: criterion-report
+          path: target/criterion/
+
+  report:
+    needs: criterion
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: benchmark-output
+      - name: Compare, store baseline, and comment
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Criterion benchmarks
+          tool: cargo
+          output-file-path: benchmark.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.event_name == 'push' }}
+          comment-always: ${{ github.event_name == 'pull_request' }}
+          alert-threshold: '110%'
+          fail-on-alert: true

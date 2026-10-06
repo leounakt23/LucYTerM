@@ -1,0 +1,296 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - id: version
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          tag="${REQUESTED_TAG:-${GITHUB_REF_NAME}}"
+          version="${tag#v}"
+          manifest_version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "remote-app") | .version')"
+          test "$tag" = "v$manifest_version" || { echo "tag $tag does not match Cargo version $manifest_version" >&2; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [[ "$version" == *-* ]]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
+
+  test:
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+      - uses: dtolnay/rust-toolchain@1.85.1
+        with:
+          components: clippy, rustfmt
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-test-${{ hashFiles('Cargo.lock') }}
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+      - run: cargo test --locked --workspace --all-features
+
+  binaries:
+    needs: [validate, test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cross,cargo-sbom
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
+      - name: Cross-compile binaries
+        run: cross build --locked --release --target ${{ matrix.target }} --package remote-app --features feedback-network,crash-reporting
+      - name: Generate SBOM and archive
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          mkdir -p "dist/remote-app-$VERSION-$TARGET"
+          cp "target/$TARGET/release/remote-app" "target/$TARGET/release/remote-app-headless" "dist/remote-app-$VERSION-$TARGET/"
+          cp README.md CHANGELOG.md "dist/remote-app-$VERSION-$TARGET/"
+          cargo sbom --output-format cyclone_dx_json_1_4 > "dist/remote-app-$VERSION-$TARGET.sbom.json"
+          tar --sort=name --mtime="@$(git log -1 --format=%ct)" --owner=0 --group=0 --numeric-owner -czf "dist/remote-app-$VERSION-$TARGET.tar.gz" -C dist "remote-app-$VERSION-$TARGET"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.target }}
+          path: |
+            dist/*.tar.gz
+            dist/*.sbom.json
+          if-no-files-found: error
+
+  linux-packages:
+    needs: [validate, binaries]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-x86_64-unknown-linux-gnu
+          path: input
+      - name: Install package tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ruby ruby-dev build-essential libfuse2 file
+          sudo gem install --no-document fpm -v 1.15.1
+      - name: Build DEB, RPM, and AppImage
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          tar -xzf "input/remote-app-$VERSION-x86_64-unknown-linux-gnu.tar.gz" -C input
+          mkdir -p dist package-root/usr/bin package-root/usr/share/applications package-root/usr/share/metainfo package-root/usr/share/icons/hicolor/scalable/apps
+          cp "input/remote-app-$VERSION-x86_64-unknown-linux-gnu/remote-app" "package-root/usr/bin/"
+          cp "input/remote-app-$VERSION-x86_64-unknown-linux-gnu/remote-app-headless" "package-root/usr/bin/"
+          cp assets/remote-app.desktop package-root/usr/share/applications/
+          cp assets/remote-app.metainfo.xml package-root/usr/share/metainfo/
+          cp assets/icon.svg package-root/usr/share/icons/hicolor/scalable/apps/remote-app.svg
+          fpm -s dir -C package-root -t deb -n remote-app -v "$VERSION" --depends libdbus-1-3 --depends libudev1 --license 'MIT OR Apache-2.0' --url 'https://github.com/LucYTerM/mbxt' --description 'Secure native remote computing client' -p "dist/remote-app_${VERSION}_amd64.deb" .
+          fpm -s dir -C package-root -t rpm -n remote-app -v "$VERSION" --depends dbus-libs --depends systemd-libs --license 'MIT OR Apache-2.0' --url 'https://github.com/LucYTerM/mbxt' --description 'Secure native remote computing client' -p "dist/remote-app-${VERSION}-1.x86_64.rpm" .
+          mv package-root AppDir
+          cp assets/icon.svg AppDir/remote-app.svg
+          cp assets/remote-app.desktop AppDir/remote-app.desktop
+          printf '#!/bin/sh\nexec "$APPDIR/usr/bin/remote-app" "$@"\n' > AppDir/AppRun
+          chmod +x AppDir/AppRun
+          curl -fsSLo appimagetool.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          echo "${{ vars.APPIMAGETOOL_SHA256 }}  appimagetool.AppImage" | sha256sum --check --strict
+          chmod +x appimagetool.AppImage
+          ARCH=x86_64 ./appimagetool.AppImage --appimage-extract-and-run AppDir "dist/remote-app-${VERSION}-x86_64.AppImage"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-linux-packages
+          path: dist/
+
+  publish:
+    if: always() && needs.validate.result == 'success' && needs.binaries.result == 'success' && needs.linux-packages.result == 'success' && needs.container.result == 'success' && (needs.crates_publish.result == 'success' || needs.crates_publish.result == 'skipped')
+    needs: [validate, binaries, linux-packages, container, crates_publish]
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.validate.outputs.prerelease == 'true' && 'staging' || 'production' }}
+    permissions:
+      contents: write
+      packages: write
+      discussions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+      - uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Checksums and signatures
+        run: |
+          cd dist
+          find . -type f ! -name '*.asc' ! -name 'SHA256SUMS' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          gpg --batch --yes --armor --detach-sign SHA256SUMS
+          while IFS= read -r -d '' artifact; do gpg --batch --yes --armor --detach-sign "$artifact"; done < <(find . -type f ! -name '*.asc' ! -name 'SHA256SUMS' -print0)
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate.outputs.tag }}
+          prerelease: ${{ needs.validate.outputs.prerelease }}
+          generate_release_notes: true
+          files: dist/**/*
+      - name: Notify release channel
+        if: vars.RELEASE_NOTIFICATIONS == 'true'
+        env:
+          WEBHOOK: ${{ secrets.RELEASE_WEBHOOK_URL }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          curl --fail-with-body -H 'Content-Type: application/json' \
+            --data "{\"content\":\"Remote App $TAG has been released: https://github.com/${GITHUB_REPOSITORY}/releases/tag/$TAG\"}" \
+            "$WEBHOOK"
+      - name: Post GitHub Discussion
+        if: vars.RELEASE_DISCUSSION_CATEGORY_ID != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CATEGORY_ID: ${{ vars.RELEASE_DISCUSSION_CATEGORY_ID }}
+          TAG: ${{ needs.validate.outputs.tag }}
+        run: |
+          gh api graphql \
+            -f query='mutation($repo:ID!,$category:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repo,categoryId:$category,title:$title,body:$body}){discussion{url}}}' \
+            -f repo="$(gh api repos/$GITHUB_REPOSITORY --jq .node_id)" \
+            -f category="$CATEGORY_ID" \
+            -f title="Remote App $TAG" \
+            -f body="Release notes: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
+
+  container:
+    needs: [validate, test]
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.validate.outputs.prerelease == 'true' && 'staging' || 'production' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/remote-app
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.validate.outputs.tag }}
+            type=raw,value=latest,enable=${{ needs.validate.outputs.prerelease == 'false' }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  crates_publish:
+    if: vars.PUBLISH_CRATES == 'true'
+    needs: [validate, test]
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.validate.outputs.prerelease == 'true' && 'staging' || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+      - uses: dtolnay/rust-toolchain@1.85.1
+      - name: Publish library crates in dependency order
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          for crate in mbxt-core mbxt-cli mbxt-storage mbxt-system mbxt-terminal mbxt-connections; do
+            cargo publish --locked --package "$crate"
+            sleep 20
+          done
+
+  downstreams:
+    if: always() && needs.validate.outputs.prerelease == 'false' && needs.publish.result == 'success' && (needs.crates_publish.result == 'success' || needs.crates_publish.result == 'skipped')
+    needs: [validate, publish, crates_publish]
+    runs-on: ubuntu-24.04
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Homebrew tap
+        if: vars.HOMEBREW_TAP_REPOSITORY != ''
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          TAP: ${{ vars.HOMEBREW_TAP_REPOSITORY }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: gh workflow run update.yml --repo "$TAP" -f version="$VERSION"
+      - name: Submit Flathub update
+        if: vars.FLATHUB_REPOSITORY != ''
+        env:
+          GH_TOKEN: ${{ secrets.FLATHUB_TOKEN }}
+          REPOSITORY: ${{ vars.FLATHUB_REPOSITORY }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: gh workflow run update.yml --repo "$REPOSITORY" -f version="$VERSION"
+      - name: Update AUR package
+        if: vars.AUR_REPOSITORY != ''
+        env:
+          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+          AUR_REPOSITORY: ${{ vars.AUR_REPOSITORY }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s' "$AUR_SSH_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          printf '%s\n' "${{ secrets.AUR_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          GIT_SSH_COMMAND='ssh -i ~/.ssh/aur' git clone "$AUR_REPOSITORY" aur-package
+          sed -i "s/^pkgver=.*/pkgver=$VERSION/" aur-package/PKGBUILD
+          git -C aur-package add PKGBUILD
+          git -C aur-package -c user.name='remote-app release bot' -c user.email='release-bot@users.noreply.github.com' commit -m "Update to $VERSION"
+          GIT_SSH_COMMAND='ssh -i ~/.ssh/aur' git -C aur-package push
