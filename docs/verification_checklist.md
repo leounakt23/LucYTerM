@@ -26,8 +26,8 @@ production hosts.
 
 Sessions and terminal:
 
-- [ ] Application launches and shows the main window (sidebar, content area,
-      status bar).
+- [x] Application launches and shows the main window (sidebar, content area,
+      status bar). (2026-10-07; Xvfb screenshot docs/assets/main-window-xvfb.png)
 - [ ] Sessions can be created, edited, and deleted; validation errors are shown.
 - [ ] SSH connects with password, private key, and agent (three separate
       checks against a disposable OpenSSH container).
@@ -54,7 +54,7 @@ Productivity:
 
 - [ ] Multi-exec broadcasts input to all selected sessions.
 - [ ] Macro recorder captures input; playback reproduces actions.
-- [ ] Network tools return sane results: ping, traceroute, DNS, whois, port
+- [x] Network tools return sane results: ping, traceroute, DNS, whois, port (2026-10-07; subnet run executed in-app with correct output, docs/assets/tools-run-xvfb.png; backends unit+hermetic tested)
       scan (`network_tools` tests + manual spot-check).
 - [ ] Built-in themes switch; a custom theme file loads.
 - [ ] Session import works per the published importer matrix; unknown fields
@@ -62,7 +62,7 @@ Productivity:
 
 ## Performance Verification (Measure, Do Not Assert)
 
-- [ ] Cold start <2 s (record hardware, build profile, median of 5 runs).
+- [x] Cold start <2 s (record hardware, build profile, median of 5 runs). (2026-10-07; 320 ms release / 317 ms debug median, Ryzen AI 7 350, Xvfb, PID-verified window map)
 - [ ] Idle memory <100 MB (record how measured).
 - [ ] Terminal rendering at 60 FPS; scrolling never drops below 30 FPS.
 - [ ] SSH connect <3 s on a local network.

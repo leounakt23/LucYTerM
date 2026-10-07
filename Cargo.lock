@@ -5290,6 +5290,7 @@ dependencies = [
  "memsec",
  "minidumper",
  "mockall",
+ "nix 0.29.0",
  "proptest",
  "puffin",
  "reqwest",

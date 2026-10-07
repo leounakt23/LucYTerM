@@ -107,3 +107,156 @@ pub fn learn_live_host_key(addr: &str) {
     std::fs::write(ssh_dir.join("known_hosts"), &output.stdout).expect("write known_hosts");
     std::env::set_var("HOME", &home);
 }
+
+/// Process-scoped throwaway `HOME` with restoration on drop. Serializes
+/// the global-env mutation internally; holders keep the lock for their
+/// whole lifetime, so parallel tests never observe a half-moved `HOME`.
+#[derive(Debug)]
+pub struct ThrowawayHome {
+    saved: Option<std::ffi::OsString>,
+    _dir: TempConfig,
+    _lock: std::sync::MutexGuard<'static, ()>,
+}
+
+impl ThrowawayHome {
+    pub fn set() -> std::io::Result<Self> {
+        static GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        let lock = GUARD.lock().unwrap();
+        let dir = TempConfig::new()?;
+        let saved = std::env::var_os("HOME");
+        std::env::set_var("HOME", dir.path());
+        Ok(Self {
+            saved,
+            _dir: dir,
+            _lock: lock,
+        })
+    }
+}
+
+impl Drop for ThrowawayHome {
+    fn drop(&mut self) {
+        match self.saved.take() {
+            Some(home) => std::env::set_var("HOME", home),
+            None => std::env::remove_var("HOME"),
+        }
+    }
+}
+
+/// In-process SSH echo server for hermetic tests (no network beyond
+/// loopback, no credentials on disk): accepts `test`/`test` over
+/// password auth and echoes shell bytes. Pair with [`ThrowawayHome`]
+/// plus [`learn_loopback_key`] so the client's fail-closed
+/// `known_hosts` check runs exactly as in production.
+#[cfg(feature = "ssh")]
+pub struct EchoSshServer {
+    pub port: u16,
+    pub public: russh::keys::key::PublicKey,
+    pub task: tokio::task::JoinHandle<()>,
+}
+
+#[cfg(feature = "ssh")]
+struct EchoHandler;
+
+#[cfg(feature = "ssh")]
+impl russh::server::Server for EchoHandler {
+    type Handler = EchoHandler;
+
+    fn new_client(&mut self, _: Option<std::net::SocketAddr>) -> Self::Handler {
+        EchoHandler
+    }
+}
+
+#[cfg(feature = "ssh")]
+#[async_trait::async_trait]
+impl russh::server::Handler for EchoHandler {
+    type Error = russh::Error;
+
+    async fn auth_password(
+        &mut self,
+        user: &str,
+        password: &str,
+    ) -> Result<russh::server::Auth, Self::Error> {
+        if user == "test" && password == "test" {
+            Ok(russh::server::Auth::Accept)
+        } else {
+            Ok(russh::server::Auth::Reject {
+                proceed_with_methods: None,
+            })
+        }
+    }
+
+    async fn channel_open_session(
+        &mut self,
+        _channel: russh::Channel<russh::server::Msg>,
+        _session: &mut russh::server::Session,
+    ) -> Result<bool, Self::Error> {
+        Ok(true)
+    }
+
+    async fn pty_request(
+        &mut self,
+        _channel: russh::ChannelId,
+        _term: &str,
+        _col_width: u32,
+        _row_height: u32,
+        _pix_width: u32,
+        _pix_height: u32,
+        _modes: &[(russh::Pty, u32)],
+        _session: &mut russh::server::Session,
+    ) -> Result<(), Self::Error> {
+        Ok(())
+    }
+
+    async fn shell_request(
+        &mut self,
+        _channel: russh::ChannelId,
+        _session: &mut russh::server::Session,
+    ) -> Result<(), Self::Error> {
+        Ok(())
+    }
+
+    async fn data(
+        &mut self,
+        channel: russh::ChannelId,
+        data: &[u8],
+        session: &mut russh::server::Session,
+    ) -> Result<(), Self::Error> {
+        session.data(channel, data.to_vec().into());
+        Ok(())
+    }
+}
+
+#[cfg(feature = "ssh")]
+impl EchoSshServer {
+    /// Bind an ephemeral loopback port and serve exactly one connection.
+    pub async fn start() -> Self {
+        let host_key = russh::keys::key::KeyPair::generate_ed25519().expect("ed25519 host key");
+        let public = host_key.clone_public_key().expect("host pubkey");
+        let config = std::sync::Arc::new(russh::server::Config {
+            keys: vec![host_key],
+            ..Default::default()
+        });
+        let listener = tokio::net::TcpListener::bind(("127.0.0.1", 0))
+            .await
+            .expect("loopback bind");
+        let port = listener.local_addr().expect("addr").port();
+        let task = tokio::spawn(async move {
+            let Ok((socket, _)) = listener.accept().await else {
+                return;
+            };
+            use russh::server::Server as _;
+            let mut server = EchoHandler;
+            let handler = server.new_client(socket.peer_addr().ok());
+            if let Ok(session) = russh::server::run_stream(config, socket, handler).await {
+                let _ = session.await;
+            }
+        });
+        Self { port, public, task }
+    }
+}
+
+/// Learn a loopback echo-server key into the current (throwaway) HOME.
+#[cfg(feature = "ssh")]
+pub fn learn_loopback_key(port: u16, public: &russh::keys::key::PublicKey) {
+    russh::keys::learn_known_hosts("127.0.0.1", port, public).expect("learn loopback key");
+}

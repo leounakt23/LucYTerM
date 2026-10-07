@@ -1883,6 +1883,8 @@ fn focus_vnc_tab(app: &mut AppState, session: SessionId) {
         });
         app.active_tab = app.tabs.len() - 1;
     }
+    // The viewer tab must be visible, not shadowed by overlays.
+    app.ui_state.view = crate::app::messages::ViewKind::SessionList;
 }
 
 /// VNC connect flow for `Protocol::Vnc` sessions: direct TCP with a cached
@@ -3391,6 +3393,7 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
                 });
                 app.active_tab = app.tabs.len() - 1;
             }
+            app.ui_state.view = crate::app::messages::ViewKind::SessionList;
             Ok(iced::Task::none())
         },
         UiMsg::OpenTunnelsView => {
@@ -3403,6 +3406,7 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
                 });
                 app.active_tab = app.tabs.len() - 1;
             }
+            app.ui_state.view = crate::app::messages::ViewKind::SessionList;
             Ok(iced::Task::none())
         },
         UiMsg::OpenToolsView => {
@@ -3415,6 +3419,7 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
                 });
                 app.active_tab = app.tabs.len() - 1;
             }
+            app.ui_state.view = crate::app::messages::ViewKind::SessionList;
             Ok(iced::Task::none())
         },
         UiMsg::NewTab => {
@@ -3446,6 +3451,9 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
         },
         UiMsg::SelectTab(index) => {
             app.active_tab = index.min(app.tabs.len().saturating_sub(1));
+            // Tabs live under the SessionList view; selecting one must
+            // leave Settings/Feedback overlays (they shadow all tabs).
+            app.ui_state.view = crate::app::messages::ViewKind::SessionList;
             Ok(iced::Task::none())
         },
         UiMsg::MasterPasswordSubmitted(password) => {
@@ -4548,6 +4556,21 @@ mod tests {
         assert_eq!(state.settings.appearance.theme, "solarized-dark");
         assert!(state.settings.appearance.dark_theme);
         assert!(state.ui_state.dirty);
+    }
+
+    #[test]
+    fn tool_run_request_records_a_running_run() {
+        use crate::app::messages::ToolMsg;
+        use crate::tools::{RunStatus, ToolKind, ToolParams};
+        let mut state = app();
+        state.tool_draft.kind = ToolKind::Subnet;
+        state.tool_draft.params = ToolParams::for_kind(ToolKind::Subnet);
+        let _task = update(&mut state, Message::Tool(ToolMsg::RunRequested));
+        assert_eq!(state.tool_runs.len(), 1);
+        let run = &state.tool_runs[0];
+        assert_eq!(run.kind, ToolKind::Subnet);
+        assert_eq!(run.status, RunStatus::Running);
+        assert!(state.tool_cancel.contains_key(&run.id));
     }
 
     #[test]

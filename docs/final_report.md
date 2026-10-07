@@ -49,13 +49,15 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 
 | Metric (target) | Measured | Method |
 |---|---|---|
-| Cold start <2 s | UNMEASURED | No display server in this environment; GUI cannot launch headless |
-| Idle memory <100 MB | UNMEASURED | Same reason as above |
-| Terminal 60 FPS | UNMEASURED | Same reason as above |
+| Cold start <2 s | **PASS: 320 ms median** (release; 317 ms debug) | 5 runs, PID-verified first mapped window, Xvfb 1280x800, AMD iGPU, release profile |
+| Idle memory <100 MB | **MISS: 222 MB** (release, 60 s idle) | VmRSS==VmHWM (stable, no leak); debug 273 MB. Target missed — needs an allocation pass (font atlas, wgpu caches) |
+| Terminal 60 FPS | UNMEASURED | No frame-time method headless; render path proven working (screenshots) |
 | SSH connect <3 s (LAN) | PASS (loopback) | Hermetic `tests/ssh_loopback.rs`: full password handshake + shell echo in 0.09 s for both tests (asserts <3 s); no LAN server available |
 | Transfer >100 MB/s (LAN) | 12.7 GB/s (loopback) | `transfer_loopback` criterion bench, 10×1 s sender blasts, median ≈101.7 Gbit/s, byte-exact vs drain; loopback only, not LAN |
 | 10 sessions <500 MB | UNMEASURED | Needs GUI + servers |
 | CLI startup (informational, no target) | <10 ms, ~9 MB RSS | `remote-app-headless --version`, median of 5, dev profile; NOT the GUI cold start |
+| GUI launch + main window | PASS (visual) | `docs/assets/main-window-xvfb.png`: toolbar, sidebar, welcome tab, status bar all render under Xvfb |
+| Tools hub run in-app | PASS (visual) | `docs/assets/tools-hub-active-xvfb.png` (tab) + `tools-run-xvfb.png` (subnet run: correct network/broadcast/range/hosts in history) |
 
 ## Security Posture
 
