@@ -120,7 +120,7 @@ uuid = { version = "1.10", features = ["v4", "serde"] }
 copypasta = "0.10.1"
 rpassword = "7.3"
 human-panic = "2.0"
-fluent-bundle = "0.15"
+fluent-bundle = "0.16"
 unic-langid = "0.9"
 serde_json = "1.0"
 reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "native-tls"] }
