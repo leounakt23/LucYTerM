@@ -74,6 +74,59 @@ impl NewSessionDraft {
     }
 }
 
+/// Network-tools draft (Prompt 5.4): picker + target + per-tool params.
+/// `remote` is `None` for local runs, `Some(id)` for session shells.
+#[derive(Debug, Clone)]
+pub struct ToolDraft {
+    pub kind: crate::tools::ToolKind,
+    pub target: String,
+    pub timeout_ms: u64,
+    pub remote: Option<SessionId>,
+    pub params: crate::tools::ToolParams,
+    /// Widget-owned input strings per field (iced borrows them; parsed
+    /// back into `params` on edit, keeping last good on garbage).
+    pub field_text: HashMap<String, String>,
+    pub search: String,
+    pub error: Option<String>,
+}
+
+impl Default for ToolDraft {
+    fn default() -> Self {
+        let params = crate::tools::ToolParams::for_kind(crate::tools::ToolKind::Ping);
+        let field_text = crate::tools::ToolParams::text_fields(&params)
+            .into_iter()
+            .collect();
+        Self {
+            kind: crate::tools::ToolKind::Ping,
+            target: String::new(),
+            timeout_ms: 10_000,
+            remote: None,
+            params,
+            field_text,
+            search: String::new(),
+            error: None,
+        }
+    }
+}
+
+impl ToolDraft {
+    /// Validate the draft into a runnable config (target required
+    /// except for tools that carry their own input, like Subnet).
+    pub fn build_config(&self) -> Result<crate::tools::ToolConfig, String> {
+        use crate::tools::ToolKind;
+        let needs_target = !matches!(self.kind, ToolKind::Subnet);
+        if needs_target && self.target.trim().is_empty() {
+            return Err("enter a target first".to_string());
+        }
+        Ok(crate::tools::ToolConfig {
+            target: self.target.trim().to_string(),
+            remote: self.remote,
+            timeout_ms: self.timeout_ms.max(100),
+            params: self.params.clone(),
+        })
+    }
+}
+
 use super::messages::{UiMsg, ViewKind};
 use crate::task::{TaskBoard, TaskId, TaskStatus};
 use crate::utils::config::AppConfig;
@@ -133,6 +186,8 @@ pub enum TabKind {
     Macros,
     /// SSH tunnels panel (Prompt 5.3).
     Tunnels,
+    /// Network-tools hub (Prompt 5.4).
+    Tools,
 }
 
 /// Multi-execution mode (#32): when enabled, keystrokes fan out to targets.
@@ -239,6 +294,14 @@ pub struct AppState {
     pub new_session: Option<NewSessionDraft>,
     /// Tunnel form draft (Prompt 5.3, `None` == closed).
     pub tunnel_draft: Option<TunnelDraft>,
+    /// Network-tools draft (Prompt 5.4): picker + target + per-tool params.
+    pub tool_draft: ToolDraft,
+    /// Recorded tool runs, oldest first (Prompt 5.4 history).
+    pub tool_runs: Vec<crate::tools::ToolRun>,
+    /// Next tool-run id.
+    pub tool_run_seq: u64,
+    /// Cancel tokens for in-flight runs.
+    pub tool_cancel: HashMap<u64, crate::tools::CancelToken>,
     /// Macro library (Prompt 5.2, loaded from the macros dir).
     pub macros: Vec<crate::macros::Macro>,
     /// Macro load warnings (shown in the panel footer).
@@ -396,6 +459,10 @@ impl AppState {
             vnc_viewers: HashMap::new(),
             new_session: None,
             tunnel_draft: None,
+            tool_draft: ToolDraft::default(),
+            tool_runs: Vec::new(),
+            tool_run_seq: 1,
+            tool_cancel: HashMap::new(),
             macros: Vec::new(),
             macro_load_errors: Vec::new(),
             macro_recorder: crate::macros::MacroRecorder::new(),

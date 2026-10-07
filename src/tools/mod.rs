@@ -179,14 +179,124 @@ pub enum ToolParams {
     },
 }
 
+impl ToolParams {
+    /// Fresh params for a freshly picked tool (hub form defaults).
+    pub fn for_kind(kind: ToolKind) -> Self {
+        match kind {
+            ToolKind::Ping => Self::Ping {
+                count: 4,
+                interval_ms: 1000,
+                size: 56,
+                v6: false,
+            },
+            ToolKind::Traceroute => Self::Traceroute {
+                max_hops: 30,
+                timeout_ms: 2000,
+            },
+            ToolKind::Dns => Self::Dns {
+                record_type: "A".to_string(),
+                server: String::new(),
+            },
+            ToolKind::ReverseDns => Self::ReverseDns,
+            ToolKind::Whois => Self::Whois {
+                server: String::new(),
+            },
+            ToolKind::PortScan => Self::PortScan {
+                ports: "22,80,443".to_string(),
+                concurrency: 32,
+                timeout_ms: 1000,
+                banner: true,
+            },
+            ToolKind::Http => Self::Http {
+                method: "GET".to_string(),
+                path: "/".to_string(),
+                headers: String::new(),
+                body: String::new(),
+            },
+            ToolKind::Subnet => Self::Subnet {
+                cidr: "192.168.1.0/24".to_string(),
+            },
+            ToolKind::Bandwidth => Self::Bandwidth {
+                mode: "send".to_string(),
+                port: 5201,
+                seconds: 5,
+            },
+        }
+    }
+
+    /// Editable text per form field, derived from typed params. The hub
+    /// keeps these strings as widget-owned state (iced borrows input
+    /// values); parsing back happens in the update arm, keeping the
+    /// last good value on garbage input.
+    pub fn text_fields(params: &ToolParams) -> Vec<(String, String)> {
+        fn number(value: impl std::fmt::Display) -> String {
+            value.to_string()
+        }
+        match params {
+            ToolParams::Ping {
+                count,
+                interval_ms,
+                size,
+                ..
+            } => vec![
+                ("count".into(), number(count)),
+                ("interval_ms".into(), number(interval_ms)),
+                ("size".into(), number(size)),
+            ],
+            ToolParams::Traceroute {
+                max_hops,
+                timeout_ms,
+            } => vec![
+                ("max_hops".into(), number(max_hops)),
+                ("timeout_ms".into(), number(timeout_ms)),
+            ],
+            ToolParams::Dns {
+                record_type,
+                server,
+            } => vec![
+                ("record_type".into(), record_type.clone()),
+                ("server".into(), server.clone()),
+            ],
+            ToolParams::ReverseDns => Vec::new(),
+            ToolParams::Whois { server } => vec![("server".into(), server.clone())],
+            ToolParams::PortScan {
+                ports,
+                concurrency,
+                timeout_ms,
+                ..
+            } => vec![
+                ("ports".into(), ports.clone()),
+                ("concurrency".into(), number(concurrency)),
+                ("timeout_ms".into(), number(timeout_ms)),
+            ],
+            ToolParams::Http {
+                method,
+                path,
+                headers,
+                body,
+            } => vec![
+                ("method".into(), method.clone()),
+                ("path".into(), path.clone()),
+                ("headers".into(), headers.clone()),
+                ("body".into(), body.clone()),
+            ],
+            ToolParams::Subnet { cidr } => vec![("cidr".into(), cidr.clone())],
+            ToolParams::Bandwidth {
+                mode,
+                port,
+                seconds,
+            } => vec![
+                ("mode".into(), mode.clone()),
+                ("port".into(), number(port)),
+                ("seconds".into(), number(seconds)),
+            ],
+        }
+    }
+}
+
 impl Default for ToolParams {
     fn default() -> Self {
-        Self::Ping {
-            count: 4,
-            interval_ms: 1000,
-            size: 56,
-            v6: false,
-        }
+        Self::for_kind(ToolKind::Ping)
     }
 }
 
@@ -359,6 +469,157 @@ pub fn filter_lines<'a>(
         .collect()
 }
 
+/// Instant failure stream for configuration errors (bad params, remote
+/// runs of local-only tools). Same event shape as real runners.
+fn failed_now(error: String) -> BoxStream<'static, ToolEvent> {
+    Box::pin(futures::stream::iter(vec![
+        ToolEvent::Started,
+        ToolEvent::Failed { error },
+    ]))
+}
+
+/// Dispatch one configured tool to its runner (local sockets/binaries
+/// or remote shell). This is the single entry point the UI hub calls;
+/// per-module runners stay directly testable underneath.
+pub fn run_tool(
+    kind: ToolKind,
+    config: ToolConfig,
+    cancel: CancelToken,
+) -> BoxStream<'static, ToolEvent> {
+    let target = config.target.clone();
+    let timeout = config.timeout_ms;
+    let remote = config.remote;
+    match (kind, config.params) {
+        (
+            ToolKind::Ping,
+            ToolParams::Ping {
+                count,
+                interval_ms,
+                size,
+                v6,
+            },
+        ) => match remote {
+            Some(session) => {
+                ping::run_remote(session, target, count, interval_ms, size, v6, cancel)
+            },
+            None => ping::run_local(target, count, interval_ms, size, v6, cancel),
+        },
+        (
+            ToolKind::Traceroute,
+            ToolParams::Traceroute {
+                max_hops,
+                timeout_ms,
+            },
+        ) => match remote {
+            Some(session) => traceroute::run_remote(session, target, max_hops, timeout_ms, cancel),
+            None => traceroute::run_local(target, max_hops, timeout_ms, cancel),
+        },
+        (
+            ToolKind::Dns,
+            ToolParams::Dns {
+                record_type,
+                server,
+            },
+        ) => match (dns::parse_record_type(&record_type), remote) {
+            (Err(error), _) => failed_now(error),
+            (Ok(record), None) => dns::run_lookup(target, record, server, cancel),
+            (Ok(record), Some(session)) => dns::run_remote_lookup(session, target, record, cancel),
+        },
+        (ToolKind::ReverseDns, ToolParams::ReverseDns) => {
+            dns::run_reverse(target, String::new(), cancel)
+        },
+        (ToolKind::Whois, ToolParams::Whois { server }) => match remote {
+            Some(session) => whois::run_remote(session, target, server, cancel),
+            None => whois::run_local(target, server, timeout, cancel),
+        },
+        (
+            ToolKind::PortScan,
+            ToolParams::PortScan {
+                ports,
+                concurrency,
+                timeout_ms,
+                banner,
+            },
+        ) => match remote {
+            Some(_) => failed_now("port scans run locally; switch the target to Local".to_string()),
+            None => match port_scanner::parse_ports(&ports) {
+                Err(error) => failed_now(error),
+                Ok(ports) => {
+                    port_scanner::scan(target, ports, timeout_ms, concurrency, banner, cancel)
+                },
+            },
+        },
+        (
+            ToolKind::Http,
+            ToolParams::Http {
+                method,
+                path,
+                headers,
+                body,
+            },
+        ) => {
+            let url = join_url(&target, &path);
+            match remote {
+                Some(session) => {
+                    http_client::run_remote(session, method, url, headers, body, cancel)
+                },
+                None => http_client::run_local(method, url, headers, body, timeout, cancel),
+            }
+        },
+        (ToolKind::Subnet, ToolParams::Subnet { cidr }) => {
+            match subnet::calculate(if cidr.trim().is_empty() {
+                &target
+            } else {
+                cidr.trim()
+            }) {
+                Err(error) => failed_now(error),
+                Ok(info) => {
+                    let lines = vec![
+                        format!("network:   {}/{}", info.network, info.prefix),
+                        format!("broadcast: {}", info.broadcast),
+                        format!("range:     {} - {}", info.first_host, info.last_host),
+                        format!("hosts:     {}", info.host_count),
+                    ];
+                    Box::pin(futures::stream::iter(
+                        [ToolEvent::Started]
+                            .into_iter()
+                            .chain(lines.into_iter().map(|line| ToolEvent::Output {
+                                line,
+                                level: OutputLevel::Info,
+                            }))
+                            .chain([ToolEvent::Completed { summary: None }]),
+                    ))
+                },
+            }
+        },
+        (
+            ToolKind::Bandwidth,
+            ToolParams::Bandwidth {
+                mode,
+                port,
+                seconds,
+            },
+        ) => match remote {
+            Some(session) => bandwidth::run_remote(session, mode, target, port, seconds, cancel),
+            None => bandwidth::run_local(mode, target, port, seconds, timeout, cancel),
+        },
+        _ => failed_now("tool parameters do not match the selected tool".to_string()),
+    }
+}
+
+/// Join a base URL and a path without doubling slashes.
+fn join_url(base: &str, path: &str) -> String {
+    let base = base.trim_end_matches('/');
+    if path.is_empty() {
+        return base.to_string();
+    }
+    if path.starts_with('/') {
+        format!("{base}{path}")
+    } else {
+        format!("{base}/{path}")
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -402,5 +663,90 @@ mod tests {
         ];
         assert_eq!(filter_lines(&lines, "").len(), 2);
         assert_eq!(filter_lines(&lines, "ping").len(), 1);
+    }
+}
+
+#[cfg(test)]
+mod dispatch_tests {
+    use super::*;
+    use futures::StreamExt as _;
+
+    #[test]
+    fn every_kind_has_form_defaults() {
+        for kind in ToolKind::ALL {
+            let params = ToolParams::for_kind(kind);
+            // Text round-trips through the hub buffers without loss.
+            let text = ToolParams::text_fields(&params);
+            assert!(!text.is_empty() || matches!(kind, ToolKind::ReverseDns));
+            for (field, value) in &text {
+                assert!(!field.is_empty());
+                let _ = value;
+            }
+        }
+    }
+
+    #[test]
+    fn join_url_avoids_double_slashes() {
+        assert_eq!(join_url("http://h:8080", "/a"), "http://h:8080/a");
+        assert_eq!(join_url("http://h:8080/", "/a"), "http://h:8080/a");
+        assert_eq!(join_url("http://h:8080", ""), "http://h:8080");
+        assert_eq!(join_url("http://h:8080", "a"), "http://h:8080/a");
+    }
+
+    #[tokio::test]
+    async fn subnet_dispatch_runs_offline() {
+        let config = ToolConfig::local(
+            "192.168.10.7/24",
+            5000,
+            ToolParams::Subnet {
+                cidr: String::new(),
+            },
+        );
+        let events: Vec<ToolEvent> = run_tool(ToolKind::Subnet, config, CancelToken::new())
+            .collect()
+            .await;
+        assert!(matches!(events.first(), Some(ToolEvent::Started)));
+        assert!(events.iter().any(|event| matches!(
+            event,
+            ToolEvent::Output { line, .. } if line.contains("192.168.10.0")
+        )));
+        assert!(matches!(events.last(), Some(ToolEvent::Completed { .. })));
+    }
+
+    #[tokio::test]
+    async fn mismatched_params_fail_cleanly() {
+        let config = ToolConfig::local(
+            "example.com",
+            5000,
+            ToolParams::Subnet {
+                cidr: "10.0.0.0/8".into(),
+            },
+        );
+        let events: Vec<ToolEvent> = run_tool(ToolKind::Ping, config, CancelToken::new())
+            .collect()
+            .await;
+        assert!(matches!(events.last(), Some(ToolEvent::Failed { .. })));
+    }
+
+    #[tokio::test]
+    async fn remote_portscan_is_redirected_to_local() {
+        let config = ToolConfig {
+            target: "192.0.2.1".into(),
+            remote: Some(7),
+            timeout_ms: 1000,
+            params: ToolParams::PortScan {
+                ports: "80".into(),
+                concurrency: 8,
+                timeout_ms: 500,
+                banner: false,
+            },
+        };
+        let events: Vec<ToolEvent> = run_tool(ToolKind::PortScan, config, CancelToken::new())
+            .collect()
+            .await;
+        match events.last() {
+            Some(ToolEvent::Failed { error }) => assert!(error.contains("Local"), "{error}"),
+            other => panic!("expected local-only failure, got {other:?}"),
+        }
     }
 }

@@ -16,6 +16,8 @@ pub mod status_bar;
 pub mod terminal_view;
 pub mod terminal_widget;
 pub mod toolbar;
+/// Network-tools hub tab (Prompt 5.4): picker, params, run history.
+pub mod tools_hub;
 /// Transfer list (Prompt 3.2); rides the ssh-gated SFTP stack.
 #[cfg(feature = "ssh")]
 pub mod transfer_view;

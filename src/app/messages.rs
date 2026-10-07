@@ -231,6 +231,32 @@ pub enum TunnelMsg {
     Stopped(uuid::Uuid),
 }
 
+/// Network-tools hub events (Prompt 5.4): draft edits, run control,
+/// and streamed runner events.
+#[derive(Debug, Clone)]
+pub enum ToolMsg {
+    /// Tool picker selection (resets the params form to kind defaults).
+    KindSelected(crate::tools::ToolKind),
+    /// Target host/URL/CIDR edited.
+    TargetChanged(String),
+    /// Run on this host.
+    ScopeLocal,
+    /// Run on a session shell.
+    ScopeRemote(SessionId),
+    /// Per-tool param field edited (`field`, `value`).
+    ParamChanged(String, String),
+    /// Start the configured run.
+    RunRequested,
+    /// Cancel a running run.
+    CancelRequested(u64),
+    /// Drop finished runs from history.
+    ClearHistory,
+    /// History search box edited.
+    SearchChanged(String),
+    /// One runner event for run `id`.
+    Event(u64, crate::tools::ToolEvent),
+}
+
 /// Macro recording & playback events (Prompt 5.2).
 #[derive(Debug, Clone)]
 pub enum MacroMsg {
@@ -408,6 +434,8 @@ pub enum UiMsg {
     OpenMacrosView,
     /// Toolbar: open the tunnels tab.
     OpenTunnelsView,
+    /// Toolbar: open the network-tools tab.
+    OpenToolsView,
     /// `Ctrl+T`: open a new tab for the active session (or welcome).
     NewTab,
     /// `Ctrl+W`: close the active tab.
@@ -478,6 +506,7 @@ pub enum Message {
     Terminal(TerminalMsg),
     Sftp(SftpMsg),
     Macro(MacroMsg),
+    Tool(ToolMsg),
     #[cfg(feature = "ssh")]
     Tunnel(TunnelMsg),
     #[cfg(feature = "vnc")]

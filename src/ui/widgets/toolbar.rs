@@ -30,6 +30,9 @@ pub fn view(_app: &AppState) -> iced::Element<'_, Message> {
         button(text("tunnels").size(13))
             .on_press(Message::Ui(UiMsg::OpenTunnelsView))
             .padding(6),
+        button(text("tools").size(13))
+            .on_press(Message::Ui(UiMsg::OpenToolsView))
+            .padding(6),
         button(text("send feedback").size(13))
             .on_press(Message::Ui(UiMsg::OpenFeedback))
             .padding(6),

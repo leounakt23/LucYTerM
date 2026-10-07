@@ -47,6 +47,7 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             TabKind::TerminalPlaceholder(id) => super::widgets::terminal_view::view(app, id),
             TabKind::FileBrowserPlaceholder => super::widgets::file_browser::view(app),
             TabKind::Tunnels => super::widgets::tunnels_panel::view(app),
+            TabKind::Tools => super::widgets::tools_hub::view(app),
             TabKind::Macros => super::widgets::macro_panel::tab_view(app),
             TabKind::MultiExecView => super::widgets::multi_exec_view::view(app),
             #[cfg(feature = "vnc")]

@@ -13,7 +13,7 @@ use mbxt_core::{AuthMethod, SessionId, SessionSpec, SessionState};
 #[cfg(feature = "vnc")]
 use super::messages::VncMsg;
 use super::messages::{
-    ConnectionMsg, MacroMsg, Message, SessionMsg, SftpMsg, SystemEvent, TerminalMsg, UiMsg,
+    ConnectionMsg, MacroMsg, Message, SessionMsg, SftpMsg, SystemEvent, TerminalMsg, ToolMsg, UiMsg,
 };
 use super::notifications::Level;
 use super::state::{now_secs, AppState, ConnectionStatus, Tab, TabKind};
@@ -35,6 +35,7 @@ pub fn update(app: &mut AppState, message: Message) -> iced::Task<Message> {
         Message::Terminal(_) => "terminal interaction",
         Message::Sftp(_) => "file transfer action",
         Message::Macro(_) => "macro action",
+        Message::Tool(_) => "network tool action",
         #[cfg(feature = "ssh")]
         Message::Tunnel(_) => "tunnel action",
         #[cfg(feature = "vnc")]
@@ -55,6 +56,7 @@ pub fn update(app: &mut AppState, message: Message) -> iced::Task<Message> {
         Message::Terminal(msg) => handle_terminal(app, msg),
         Message::Sftp(msg) => handle_sftp(app, msg),
         Message::Macro(msg) => handle_macro(app, msg),
+        Message::Tool(msg) => handle_tool(app, msg),
         #[cfg(feature = "ssh")]
         Message::Tunnel(msg) => handle_tunnel(app, msg),
         #[cfg(feature = "vnc")]
@@ -2714,6 +2716,257 @@ fn finish_macro_with_error(
     Ok(iced::Task::none())
 }
 
+/// Network-tools hub events (Prompt 5.4).
+#[allow(clippy::too_many_lines)]
+fn handle_tool(app: &mut AppState, msg: ToolMsg) -> Result<iced::Task<Message>, String> {
+    use crate::tools::{run_tool, CancelToken, RunStatus, ToolEvent, ToolParams, ToolRun};
+    use futures::StreamExt as _;
+    match msg {
+        ToolMsg::KindSelected(kind) => {
+            app.tool_draft.kind = kind;
+            app.tool_draft.params = ToolParams::for_kind(kind);
+            app.tool_draft.field_text = ToolParams::text_fields(&app.tool_draft.params)
+                .into_iter()
+                .collect();
+            app.tool_draft.error = None;
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::TargetChanged(target) => {
+            app.tool_draft.target = target;
+            app.tool_draft.error = None;
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::ScopeLocal => {
+            app.tool_draft.remote = None;
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::ScopeRemote(id) => {
+            app.tool_draft.remote = Some(id);
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::ParamChanged(field, value) => {
+            app.tool_draft
+                .field_text
+                .insert(field.clone(), value.clone());
+            apply_tool_param(&mut app.tool_draft, &field, &value);
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::RunRequested => {
+            let config = match app.tool_draft.build_config() {
+                Ok(config) => config,
+                Err(error) => {
+                    app.tool_draft.error = Some(error);
+                    app.ui_state.dirty = true;
+                    return Ok(iced::Task::none());
+                },
+            };
+            let id = app.tool_run_seq;
+            app.tool_run_seq += 1;
+            let token = CancelToken::new();
+            app.tool_cancel.insert(id, token.clone());
+            app.tool_runs.push(ToolRun {
+                id,
+                kind: app.tool_draft.kind,
+                target_label: config.target.clone(),
+                lines: Vec::new(),
+                status: RunStatus::Running,
+                started_secs: crate::tools::now_secs(),
+            });
+            // Cap history so long sessions cannot grow it without bound.
+            while app.tool_runs.len() > 50 {
+                let oldest_finished = app
+                    .tool_runs
+                    .iter()
+                    .position(|run| run.status != RunStatus::Running);
+                match oldest_finished {
+                    Some(index) => {
+                        app.tool_cancel.remove(&app.tool_runs[index].id);
+                        app.tool_runs.remove(index);
+                    },
+                    None => break,
+                }
+            }
+            let kind = app.tool_draft.kind;
+            let stream = run_tool(kind, config, token);
+            app.ui_state.dirty = true;
+            Ok(iced::Task::stream(stream.map(move |event| {
+                Message::Tool(ToolMsg::Event(id, event))
+            })))
+        },
+        ToolMsg::CancelRequested(id) => {
+            if let Some(token) = app.tool_cancel.get(&id) {
+                token.cancel();
+            }
+            if let Some(run) = app.tool_runs.iter_mut().find(|run| run.id == id) {
+                run.status = RunStatus::Cancelled;
+            }
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::ClearHistory => {
+            app.tool_runs.retain(|run| run.status == RunStatus::Running);
+            app.tool_cancel
+                .retain(|id, _| app.tool_runs.iter().any(|run| &run.id == id));
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::SearchChanged(query) => {
+            app.tool_draft.search = query;
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+        ToolMsg::Event(id, event) => {
+            let Some(run) = app.tool_runs.iter_mut().find(|run| run.id == id) else {
+                return Ok(iced::Task::none());
+            };
+            match event {
+                ToolEvent::Started => run.status = RunStatus::Running,
+                ToolEvent::Progress { message, percent } => {
+                    let line = match percent {
+                        Some(value) => format!("{message} ({value:.0}%)"),
+                        None => message,
+                    };
+                    run.lines.push((crate::tools::OutputLevel::Info, line));
+                },
+                ToolEvent::Output { line, level } => run.lines.push((level, line)),
+                ToolEvent::Completed { summary } => {
+                    if let Some(summary) = summary {
+                        run.lines
+                            .push((crate::tools::OutputLevel::Success, summary));
+                    }
+                    run.status = RunStatus::Completed;
+                    app.tool_cancel.remove(&id);
+                },
+                ToolEvent::Failed { error } => {
+                    run.status = RunStatus::Failed(error);
+                    app.tool_cancel.remove(&id);
+                },
+                ToolEvent::Cancelled => {
+                    run.status = RunStatus::Cancelled;
+                    app.tool_cancel.remove(&id);
+                },
+            }
+            // Bound per-run output like the multi-exec log.
+            while run.lines.len() > 500 {
+                run.lines.remove(0);
+            }
+            app.ui_state.dirty = true;
+            Ok(iced::Task::none())
+        },
+    }
+}
+
+/// Apply one draft field edit to the per-kind params (Prompt 5.4 form
+/// state). Unparseable numbers keep their previous value.
+fn apply_tool_param(draft: &mut super::state::ToolDraft, field: &str, value: &str) {
+    use crate::tools::{ToolKind, ToolParams};
+    let parse_u32 = |text: &str, current: u32| text.trim().parse().unwrap_or(current);
+    let parse_u64 = |text: &str, current: u64| text.trim().parse().unwrap_or(current);
+    let parse_u16 = |text: &str, current: u16| text.trim().parse().unwrap_or(current);
+    let parse_bool = |text: &str| text.trim().eq_ignore_ascii_case("true");
+    match (&draft.kind, &mut draft.params) {
+        (
+            ToolKind::Ping,
+            ToolParams::Ping {
+                count,
+                interval_ms,
+                size,
+                v6,
+            },
+        ) => match field {
+            "count" => *count = parse_u32(value, *count),
+            "interval_ms" => *interval_ms = parse_u64(value, *interval_ms),
+            "size" => *size = parse_u32(value, *size),
+            "v6" => *v6 = parse_bool(value),
+            _ => {},
+        },
+        (
+            ToolKind::Traceroute,
+            ToolParams::Traceroute {
+                max_hops,
+                timeout_ms,
+            },
+        ) => match field {
+            "max_hops" => *max_hops = value.trim().parse().unwrap_or(*max_hops),
+            "timeout_ms" => *timeout_ms = parse_u64(value, *timeout_ms),
+            _ => {},
+        },
+        (
+            ToolKind::Dns,
+            ToolParams::Dns {
+                record_type,
+                server,
+            },
+        ) => match field {
+            "record_type" => {
+                *record_type = value.trim().to_ascii_uppercase();
+            },
+            "server" => *server = value.trim().to_string(),
+            _ => {},
+        },
+        (ToolKind::ReverseDns, ToolParams::ReverseDns) => {},
+        (ToolKind::Whois, ToolParams::Whois { server }) => {
+            if field == "server" {
+                *server = value.trim().to_string();
+            }
+        },
+        (
+            ToolKind::PortScan,
+            ToolParams::PortScan {
+                ports,
+                concurrency,
+                timeout_ms,
+                banner,
+            },
+        ) => match field {
+            "ports" => *ports = value.trim().to_string(),
+            "concurrency" => *concurrency = parse_u32(value, *concurrency),
+            "timeout_ms" => *timeout_ms = parse_u64(value, *timeout_ms),
+            "banner" => *banner = parse_bool(value),
+            _ => {},
+        },
+        (
+            ToolKind::Http,
+            ToolParams::Http {
+                method,
+                path,
+                headers,
+                body,
+            },
+        ) => match field {
+            "method" => *method = value.trim().to_ascii_uppercase(),
+            "path" => *path = value.trim().to_string(),
+            "headers" => *headers = value.to_string(),
+            "body" => *body = value.to_string(),
+            _ => {},
+        },
+        (ToolKind::Subnet, ToolParams::Subnet { cidr }) => {
+            if field == "cidr" {
+                *cidr = value.trim().to_string();
+            }
+        },
+        (
+            ToolKind::Bandwidth,
+            ToolParams::Bandwidth {
+                mode,
+                port,
+                seconds,
+            },
+        ) => match field {
+            "mode" => *mode = value.trim().to_ascii_lowercase(),
+            "port" => *port = parse_u16(value, *port),
+            "seconds" => *seconds = parse_u64(value, *seconds),
+            _ => {},
+        },
+        _ => {},
+    }
+}
+
 /// Port-forwarding events (Prompt 5.3, ssh-gated).
 #[cfg(feature = "ssh")]
 #[allow(clippy::too_many_lines)]
@@ -3134,6 +3387,18 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
                 app.tabs.push(Tab {
                     title: "Tunnels".to_string(),
                     kind: TabKind::Tunnels,
+                });
+                app.active_tab = app.tabs.len() - 1;
+            }
+            Ok(iced::Task::none())
+        },
+        UiMsg::OpenToolsView => {
+            if let Some(index) = app.tabs.iter().position(|tab| tab.kind == TabKind::Tools) {
+                app.active_tab = index;
+            } else {
+                app.tabs.push(Tab {
+                    title: "Network tools".to_string(),
+                    kind: TabKind::Tools,
                 });
                 app.active_tab = app.tabs.len() - 1;
             }
