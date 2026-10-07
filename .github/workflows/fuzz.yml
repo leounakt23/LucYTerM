@@ -22,7 +22,7 @@ jobs:
       matrix:
         target: [ping_parser, subnet_parser, vte_parser, config_parser, macro_parser]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@nightly
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev
@@ -41,7 +41,7 @@ jobs:
         run: cargo fuzz run ${{ matrix.target }} -- -max_total_time=3600
       - name: Upload crash artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: fuzz-${{ matrix.target }}-artifacts
           path: fuzz/artifacts/${{ matrix.target }}/
