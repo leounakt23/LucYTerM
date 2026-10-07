@@ -1,5 +1,5 @@
 # Reproducible build: pin the toolchain image tag; build in a clean container.
-FROM rust:1.85-slim AS build
+FROM rust:1.98-slim AS build
 
 # System deps: pkg-config/libudev (serialport), libdbus (dbus-rs); sqlite and
 # everything else compiles from source (bundled/pure Rust).
