@@ -21,6 +21,8 @@ fn dialog(draft: &NewSessionDraft) -> iced::Element<'_, Message> {
         protocol_button(draft, Protocol::Ssh, "SSH"),
         protocol_button(draft, Protocol::Telnet, "Telnet"),
         protocol_button(draft, Protocol::Serial, "Serial"),
+        protocol_button(draft, Protocol::Rdp, "RDP"),
+        protocol_button(draft, Protocol::Vnc, "VNC"),
     ]
     .spacing(6);
 
@@ -48,6 +50,29 @@ fn dialog(draft: &NewSessionDraft) -> iced::Element<'_, Message> {
                 &draft.port,
                 NewSessionField::Port,
                 "22",
+            ));
+        },
+        // RDP/VNC: same host/port shape, viewer-side defaults.
+        Protocol::Rdp | Protocol::Vnc => {
+            body = body.push(field(
+                "Host",
+                &draft.host,
+                NewSessionField::Host,
+                "192.168.1.10",
+            ));
+            body = body.push(field(
+                if draft.protocol == Protocol::Rdp {
+                    "Port (3389)"
+                } else {
+                    "Port (5900)"
+                },
+                &draft.port,
+                NewSessionField::Port,
+                if draft.protocol == Protocol::Rdp {
+                    "3389"
+                } else {
+                    "5900"
+                },
             ));
         },
         Protocol::Serial => {
@@ -187,7 +212,13 @@ mod tests {
     #[test]
     fn dialog_covers_all_protocols() {
         let mut app = test_app();
-        for protocol in [Protocol::Ssh, Protocol::Telnet, Protocol::Serial] {
+        for protocol in [
+            Protocol::Ssh,
+            Protocol::Telnet,
+            Protocol::Serial,
+            Protocol::Rdp,
+            Protocol::Vnc,
+        ] {
             let mut draft = NewSessionDraft::new("test".into());
             draft.protocol = protocol;
             draft.serial_ports = vec!["/dev/ttyUSB0 — USB".into()];

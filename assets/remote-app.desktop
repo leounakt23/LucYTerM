@@ -7,6 +7,6 @@ Comment=SSH, Telnet, RDP, VNC and serial client for Linux
 Exec=remote-app
 Icon=remote-app
 Terminal=false
-Categories=Network;RemoteAccess;System;TerminalEmulator;
+Categories=Network;RemoteAccess;TerminalEmulator;
 Keywords=ssh;terminal;remote;sftp;telnet;serial;vnc;rdp;
 StartupWMClass=remote-app

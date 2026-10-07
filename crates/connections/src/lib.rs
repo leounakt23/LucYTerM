@@ -359,17 +359,19 @@ pub mod spawn {
                     plan.program.display()
                 )))
             })?;
-            // Password over stdin (never argv). Viewers that do not read
-            // the password from stdin fall back to their own prompt; the
-            // session still works interactively.
+            // Password over stdin (never argv). Empty passwords are not
+            // sent at all so the viewer falls back to its own prompt;
+            // viewers that ignore stdin prompt natively either way.
             if let (Some(password), Some(stdin)) = (plan.stdin_password, child.stdin.as_mut()) {
-                // Short-lived formatted copy; the Zeroizing wrapper
-                // scrubs it on drop at scope end.
-                let secret = Zeroizing::new(format!("{}\n", password.as_str()));
-                stdin
-                    .write_all(secret.as_bytes())
-                    .await
-                    .map_err(ConnError::Io)?;
+                if !password.is_empty() {
+                    // Short-lived formatted copy; the Zeroizing wrapper
+                    // scrubs it on drop at scope end.
+                    let secret = Zeroizing::new(format!("{}\n", password.as_str()));
+                    stdin
+                        .write_all(secret.as_bytes())
+                        .await
+                        .map_err(ConnError::Io)?;
+                }
             }
             let stdin = child.stdin.take();
             let stderr = child.stderr.take();

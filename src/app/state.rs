@@ -253,6 +253,9 @@ pub struct AppState {
     /// Focused tab index (clamped on close).
     pub active_tab: usize,
     pub theme: crate::ui::theme::AppTheme,
+    /// User palettes loaded from `<config_dir>/themes` (toolbar cycles
+    /// built-ins then these, in name order).
+    pub custom_themes: Vec<crate::ui::theme::AppTheme>,
     /// Draft and attachment consent for the feedback preview.
     pub feedback: FeedbackUiState,
     /// Live Sentry guard; dropping it immediately disables crash delivery.
@@ -365,7 +368,12 @@ impl AppState {
         settings: AppConfig,
         paths: crate::utils::paths::AppPaths,
     ) -> (Self, iced::Task<super::Message>) {
-        let theme = crate::ui::theme::AppTheme::from_settings(&settings);
+        // Custom palettes load before theme resolution so a persisted
+        // custom name restores on startup; broken files surface as a
+        // startup notification instead of failing the launch.
+        let (custom_themes, theme_errors) =
+            crate::ui::theme::load_custom_themes(&paths.config_dir.join("themes"));
+        let theme = crate::ui::theme::AppTheme::from_settings(&settings, &custom_themes);
 
         let secure = SecureStorage::new(&paths.config_dir);
 
@@ -434,6 +442,7 @@ impl AppState {
             }],
             active_tab: 0,
             theme,
+            custom_themes,
             feedback: FeedbackUiState::default(),
             crash_reporter: crate::feedback::sentry::init(
                 &settings.general,
@@ -496,6 +505,16 @@ impl AppState {
                     "some macro files failed to load"
                 );
             }
+        }
+        // Broken custom themes warn the same way (loader already skipped
+        // them; the fallback theme above keeps the UI consistent).
+        for error in theme_errors {
+            tracing::warn!(error, "custom theme skipped");
+            state.notify(
+                super::notifications::Level::Warning,
+                "Theme skipped",
+                &error,
+            );
         }
         (state, iced::Task::batch(startup_tasks))
     }

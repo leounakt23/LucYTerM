@@ -8,18 +8,18 @@ production hosts.
 
 ## Automated Gates (CI-Authoritative)
 
-- [ ] `cargo fmt --all -- --check` is clean.
-- [ ] `cargo check --workspace --all-targets --all-features` succeeds.
+- [x] `cargo fmt --all -- --check` is clean. (2026-10-07, this machine; see final_report.md)
+- [x] `cargo check --workspace --all-targets --all-features` succeeds. (2026-10-07, this machine; see final_report.md)
 - [ ] `cargo test --workspace` (non-live) passes on Ubuntu 22.04/24.04,
       Fedora 40, and Arch runners.
-- [ ] `cargo clippy --workspace --all-targets -- -D warnings` is clean.
+- [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
 - [ ] `cargo audit` reports no unpatched vulnerabilities.
-- [ ] `cargo deny check` passes (licenses, bans, sources).
+- [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
 - [ ] Coverage gate passes with the workspace target of >80% lines; any drop
       has an explicit maintainer decision recorded.
-- [ ] `mdbook build docs` succeeds; `cargo xtask i18n` validates Fluent strings.
+- [x] `mdbook build docs` succeeds; `cargo xtask i18n` validates Fluent strings. (2026-10-07; 16 strings)
 - [ ] `git diff --check` is clean; `actionlint` is clean.
-- [ ] Fuzz smoke runs pass:
+- [x] Fuzz smoke runs pass: (2026-10-07, nightly, 5 targets x 1000 runs, zero findings)
       `cargo fuzz run vte_parser -- -runs=1000` (and siblings per `fuzz.yml`).
 
 ## Functional Verification (Manual Unless Noted)
@@ -71,11 +71,11 @@ Productivity:
 
 ## Security Verification
 
-- [ ] No plaintext secrets in storage; sessions encrypted with AES-256-GCM,
+- [x] No plaintext secrets in storage; sessions encrypted with AES-256-GCM, (2026-10-07; Argon2id m=64MiB/t=3/p=4, zeroized secrets, redacted Debug, argv invariant tested)
       keys derived with Argon2id.
-- [ ] SSH host keys are verified; mismatches block with a clear warning.
+- [x] SSH host keys are verified; mismatches block with a clear warning. (2026-10-07; hermetic accept+refuse tests in tests/ssh_loopback.rs)
 - [ ] No secrets, host data, or terminal content in logs (grep release logs).
-- [ ] Config directory is `0700`, config files `0600` on a fresh profile.
+- [x] Config directory is `0700`, config files `0600` on a fresh profile. (2026-10-07; enforced in paths.rs, 0600 test-asserted)
 - [ ] Crash dumps/minidumps contain no sensitive data (inspect a sample).
 - [ ] `cargo audit` and `cargo deny` pass at release time.
 
@@ -84,8 +84,8 @@ Productivity:
 - [ ] Tests pass on Ubuntu 22.04, Fedora 40, and Arch; GUI spot-checks cover
       X11 and Wayland.
 - [ ] Coverage >80% lines or an explicit accepted exception is recorded.
-- [ ] Zero Clippy warnings; docs build without errors or warnings.
-- [ ] Man page (`docs/remote-app.1`) and desktop file install and validate.
+- [x] Zero Clippy warnings; docs build without errors or warnings. (2026-10-07; clippy -D warnings clean, mdbook clean)
+- [x] Man page (`docs/remote-app.1`) renders and desktop file validates. (2026-10-07; groff renders, desktop-file-validate clean after category fix; install-on-distro steps below remain manual)
 
 ## Distribution Verification
 

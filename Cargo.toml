@@ -11,6 +11,10 @@ members = [
 ]
 exclude = ["fuzz"]
 
+[[bench]]
+name = "performance"
+harness = false
+
 [workspace.package]
 version = "0.1.0"
 edition = "2021"

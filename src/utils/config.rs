@@ -206,6 +206,9 @@ pub struct AppearanceSettings {
     pub dark_theme: bool,
     /// UI scale factor (Wayland HiDPI friendliness).
     pub scale_factor: f32,
+    /// Theme name: light/dark/solarized-light/solarized-dark, a custom
+    /// theme file name, or empty (follow the legacy `dark_theme` flag).
+    pub theme: String,
 }
 
 impl Default for AppearanceSettings {
@@ -213,6 +216,7 @@ impl Default for AppearanceSettings {
         Self {
             dark_theme: true,
             scale_factor: 1.0,
+            theme: String::new(),
         }
     }
 }

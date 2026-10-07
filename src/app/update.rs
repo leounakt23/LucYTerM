@@ -359,12 +359,16 @@ fn handle_connection(
             let cache = app.credentials.clone();
             Ok(iced::Task::perform(
                 async move {
-                    // Telnet/serial lines carry no authentication: skip the
+                    // Telnet/serial lines carry no authentication, and RDP
+                    // authenticates in its own viewer window: skip the
                     // interactive auth flow (no prompts) with an ignored
-                    // placeholder both transports accept and drop.
+                    // placeholder all three transports accept and drop.
+                    // (SpawnConn only forwards non-empty stdin passwords.)
                     let auth = if matches!(
                         spec.protocol,
-                        mbxt_core::Protocol::Telnet | mbxt_core::Protocol::Serial
+                        mbxt_core::Protocol::Telnet
+                            | mbxt_core::Protocol::Serial
+                            | mbxt_core::Protocol::Rdp
                     ) {
                         ConnectionAuth::Password(zeroize::Zeroizing::new(String::new()))
                     } else {
@@ -1941,7 +1945,9 @@ fn build_session_spec(draft: &super::state::NewSessionDraft) -> Result<SessionSp
         mbxt_core::Protocol::Ssh
         | mbxt_core::Protocol::Telnet
         | mbxt_core::Protocol::Sftp
-        | mbxt_core::Protocol::X11 => {
+        | mbxt_core::Protocol::X11
+        | mbxt_core::Protocol::Rdp
+        | mbxt_core::Protocol::Vnc => {
             let host = draft.host.trim().to_string();
             if host.is_empty() {
                 return Err("host is required".to_string());
@@ -3227,8 +3233,13 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
             Ok(iced::Task::none())
         },
         UiMsg::ThemeToggled => {
-            app.settings.appearance.dark_theme = !app.settings.appearance.dark_theme;
-            app.theme = crate::ui::theme::AppTheme::from_settings(&app.settings);
+            // Cycle built-ins then customs; the name persists so the
+            // choice restores on next launch. The legacy flag follows
+            // background darkness for older readers of the setting.
+            let next = app.theme.cycle_with(&app.custom_themes);
+            app.settings.appearance.theme = next.canonical_name();
+            app.settings.appearance.dark_theme = next.is_dark();
+            app.theme = next;
             // Save-on-change: mark dirty; the next tick (≤30 s) persists.
             app.ui_state.dirty = true;
             Ok(iced::Task::none())
@@ -3312,6 +3323,8 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
                 draft.port = match protocol {
                     mbxt_core::Protocol::Ssh => "22".to_string(),
                     mbxt_core::Protocol::Telnet => "23".to_string(),
+                    mbxt_core::Protocol::Rdp => "3389".to_string(),
+                    mbxt_core::Protocol::Vnc => "5900".to_string(),
                     _ => draft.port.clone(),
                 };
             }
@@ -4526,11 +4539,14 @@ mod tests {
     }
 
     #[test]
-    fn theme_toggle_flips_theme_and_marks_dirty() {
+    fn theme_toggle_cycles_and_persists_name() {
         let mut state = app();
-        let was_dark = state.settings.appearance.dark_theme;
+        assert_eq!(state.theme, crate::ui::theme::AppTheme::Dark);
         update(&mut state, Message::Ui(UiMsg::ThemeToggled));
-        assert_eq!(state.settings.appearance.dark_theme, !was_dark);
+        // Dark -> SolarizedDark, name persisted for the next launch.
+        assert_eq!(state.theme, crate::ui::theme::AppTheme::SolarizedDark);
+        assert_eq!(state.settings.appearance.theme, "solarized-dark");
+        assert!(state.settings.appearance.dark_theme);
         assert!(state.ui_state.dirty);
     }
 
