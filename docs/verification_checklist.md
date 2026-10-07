@@ -56,7 +56,7 @@ Productivity:
 - [ ] Macro recorder captures input; playback reproduces actions.
 - [x] Network tools return sane results: ping, traceroute, DNS, whois, port (2026-10-07; subnet run executed in-app with correct output, docs/assets/tools-run-xvfb.png; backends unit+hermetic tested)
       scan (`network_tools` tests + manual spot-check).
-- [ ] Built-in themes switch; a custom theme file loads.
+- [x] Built-in themes switch; a custom theme file loads. (2026-10-08; switch verified visually on real desktop by maintainer; loader unit-tested incl. malformed-skip)
 - [ ] Session import works per the published importer matrix; unknown fields
       are reported, never guessed; nothing is overwritten silently.
 
