@@ -1054,13 +1054,13 @@ dependencies = [
 
 [[package]]
 name = "crash-context"
-version = "0.6.3"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "031ed29858d90cfdf27fe49fae28028a1f20466db97962fa2f4ea34809aeebf3"
+checksum = "3748e166981fa3ba9dc54ff950ad0ed5ca4aab4b73eae21d9f539659fe806e28"
 dependencies = [
  "cfg-if",
  "libc",
- "mach2",
+ "mach2 0.6.0",
 ]
 
 [[package]]
@@ -1229,7 +1229,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e3d747f100290a1ca24b752186f61f6637e1deffe3bf6320de6fcb29510a307"
 dependencies = [
  "bitflags 2.13.2",
- "libloading 0.7.4",
+ "libloading 0.8.9",
  "winapi",
 ]
 
@@ -1427,7 +1427,7 @@ version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab8ecd87370524b461f8557c119c405552c396ed91fc0a8eec68679eab26f94a"
 dependencies = [
- "libloading 0.7.4",
+ "libloading 0.8.9",
 ]
 
 [[package]]
@@ -1651,7 +1651,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1659,6 +1659,15 @@ name = "error-code"
 version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b5343afd4a8365a643ac588dab4cf234a190c7f6c88c9f6dd6ffe00837661b7"
+
+[[package]]
+name = "error-graph"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b920e777967421aa5f9bf34f842c0ab6ba19b3bdb4a082946093860f5858879"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "etagere"
@@ -1698,6 +1707,12 @@ dependencies = [
  "event-listener",
  "pin-project-lite",
 ]
+
+[[package]]
+name = "failspot"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c942e64b20ecd39933d5ff938ca4fdb6ef0d298cc3855b231179a5ef0b24948d"
 
 [[package]]
 name = "fallible-iterator"
@@ -2174,6 +2189,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "goblin"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "daa0a64d21a7eb230583b4c5f4e23b7e4e57974f96620f42a7e75e08ae66d745"
+dependencies = [
+ "log",
+ "plain",
+ "scroll 0.12.0",
+]
+
+[[package]]
 name = "gpu-alloc"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2344,7 +2370,7 @@ dependencies = [
  "bitflags 2.13.2",
  "com",
  "libc",
- "libloading 0.7.4",
+ "libloading 0.8.9",
  "thiserror 1.0.69",
  "widestring",
  "winapi",
@@ -3009,7 +3035,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "617ee6cf8e3f66f3b4ea67a4058564628cde41901316e19f559e14c7c72c5e7b"
 dependencies = [
  "core-foundation-sys",
- "mach2",
+ "mach2 0.4.3",
 ]
 
 [[package]]
@@ -3039,7 +3065,7 @@ checksum = "3640c1c38b8e4e43584d8df18be5fc6b0aa314ce6ebf51b53313d4306cca8e46"
 dependencies = [
  "hermit-abi",
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -3346,6 +3372,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "mach2"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dae608c151f68243f2b000364e1f7b186d9c29845f7d2d85bd31b9ad77ad552b"
+
+[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3536,9 +3568,9 @@ dependencies = [
 
 [[package]]
 name = "minidump-common"
-version = "0.21.2"
+version = "0.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c4d14bcca0fd3ed165a03000480aaa364c6860c34e900cb2dafdf3b95340e77"
+checksum = "2e16d10087ae9e375bad7a40e8ef5504bc08e808ccc6019067ff9de42a84570f"
 dependencies = [
  "bitflags 2.13.2",
  "debugid",
@@ -3551,33 +3583,35 @@ dependencies = [
 
 [[package]]
 name = "minidump-writer"
-version = "0.8.9"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2abcd9c8a1e6e1e9d56ce3627851f39a17ea83e17c96bc510f29d7e43d78a7d"
+checksum = "f742d7445a9d4c63826d302dadbbcb607745560108e88b21c4014a9724d09dbe"
 dependencies = [
  "bitflags 2.13.2",
  "byteorder",
  "cfg-if",
  "crash-context",
- "goblin",
+ "error-graph",
+ "failspot",
+ "goblin 0.9.3",
  "libc",
  "log",
- "mach2",
+ "mach2 0.6.0",
  "memmap2",
- "memoffset",
  "minidump-common",
- "nix 0.28.0",
+ "process-backend",
  "procfs-core",
  "scroll 0.12.0",
- "tempfile",
- "thiserror 1.0.69",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
 name = "minidumper"
-version = "0.8.3"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b4ebc9d1f8847ec1d078f78b35ed598e0ebefa1f242d5f83cd8d7f03960a7d1"
+checksum = "c56279c70e341c9de54c18c804950595e76799e8ee627ff8931b64f795f09741"
 dependencies = [
  "cfg-if",
  "crash-context",
@@ -3587,7 +3621,7 @@ dependencies = [
  "parking_lot 0.12.5",
  "polling",
  "scroll 0.12.0",
- "thiserror 1.0.69",
+ "thiserror 2.0.20",
  "uds",
 ]
 
@@ -3771,18 +3805,6 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.28.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab2156c4fce2f8df6c499cc1c763e4394b7482525bf2a9701c9d79d215f519e4"
-dependencies = [
- "bitflags 2.13.2",
- "cfg-if",
- "cfg_aliases 0.1.1",
- "libc",
-]
-
-[[package]]
-name = "nix"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
@@ -3844,7 +3866,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4954,13 +4976,37 @@ dependencies = [
 ]
 
 [[package]]
-name = "procfs-core"
-version = "0.16.0"
+name = "process-backend"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d3554923a69f4ce04c4a754260c338f505ce22642d3830e049a399fc2059a29"
+checksum = "07c02e259a3522eccc4957ee6e922db4945648fb7730a41192d919518d06a530"
+dependencies = [
+ "libc",
+ "log",
+ "process-reader",
+ "serde",
+ "thiserror 2.0.20",
+]
+
+[[package]]
+name = "process-reader"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3024e1803f4b8c40cca8c1955243410354cb4d67f053af9210147416a7265535"
+dependencies = [
+ "libc",
+ "serde",
+]
+
+[[package]]
+name = "procfs-core"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6401bf7b6af22f78b563665d15a22e9aef27775b79b149a66ca022468a4e405"
 dependencies = [
  "bitflags 2.13.2",
  "hex",
+ "serde",
 ]
 
 [[package]]
@@ -5689,7 +5735,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6103,7 +6149,7 @@ dependencies = [
  "core-foundation 0.10.1",
  "core-foundation-sys",
  "io-kit-sys",
- "mach2",
+ "mach2 0.4.3",
  "nix 0.26.4",
  "scopeguard",
  "unescaper",
@@ -6559,7 +6605,7 @@ dependencies = [
  "fallible-iterator 0.3.0",
  "flate2",
  "gimli",
- "goblin",
+ "goblin 0.8.2",
  "memchr",
  "nom",
  "nom-supreme",
@@ -6687,7 +6733,7 @@ dependencies = [
  "getrandom 0.3.4",
  "once_cell",
  "rustix 1.1.4",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -7816,7 +7862,7 @@ dependencies = [
  "js-sys",
  "khronos-egl",
  "libc",
- "libloading 0.7.4",
+ "libloading 0.8.9",
  "log",
  "metal 0.27.0",
  "naga 0.19.2",
@@ -7934,7 +7980,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
