@@ -126,7 +126,7 @@ serde_json = "1.0"
 reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "native-tls"] }
 sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "native-tls"] }
 minidumper = "0.8"
-symbolic = "12"
+symbolic = "13"
 
 # Low-level
 libc = "0.2.170"
