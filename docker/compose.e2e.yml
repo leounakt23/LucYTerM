@@ -11,3 +11,26 @@ services:
       retries: 20
     tmpfs:
       - /home/test/upload
+  # Full OpenSSH server for forwarding/X11 live tests. atmoz/sftp above
+  # is an SFTP-only appliance (no TCP forwarding), so the forwarding
+  # suites run here instead. The vendored sshd_config enables TCP
+  # forwarding and X11 forwarding; password login is test:test.
+  # Internal sshd port is 22 (the tests loop back through it); the host
+  # mapping is 2223 to coexist with the SFTP appliance.
+  openssh:
+    image: lscr.io/linuxserver/openssh-server:latest
+    ports:
+      - "2223:22"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - USER_NAME=test
+      - USER_PASSWORD=test
+      - PASSWORD_ACCESS=true
+    volumes:
+      - ./sshd_config:/config/sshd/sshd_config
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 22"]
+      interval: 2s
+      timeout: 2s
+      retries: 20

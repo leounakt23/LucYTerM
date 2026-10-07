@@ -96,9 +96,18 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   measured). Path forward: Xvfb GUI harness + disposable-server
   E2E in CI before any release claim.
 - Test counts (all-features suite, all passing): 318 lib tests +
-  integration targets incl. 2 hermetic SSH loopback tests;
-  forward/network/sftp/vnc/x11 live cases ignored without
-  `MBXT_*_TEST_*` servers; 5 fuzz targets × 1000 runs clean.
+  integration targets incl. 2 hermetic SSH loopback tests, a canned
+  RFB handshake test, and a busybox-telnet round-trip test.
+- Live servers (2026-10-07, disposable docker services on loopback,
+  strict host-key learning, zero user-config pollution): SFTP
+  list + round-trip (`atmoz/sftp:alpine :2222`) pass; local, remote,
+  and dynamic SOCKS5 forwarding (`linuxserver/openssh-server :2223`
+  with vendored `docker/sshd_config`) pass; X11 handshake sets
+  remote `DISPLAY` (pass); Telnet echo via `busybox telnetd` passes.
+  VNC against a real server and RDP against a real server stay
+  unverified (no server image vetted yet).
+- `MBXT_*_TEST_*` suites without servers, VNC/RDP live, and
+  key/agent live logins stay ignored/skipped by default.
 - Platforms exercised: Ubuntu 24.04 x86_64 only. Fedora/Arch/
   Windows targets compile-check in CI; this machine cannot run them.
 

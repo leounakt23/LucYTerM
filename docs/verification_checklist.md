@@ -40,15 +40,15 @@ Files and tunnels:
 
 - [ ] SFTP browser lists remote files on a disposable server.
 - [ ] Upload and download complete; pause/resume continues correctly.
-- [ ] Local, remote, and dynamic (SOCKS5) forwarding carry traffic.
+- [x] Local, remote, and dynamic (SOCKS5) forwarding carry traffic. (2026-10-07; all three live vs disposable OpenSSH :2223, banner loopback)
 - [ ] X11 forwarding launches a GUI app from a disposable server.
 
 Multi-protocol (each needs its live counterpart or emulator):
 
 - [ ] RDP session connects and displays via the managed external process.
 - [ ] VNC session connects and displays (`vnc_integration` live-gated).
-- [ ] Telnet connection works against a disposable server.
-- [ ] Serial connection opens with a virtual/loopback device.
+- [x] Telnet connection works against a disposable server. (2026-10-07; tests/telnet_live.rs vs busybox telnetd, echo round-trip)
+- [x] Serial connection opens with a virtual/loopback device. (2026-10-07; unix pty-pair loopback tests, no hardware)
 
 Productivity:
 

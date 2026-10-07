@@ -80,3 +80,30 @@ fn unique_suffix() -> u128 {
         .map(|d| d.as_nanos())
         .unwrap_or_default()
 }
+
+/// Learn a live server host key into a throwaway `HOME` so strict
+/// `known_hosts` verification passes exactly as in production: no user
+/// `known_hosts` pollution, works in CI and locally.
+///
+/// Process-scoped by necessity (process env is global): the temp HOME
+/// lives for the harness lifetime and is never restored. Serialized
+/// internally; call once per live test before dialing. Requires the
+/// `ssh-keyscan` binary (openssh-client) and a reachable server.
+pub fn learn_live_host_key(addr: &str) {
+    static GUARD: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let _guard = GUARD.lock().unwrap();
+    let (host, port) = addr.rsplit_once(':').expect("live addr as HOST:PORT");
+    let home = std::env::temp_dir().join(format!("mbxt-live-home-{}", std::process::id()));
+    let ssh_dir = home.join(".ssh");
+    std::fs::create_dir_all(&ssh_dir).expect("temp ssh dir");
+    let output = std::process::Command::new("ssh-keyscan")
+        .args(["-p", port, "-t", "rsa,ecdsa,ed25519", host])
+        .output()
+        .expect("ssh-keyscan runs (openssh-client required for live tests)");
+    assert!(
+        !output.stdout.is_empty(),
+        "ssh-keyscan found no host keys at {addr}"
+    );
+    std::fs::write(ssh_dir.join("known_hosts"), &output.stdout).expect("write known_hosts");
+    std::env::set_var("HOME", &home);
+}

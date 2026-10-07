@@ -42,6 +42,7 @@ async fn direct_channel_reads_ssh_banner() {
     let Some((addr, user, password)) = live_config() else {
         return;
     };
+    remote_app::test_utils::learn_live_host_key(&addr);
     let (host, port) = addr.rsplit_once(':').expect("HOST:PORT");
     let auth = ConnectionAuth::Password(zeroize::Zeroizing::new(password));
     let dial = dial_tunnel(host, port.parse().expect("port"), &user, auth)
@@ -68,6 +69,7 @@ async fn remote_listen_granted_and_released() {
     let Some((addr, user, password)) = live_config() else {
         return;
     };
+    remote_app::test_utils::learn_live_host_key(&addr);
     let (host, port) = addr.rsplit_once(':').expect("HOST:PORT");
     let auth = ConnectionAuth::Password(zeroize::Zeroizing::new(password));
     let dial = dial_tunnel(host, port.parse().expect("port"), &user, auth)
@@ -96,6 +98,7 @@ async fn socks_connect_relays_banner() {
     let Some((addr, user, password)) = live_config() else {
         return;
     };
+    remote_app::test_utils::learn_live_host_key(&addr);
     let (host, port) = addr.rsplit_once(':').expect("HOST:PORT");
     let port: u16 = port.parse().expect("port");
     let auth = ConnectionAuth::Password(zeroize::Zeroizing::new(password));
