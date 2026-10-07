@@ -83,13 +83,12 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 
 ## Test Coverage
 
-- Line coverage: **5.6%** (`cargo llvm-cov --workspace
-  --all-features`, nightly toolchain for instrumentation; stable
-  1.85 cannot instrument the `tiny-xlib` dependency).
-  Tooling caveat (verified): the report is non-responsive — theme
-  and WHOIS unit tests demonstrably ran, yet both files report
-  0.00%, and per-file values are identical across different test
-  selections. The true value is higher but unverified.
+- Line coverage: **65.2%** (`cargo llvm-cov --workspace
+  --all-features`, llvm-cov 0.9.1, nightly toolchain for
+  instrumentation; e.g. theme 90.6%, whois 73.3%). The earlier 5.6%
+  was a broken-tool artifact (cargo-llvm-cov 0.6.21 reported
+  identical per-file numbers across different test selections;
+  verified non-responsive and replaced).
 - Explicit exception (maintainer decision): the >80% line target is
   not met and cannot be met headless — `src/ui` and much of
   `src/app` need a display server, and live-protocol paths need

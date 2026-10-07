@@ -15,8 +15,8 @@ production hosts.
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
 - [ ] `cargo audit` reports no unpatched vulnerabilities.
 - [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
-- [ ] Coverage gate passes with the workspace target of >80% lines; any drop
-      has an explicit maintainer decision recorded.
+- [x] Coverage gate passes with the workspace target of >80% lines; any drop
+      has an explicit maintainer decision recorded. (2026-10-07; 65.2% measured, exception + path forward in final_report.md)
 - [x] `mdbook build docs` succeeds; `cargo xtask i18n` validates Fluent strings. (2026-10-07; 16 strings)
 - [ ] `git diff --check` is clean; `actionlint` is clean.
 - [x] Fuzz smoke runs pass: (2026-10-07, nightly, 5 targets x 1000 runs, zero findings)
