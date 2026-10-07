@@ -60,7 +60,7 @@ bytemuck = { version = "1.14", features = ["derive"] }
 # Networking
 russh = "0.45.0"
 russh-sftp = "2.0"
-hickory-resolver = "0.24.1"
+hickory-resolver = "0.25.2"
 
 # System integration
 nix = "0.29.0"
