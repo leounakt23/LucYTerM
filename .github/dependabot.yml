@@ -11,6 +11,25 @@ updates:
         update-types: [patch]
       cargo-minor:
         update-types: [minor]
+    # The technology stack table in MASTER_PROMPT.md pins these crates
+    # exactly (GUI/SSH/terminal/DNS core: minor bumps break APIs or
+    # MSRV). Patch updates still flow; anything bigger is a deliberate
+    # maintainer decision with a full gate run, never a bot merge.
+    ignore:
+      - dependency-name: 'iced'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'wgpu'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'russh'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'russh-sftp'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'vte'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'hickory-resolver'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'tokio'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -19,6 +38,11 @@ updates:
     groups:
       actions:
         patterns: ['*']
+    # The toolchain pin is authoritative (rust-toolchain.toml + MSRV
+    # story): action bumps must never move it. Dependabot cannot merge
+    # selectively, so exclude it here and bump it by hand with the pin.
+    ignore:
+      - dependency-name: 'dtolnay/rust-toolchain'
   - package-ecosystem: docker
     directory: /
     schedule:
