@@ -16,6 +16,10 @@ pub enum AppTheme {
     Dark,
     SolarizedLight,
     SolarizedDark,
+    /// Vibrant high-contrast dark: near-black background, saturated RGB
+    /// accents (cyan/green/pink). Added for low-vision and stage-light
+    /// use; kept in the built-in cycle.
+    RainbowDark,
     /// User-supplied palette loaded from a theme file.
     Custom {
         name: String,
@@ -40,6 +44,7 @@ impl AppTheme {
             "dark" => Self::Dark,
             "solarized-light" => Self::SolarizedLight,
             "solarized-dark" => Self::SolarizedDark,
+            "rainbow-dark" => Self::RainbowDark,
             other => customs
                 .iter()
                 .find(|theme| theme.name().eq_ignore_ascii_case(other))
@@ -48,14 +53,15 @@ impl AppTheme {
         }
     }
 
-    /// Cycle Light → Dark → Solarized Dark → Solarized Light → back.
-    /// (Bound to a toolbar button/shortcut in a later prompt; kept total.)
+    /// Cycle Light → Dark → Solarized Dark → Solarized Light →
+    /// Rainbow Dark → back (toolbar theme button order).
     pub fn cycle(&self) -> Self {
         match self {
             Self::Light => Self::Dark,
             Self::Dark => Self::SolarizedDark,
             Self::SolarizedDark => Self::SolarizedLight,
-            Self::SolarizedLight => Self::Light,
+            Self::SolarizedLight => Self::RainbowDark,
+            Self::RainbowDark => Self::Light,
             Self::Custom { .. } => Self::Light,
         }
     }
@@ -68,6 +74,7 @@ impl AppTheme {
             Self::Dark,
             Self::SolarizedDark,
             Self::SolarizedLight,
+            Self::RainbowDark,
         ];
         order.extend(customs.iter().cloned());
         let current = order.iter().position(|theme| theme.name() == self.name());
@@ -84,6 +91,7 @@ impl AppTheme {
             Self::Dark => "dark".to_string(),
             Self::SolarizedLight => "solarized-light".to_string(),
             Self::SolarizedDark => "solarized-dark".to_string(),
+            Self::RainbowDark => "rainbow-dark".to_string(),
             Self::Custom { name, .. } => name.clone(),
         }
     }
@@ -103,6 +111,7 @@ impl AppTheme {
             Self::Dark => "Dark".into(),
             Self::SolarizedLight => "Solarized Light".into(),
             Self::SolarizedDark => "Solarized Dark".into(),
+            Self::RainbowDark => "Rainbow Dark".into(),
             Self::Custom { name, .. } => name.clone(),
         }
     }
@@ -121,6 +130,17 @@ impl AppTheme {
     pub fn palette(&self) -> iced::theme::Palette {
         if let Self::Custom { palette, .. } = self {
             return *palette;
+        }
+        if let Self::RainbowDark = self {
+            // Vibrant RGB on near-black: electric cyan / neon green /
+            // neon pink. Text is near-white for maximum contrast.
+            return iced::theme::Palette {
+                background: iced::Color::from_rgb8(0x0A, 0x0A, 0x14),
+                text: iced::Color::from_rgb8(0xF2, 0xF2, 0xF2),
+                primary: iced::Color::from_rgb8(0x00, 0xE5, 0xFF),
+                success: iced::Color::from_rgb8(0x39, 0xFF, 0x6A),
+                danger: iced::Color::from_rgb8(0xFF, 0x2E, 0x63),
+            };
         }
         let (background, text, primary, success, danger) = match self {
             Self::SolarizedLight => (
@@ -157,7 +177,7 @@ impl AppTheme {
     /// through it for them.)
     pub fn is_dark(&self) -> bool {
         match self {
-            Self::Dark | Self::SolarizedDark => true,
+            Self::Dark | Self::SolarizedDark | Self::RainbowDark => true,
             Self::Light | Self::SolarizedLight => false,
             Self::Custom { palette, .. } => {
                 let background = palette.background;
@@ -318,9 +338,10 @@ mod tests {
         };
         let customs = vec![harbor.clone()];
         assert_eq!(AppTheme::Light.cycle_with(&customs), AppTheme::Dark);
-        // ... Dark -> SolarizedDark -> SolarizedLight -> Harbor -> Light.
+        // ... Dark -> SolarizedDark -> SolarizedLight -> RainbowDark
+        // -> Harbor -> Light.
         let mut theme = AppTheme::Light;
-        for _ in 0..5 {
+        for _ in 0..6 {
             theme = theme.cycle_with(&customs);
         }
         assert_eq!(theme, AppTheme::Light);
@@ -389,6 +410,34 @@ mod tests {
         assert!(!AppTheme::Light.is_dark());
         assert!(AppTheme::SolarizedDark.is_dark());
         assert!(!AppTheme::SolarizedLight.is_dark());
+        assert!(AppTheme::RainbowDark.is_dark());
+    }
+
+    #[test]
+    fn rainbow_dark_resolves_and_contrasts() {
+        let settings = AppConfig {
+            appearance: crate::utils::config::AppearanceSettings {
+                theme: "RAINBOW-DARK".into(),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert_eq!(
+            AppTheme::from_settings(&settings, &[]),
+            AppTheme::RainbowDark
+        );
+        assert_eq!(AppTheme::RainbowDark.canonical_name(), "rainbow-dark");
+        // Near-black background, near-white text: contrast ratio ≈ 18:1.
+        let palette = AppTheme::RainbowDark.palette();
+        let luminance = |color: iced::Color| 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+        let background = luminance(palette.background);
+        let text = luminance(palette.text);
+        assert!(background < 0.05, "background luminance {background}");
+        assert!(text > 0.85, "text luminance {text}");
+        // Saturated RGB accents: each primary dominates its own channel.
+        assert!(palette.primary.b > 0.8 && palette.primary.r < 0.2);
+        assert!(palette.success.g > 0.8 && palette.success.b < 0.5);
+        assert!(palette.danger.r > 0.8 && palette.danger.g < 0.3);
     }
 
     #[test]
@@ -402,11 +451,12 @@ mod tests {
     fn cycle_visits_all_variants() {
         let mut theme = AppTheme::Light;
         let mut seen = vec![theme.clone()];
-        for _ in 0..4 {
+        for _ in 0..5 {
             theme = theme.cycle();
             seen.push(theme.clone());
         }
         assert!(seen.contains(&AppTheme::SolarizedDark));
+        assert!(seen.contains(&AppTheme::RainbowDark));
         assert_eq!(theme, AppTheme::Light);
     }
 

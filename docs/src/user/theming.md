@@ -4,8 +4,10 @@ title: Theming
 
 # Theming
 
-The application ships four built-in themes — Light, Dark, Solarized Light,
-Solarized Dark — plus any custom palettes found at startup. UI theme code
+The application ships five built-in themes — Light, Dark, Solarized Light,
+Solarized Dark, and Rainbow Dark (vibrant high-contrast: near-black
+background, saturated cyan/green/pink accents) — plus any custom
+palettes found at startup. UI theme code
 lives in `src/ui/theme.rs`; terminal colors are modeled separately in the
 terminal grid and renderer. The toolbar `theme` button cycles built-ins
 then customs; the choice persists in settings and restores on next launch.
