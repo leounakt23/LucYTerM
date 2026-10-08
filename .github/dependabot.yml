@@ -30,6 +30,14 @@ updates:
         update-types: ['version-update:semver-minor', 'version-update:semver-major']
       - dependency-name: 'tokio'
         update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      # directories 5.0 and minidumper 0.8 are stack-pinned; ed25519-dalek
+      # 2.x must not cross a major (would break the SSH key path).
+      - dependency-name: 'directories'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'minidumper'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
+      - dependency-name: 'ed25519-dalek'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -51,6 +59,11 @@ updates:
     groups:
       containers:
         patterns: ['*']
+    # The rust base image tracks the pinned toolchain (1.85.x patches
+    # flow; anything bigger is a deliberate toolchain decision).
+    ignore:
+      - dependency-name: 'rust'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
   - package-ecosystem: docker
     directory: /docker
     schedule:
