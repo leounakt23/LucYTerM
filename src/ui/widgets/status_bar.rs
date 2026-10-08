@@ -52,9 +52,13 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             .height(iced::Shrink),
     );
     bar = bar.push(
-        button(text("Send feedback").size(12))
-            .on_press(Message::Ui(UiMsg::OpenFeedback))
-            .padding(4),
+        crate::ui::theme::chrome_button(
+            app.theme.clone(),
+            "Send feedback",
+            button(text("Send feedback").size(12)),
+        )
+        .on_press(Message::Ui(UiMsg::OpenFeedback))
+        .padding(4),
     );
     bar.padding([4, 8]).into()
 }

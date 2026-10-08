@@ -18,24 +18,36 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
     } else {
         "○ multi-exec (Ctrl+Shift+M)".to_string()
     };
-    let mut strip = row![button(text(toggle_label).size(12))
-        .on_press(Message::Ui(UiMsg::MultiExecToggle))
-        .padding([3, 8]),]
+    let mut strip = row![crate::ui::theme::chrome_button(
+        app.theme.clone(),
+        "multi-exec toggle",
+        button(text(toggle_label).size(12))
+    )
+    .on_press(Message::Ui(UiMsg::MultiExecToggle))
+    .padding([3, 8]),]
     .spacing(8);
 
     if mode.enabled {
         strip = strip.push(
-            button(text("Combined output").size(11))
-                .on_press(Message::Ui(UiMsg::MultiExecOpenView))
-                .padding([3, 8]),
+            crate::ui::theme::chrome_button(
+                app.theme.clone(),
+                "Combined output",
+                button(text("Combined output").size(11)),
+            )
+            .on_press(Message::Ui(UiMsg::MultiExecOpenView))
+            .padding([3, 8]),
         );
-        strip = strip.push(quick_select_row());
+        strip = strip.push(quick_select_row(&app.theme));
         strip = strip.push(
-            button(text(format!("stagger {}ms", mode.stagger_ms)).size(11))
-                .on_press(Message::Ui(UiMsg::MultiExecStaggerChanged(next_stagger(
-                    mode.stagger_ms,
-                ))))
-                .padding([3, 8]),
+            crate::ui::theme::chrome_button(
+                app.theme.clone(),
+                "stagger",
+                button(text(format!("stagger {}ms", mode.stagger_ms)).size(11)),
+            )
+            .on_press(Message::Ui(UiMsg::MultiExecStaggerChanged(next_stagger(
+                mode.stagger_ms,
+            ))))
+            .padding([3, 8]),
         );
     }
 
@@ -53,9 +65,13 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
                     .on_submit(Message::Ui(UiMsg::MultiExecTemplateSend))
                     .padding(4)
                     .width(iced::Fill),
-                button(text("Send template").size(11))
-                    .on_press(Message::Ui(UiMsg::MultiExecTemplateSend))
-                    .padding([3, 8]),
+                crate::ui::theme::chrome_button(
+                    app.theme.clone(),
+                    "Send template",
+                    button(text("Send template").size(11))
+                )
+                .on_press(Message::Ui(UiMsg::MultiExecTemplateSend))
+                .padding([3, 8]),
             ]
             .spacing(8),
         );
@@ -65,12 +81,20 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             body = body.push(
                 row![
                     text("⚠ destructive broadcast held — confirm to send").size(12),
-                    button(text("Confirm send").size(11))
-                        .on_press(Message::Ui(UiMsg::MultiExecConfirmBroadcast))
-                        .padding([3, 8]),
-                    button(text("Discard").size(11))
-                        .on_press(Message::Ui(UiMsg::MultiExecDiscardBroadcast))
-                        .padding([3, 8]),
+                    crate::ui::theme::chrome_button(
+                        app.theme.clone(),
+                        "Confirm send",
+                        button(text("Confirm send").size(11))
+                    )
+                    .on_press(Message::Ui(UiMsg::MultiExecConfirmBroadcast))
+                    .padding([3, 8]),
+                    crate::ui::theme::chrome_button(
+                        app.theme.clone(),
+                        "Discard",
+                        button(text("Discard").size(11))
+                    )
+                    .on_press(Message::Ui(UiMsg::MultiExecDiscardBroadcast))
+                    .padding([3, 8]),
                 ]
                 .spacing(8),
             );
@@ -84,18 +108,18 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
     container(body).width(iced::Fill).padding([4, 8]).into()
 }
 
-fn quick_select_row() -> iced::Element<'static, Message> {
+fn quick_select_row(theme: &crate::ui::theme::AppTheme) -> iced::Element<'static, Message> {
     row![
-        button(text("All").size(11))
+        crate::ui::theme::chrome_button(theme.clone(), "All", button(text("All").size(11)))
             .on_press(Message::Ui(UiMsg::MultiExecSelectAll))
             .padding([3, 8]),
-        button(text("SSH").size(11))
+        crate::ui::theme::chrome_button(theme.clone(), "SSH", button(text("SSH").size(11)))
             .on_press(Message::Ui(UiMsg::MultiExecSelectSsh))
             .padding([3, 8]),
-        button(text("Tabs").size(11))
+        crate::ui::theme::chrome_button(theme.clone(), "Tabs", button(text("Tabs").size(11)))
             .on_press(Message::Ui(UiMsg::MultiExecSelectTabs))
             .padding([3, 8]),
-        button(text("Clear").size(11))
+        crate::ui::theme::chrome_button(theme.clone(), "Clear", button(text("Clear").size(11)))
             .on_press(Message::Ui(UiMsg::MultiExecClearTargets))
             .padding([3, 8]),
     ]

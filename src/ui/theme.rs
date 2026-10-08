@@ -187,8 +187,61 @@ impl AppTheme {
     }
 }
 
-/// One user-supplied palette file (`<config_dir>/themes/*.ron`):
-/// `(name: "...", background: "#rrggbb", text: "#rrggbb",
+/// Six neon accents cycled across chrome widgets (toolbar, tabs,
+/// status) when [`AppTheme::RainbowDark`] is active. Order follows the
+/// visible spectrum so neighbors never clash.
+pub const SPECTRUM: [(u8, u8, u8); 6] = [
+    (0xFF, 0x2E, 0x63), // pink-red
+    (0xFF, 0x8C, 0x00), // orange
+    (0xFF, 0xE5, 0x00), // yellow
+    (0x39, 0xFF, 0x6A), // green
+    (0x00, 0xE5, 0xFF), // cyan
+    (0x7B, 0x61, 0xFF), // violet
+];
+
+/// Deterministic accent for a chrome label: same label, same color,
+/// every frame. A plain multiplicative hash (not cryptographic — it
+/// only spreads buttons across the spectrum).
+pub fn spectrum_accent(label: &str) -> iced::Color {
+    let mut hash = 0u64;
+    for byte in label.bytes() {
+        hash = hash.wrapping_mul(31).wrapping_add(byte as u64);
+    }
+    let (red, green, blue) = SPECTRUM[hash as usize % SPECTRUM.len()];
+    iced::Color::from_rgb8(red, green, blue)
+}
+
+/// Chrome button wrapper: on [`AppTheme::RainbowDark`] the button gets
+/// a dark fill with a neon outline in its spectrum accent; on every
+/// other theme the builder passes through untouched (zero visual or
+/// performance impact elsewhere). Takes the theme by value (built-ins
+/// clone for free) so the wrapper works in `'static` contexts too.
+/// Keeps per-widget rainbow logic in one place instead of spreading
+/// color math across widgets.
+pub fn chrome_button<'a, Message>(
+    theme: AppTheme,
+    label: &str,
+    button: iced::widget::Button<'a, Message>,
+) -> iced::widget::Button<'a, Message> {
+    if !matches!(theme, AppTheme::RainbowDark) {
+        return button;
+    }
+    let accent = spectrum_accent(label);
+    button.style(move |_, _| iced::widget::button::Style {
+        background: Some(iced::Background::Color(iced::Color::from_rgb8(
+            0x14, 0x14, 0x22,
+        ))),
+        text_color: iced::Color::WHITE,
+        border: iced::Border {
+            color: accent,
+            width: 1.5,
+            radius: 6.0.into(),
+        },
+        shadow: iced::Shadow::default(),
+    })
+}
+
+/// One user-supplied palette file (`<config_dir>/themes/*.ron`):/// `(name: "...", background: "#rrggbb", text: "#rrggbb",
 /// primary: "#rrggbb", success: "#rrggbb", danger: "#rrggbb")`.
 /// `#rgb` shorthand is accepted. No secrets or host data belong here.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -438,6 +491,48 @@ mod tests {
         assert!(palette.primary.b > 0.8 && palette.primary.r < 0.2);
         assert!(palette.success.g > 0.8 && palette.success.b < 0.5);
         assert!(palette.danger.r > 0.8 && palette.danger.g < 0.3);
+    }
+
+    #[test]
+    fn spectrum_accents_are_stable_and_spread() {
+        // Same label always yields the same accent (no per-frame flicker).
+        assert_eq!(spectrum_accent("tools"), spectrum_accent("tools"));
+        // Every accent comes from the spectrum table.
+        for label in ["tools", "theme", "Welcome", "session-1", "Send feedback"] {
+            let color = spectrum_accent(label);
+            let rgb = (
+                (color.r * 255.0).round() as u8,
+                (color.g * 255.0).round() as u8,
+                (color.b * 255.0).round() as u8,
+            );
+            assert!(
+                SPECTRUM.contains(&rgb),
+                "{label} mapped outside the spectrum: {rgb:?}"
+            );
+        }
+        // Labels spread across at least three accents (a single color
+        // would defeat the purpose).
+        let distinct: std::collections::HashSet<(u8, u8, u8)> = [
+            "tools",
+            "theme",
+            "tunnels",
+            "macros",
+            "settings",
+            "session-1",
+            "Welcome",
+            "Send feedback",
+        ]
+        .iter()
+        .map(|label| {
+            let color = spectrum_accent(label);
+            (
+                (color.r * 255.0).round() as u8,
+                (color.g * 255.0).round() as u8,
+                (color.b * 255.0).round() as u8,
+            )
+        })
+        .collect();
+        assert!(distinct.len() >= 3, "accents: {distinct:?}");
     }
 
     #[test]

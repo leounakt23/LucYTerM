@@ -31,11 +31,15 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
     let mut tab_strip = row![].spacing(4);
     for (index, tab) in app.tabs.iter().enumerate() {
         let marker = if index == app.active_tab { "▸ " } else { "" };
-        tab_strip = tab_strip.push(
-            iced::widget::button(text(format!("{marker}{}", tab.title)).size(13))
-                .on_press(Message::Ui(crate::app::messages::UiMsg::SelectTab(index)))
-                .padding([3, 8]),
-        );
+        let title = format!("{marker}{}", tab.title);
+        let button = iced::widget::button(text(title.clone()).size(13))
+            .on_press(Message::Ui(crate::app::messages::UiMsg::SelectTab(index)))
+            .padding([3, 8]);
+        tab_strip = tab_strip.push(super::theme::chrome_button(
+            app.theme.clone(),
+            &title,
+            button,
+        ));
     }
 
     let content: iced::Element<'_, Message> = if app.ui_state.view == ViewKind::Settings {

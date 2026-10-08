@@ -25,11 +25,15 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             } else {
                 format!("○ {name}")
             };
-            let mut session_row = row![button(text(label).size(14).width(iced::Fill))
-                .on_press(Message::Session(
-                    crate::app::messages::SessionMsg::Selected(id),
-                ))
-                .width(iced::Fill),]
+            let mut session_row = row![crate::ui::theme::chrome_button(
+                app.theme.clone(),
+                &name,
+                button(text(label).size(14).width(iced::Fill))
+            )
+            .on_press(Message::Session(
+                crate::app::messages::SessionMsg::Selected(id),
+            ))
+            .width(iced::Fill),]
             .spacing(4);
             // X11 forwarding toggle (Prompt 4.1 checkbox equivalent; only
             // SSH-family sessions honour it — others reject the toggle).
@@ -44,11 +48,15 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
                 };
                 let check = if x11 { "☑" } else { "☐" };
                 session_row = session_row.push(
-                    button(text(format!("X11 {check}{bolt}")).size(11))
-                        .on_press(Message::Session(
-                            crate::app::messages::SessionMsg::X11Toggled(id),
-                        ))
-                        .padding([2, 6]),
+                    crate::ui::theme::chrome_button(
+                        app.theme.clone(),
+                        &format!("x11-{id}"),
+                        button(text(format!("X11 {check}{bolt}")).size(11)),
+                    )
+                    .on_press(Message::Session(
+                        crate::app::messages::SessionMsg::X11Toggled(id),
+                    ))
+                    .padding([2, 6]),
                 );
             }
             // Multi-exec target checkbox, visible while broadcasting is
@@ -57,11 +65,15 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
                 let targeted = app.multi_exec_mode.targets.contains(&id);
                 let mark = if targeted { "[x]" } else { "[ ]" };
                 session_row = session_row.push(
-                    button(text(mark).size(11))
-                        .on_press(Message::Ui(
-                            crate::app::messages::UiMsg::MultiExecToggleTarget(id),
-                        ))
-                        .padding([2, 6]),
+                    crate::ui::theme::chrome_button(
+                        app.theme.clone(),
+                        &format!("multiexec-{id}"),
+                        button(text(mark).size(11)),
+                    )
+                    .on_press(Message::Ui(
+                        crate::app::messages::UiMsg::MultiExecToggleTarget(id),
+                    ))
+                    .padding([2, 6]),
                 );
             }
             list = list.push(session_row);
