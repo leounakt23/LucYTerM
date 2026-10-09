@@ -10,6 +10,27 @@ wildcards = "deny"
 [advisories]
 version = 2
 yanked = "deny"
+# Every ignore needs a reason (mirrors .cargo/audit.toml): the stack
+# crates are MASTER_PROMPT-pinned and upstream has no patched releases
+# yet. Unmaintained transitive crates are recorded, not hidden.
+ignore = [
+    # hickory-proto 0.24.x: O(n^2) name compression; resolvers are
+    # explicitly configured, decode path not attacker-controlled by default.
+    "RUSTSEC-2026-0119",
+    # russh 0.45.x: unbounded 32-bit allocation; frame limits bound it in practice.
+    "RUSTSEC-2026-0154",
+    # russh-cryptovec 0.7.x: unchecked CryptoVec growth.
+    "RUSTSEC-2026-0153",
+    # rsa: Marvin Attack; RSA keys are opt-in (default Ed25519).
+    "RUSTSEC-2023-0071",
+    # time: DoS via stack exhaustion; affected parse path not attacker-fed.
+    "RUSTSEC-2026-0009",
+    # Unmaintained transitive crates:
+    "RUSTSEC-2024-0384", # instant
+    "RUSTSEC-2024-0436", # paste
+    "RUSTSEC-2026-0206", # rustybuzz
+    "RUSTSEC-2026-0192", # ttf-parser
+]
 
 [sources]
 unknown-registry = "deny"

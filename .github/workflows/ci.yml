@@ -28,13 +28,13 @@ jobs:
         include:
           - name: Ubuntu 22.04
             image: ubuntu:22.04
-            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libudev-dev libdbus-1-dev ca-certificates git
+            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libssl-dev libudev-dev libdbus-1-dev ca-certificates git
           - name: Ubuntu 24.04
             image: ubuntu:24.04
-            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libudev-dev libdbus-1-dev ca-certificates git
+            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libssl-dev libudev-dev libdbus-1-dev ca-certificates git
           - name: Fedora 40
             image: fedora:40
-            install: dnf install -y curl gcc gcc-c++ make pkgconf-pkg-config systemd-devel dbus-devel git
+            install: dnf install -y curl gcc gcc-c++ make pkgconf-pkg-config openssl-devel systemd-devel dbus-devel git
           - name: Arch Linux
             image: archlinux:base-devel
             install: pacman -Syu --noconfirm curl pkgconf systemd dbus git

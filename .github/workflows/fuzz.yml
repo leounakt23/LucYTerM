@@ -40,10 +40,10 @@ jobs:
           shared-key: fuzz-${{ matrix.target }}-${{ hashFiles('Cargo.lock', 'fuzz/Cargo.lock') }}
       - name: Run PR fuzz campaign
         if: github.event_name == 'pull_request'
-        run: cargo fuzz run ${{ matrix.target }} -- -max_total_time=300
+        run: cargo fuzz run ${{ matrix.target }} --target x86_64-unknown-linux-gnu -- -max_total_time=300
       - name: Run nightly fuzz campaign
         if: github.event_name != 'pull_request'
-        run: cargo fuzz run ${{ matrix.target }} -- -max_total_time=3600
+        run: cargo fuzz run ${{ matrix.target }} --target x86_64-unknown-linux-gnu -- -max_total_time=3600
       - name: Upload crash artifacts
         if: failure()
         uses: actions/upload-artifact@v4
