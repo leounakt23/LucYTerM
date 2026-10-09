@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: master
       - uses: dtolnay/rust-toolchain@1.85.1
       - name: Install system and package dependencies
         run: |
@@ -72,7 +72,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="nightly-$(date -u +%Y%m%d)-${GITHUB_SHA::7}-${GITHUB_RUN_ID}"
-          gh release create "$tag" dist/* --prerelease --target "$GITHUB_SHA" --title "Nightly ${GITHUB_SHA::7}" --notes "Automated, unsupported build from main. Start with --channel nightly. Telemetry and crash reporting remain off by default."
+          gh release create "$tag" dist/* --prerelease --target "$GITHUB_SHA" --title "Nightly ${GITHUB_SHA::7}" --notes "Automated, unsupported build from master. Start with --channel nightly. Telemetry and crash reporting remain off by default."
       - uses: actions/upload-artifact@v4
         with:
           name: nightly-${{ github.sha }}

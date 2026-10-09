@@ -17,6 +17,11 @@ jobs:
   fuzz:
     runs-on: ubuntu-24.04
     timeout-minutes: 70
+    # rust-toolchain.toml pins 1.85.1 (stable); cargo-fuzz needs -Z
+    # flags, so force the installed nightly over the pin (same trick as
+    # the coverage workflow).
+    env:
+      RUSTUP_TOOLCHAIN: nightly
     strategy:
       fail-fast: false
       matrix:

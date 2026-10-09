@@ -2,7 +2,7 @@ name: Release notes
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request_target:
     types: [closed]
 
