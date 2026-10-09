@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM rust:1.85.1-bookworm AS builder
+FROM rust:1.98.1-bookworm AS builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential pkg-config libudev-dev libdbus-1-dev \
