@@ -7,3 +7,5 @@
 **/*.rs.bk
 /dist
 Cargo.lock.bak
+# Local OpenCode harness configuration (user-specific provider setup)
+/opencode.json
