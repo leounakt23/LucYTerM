@@ -2,6 +2,10 @@ app-id: com.github.LucYTerM.remote-app
 runtime: org.freedesktop.Platform
 runtime-version: "24.08"
 sdk: org.freedesktop.Sdk
+# The freedesktop SDK ships no Rust toolchain; the stable extension
+# provides cargo for the build module below.
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable//24.08
 command: remote-app
 finish-args:
   - --share=network
@@ -17,8 +21,11 @@ modules:
     build-options:
       build-args:
         - --share=network
+      # cargo comes from the rust-stable SDK extension, not the base SDK.
+      append-path: /usr/lib/sdk/rust-stable/bin
       env:
         MBXT_DEFAULT_CHANNEL: nightly
+        CARGO_HOME: /run/build/remote-app/cargo-home
     buildsystem: simple
     build-commands:
       - cargo build --release --locked --all-features

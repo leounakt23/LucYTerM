@@ -28,7 +28,12 @@ jobs:
         with:
           shared-key: bench-${{ hashFiles('Cargo.lock') }}
       - name: Run Criterion benchmarks
-        run: cargo bench --locked --bench performance -- --noplot --output-format bencher | tee benchmark.txt
+        run: |
+          # rust-cache restores partial target/criterion data (a baseline
+          # dir without sample.json), which makes Criterion error out on
+          # every bench. Start clean so the run is deterministic.
+          rm -rf target/criterion
+          cargo bench --locked --bench performance -- --noplot --output-format bencher | tee benchmark.txt
       - uses: actions/upload-artifact@v4
         with:
           name: benchmark-output

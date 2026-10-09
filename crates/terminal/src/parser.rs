@@ -63,13 +63,27 @@ impl vte::Perform for Terminal {
         let private = intermediates.contains(&b'?');
         match action {
             'A' => self.cursor.row = self.cursor.row.saturating_sub(n),
-            'B' => self.cursor.row = (self.cursor.row + n).min(self.grid.rows().saturating_sub(1)),
+            'B' => {
+                self.cursor.row = self
+                    .cursor
+                    .row
+                    .saturating_add(n)
+                    .min(self.grid.rows().saturating_sub(1))
+            },
             'C' | 'a' => {
-                self.cursor.col = (self.cursor.col + n).min(self.grid.cols().saturating_sub(1))
+                self.cursor.col = self
+                    .cursor
+                    .col
+                    .saturating_add(n)
+                    .min(self.grid.cols().saturating_sub(1))
             },
             'D' => self.cursor.col = self.cursor.col.saturating_sub(n),
             'E' => {
-                self.cursor.row = (self.cursor.row + n).min(self.grid.rows().saturating_sub(1));
+                self.cursor.row = self
+                    .cursor
+                    .row
+                    .saturating_add(n)
+                    .min(self.grid.rows().saturating_sub(1));
                 self.cursor.col = 0;
             },
             'F' => {
@@ -254,4 +268,42 @@ fn apply_sgr(terminal: &mut Terminal, params: &vte::Params) {
         i += 1;
     }
     terminal.set_style(style);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Fuzz regression (2026-10-09, crash-68260de491ad487fc4a875e7e4b2f105528b8bd8):
+    /// huge CSI cursor parameters overflowed u16 addition on `C`/`B`/`E`
+    /// when the cursor sat at the grid edge. Saturation keeps the cursor
+    /// clamped to the grid instead of panicking in release fuzz builds.
+    #[test]
+    fn huge_cursor_params_saturate_instead_of_overflowing() {
+        let mut terminal = Terminal::new(80, 24, 256);
+        // Place the cursor at the far corner, then request huge steps in
+        // every overflowing direction (right, down, down+newline).
+        terminal.write_bytes(b"\x1b[24;79H");
+        terminal.write_bytes(b"\x1b[65535C");
+        assert_eq!(terminal.cursor.col, 79, "C saturates at the right edge");
+        terminal.write_bytes(b"\x1b[65535B");
+        assert_eq!(terminal.cursor.row, 23, "B saturates at the bottom edge");
+        terminal.write_bytes(b"\x1b[65535E");
+        assert_eq!(terminal.cursor.row, 23, "E saturates at the bottom edge");
+        assert_eq!(terminal.cursor.col, 0, "E moves to column 0 by definition");
+    }
+
+    /// The exact fuzzer artifact must be accepted without panic.
+    #[test]
+    fn fuzzer_crash_artifact_parses_cleanly() {
+        let mut terminal = Terminal::new(80, 24, 256);
+        let crash = [
+            0x1b, 0x1b, 0x5b, 0x8d, 0xcd, 0x8d, 0x61, 0x00, 0xe0, 0x1b, 0x1b, 0xe0, 0x29, 0x1b,
+            0x5b, 0x8d, 0xcd, 0x8d, b'7', b'7', b'7', b'7', b'7', b'7', b'7', b'7', b'7', b'7',
+            b'7', b'7', b'7', b'7', b'7', b'7', b'7', b'7', b'7', 0x61, 0x00, 0x5b, 0xe8, 0x46,
+        ];
+        terminal.write_bytes(&crash);
+        assert!(terminal.cursor.col < 80);
+        assert!(terminal.cursor.row < 24);
+    }
 }
