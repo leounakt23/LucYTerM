@@ -22,7 +22,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: peaceiris/actions-mdbook@v2
         with:
           mdbook-version: latest
@@ -32,9 +32,9 @@ jobs:
         env:
           DOMAIN: ${{ vars.PAGES_CUSTOM_DOMAIN }}
         run: printf '%s\n' "$DOMAIN" > docs/book/CNAME
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: docs/book
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment

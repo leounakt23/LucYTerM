@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: master
       - uses: dtolnay/rust-toolchain@1.85.1
@@ -58,7 +58,7 @@ jobs:
         run: |
           flatpak-builder --user --force-clean --repo=flatpak-repo flatpak-build packaging/flatpak/com.github.LucYTerM.remote-app.yml
           flatpak build-bundle flatpak-repo "dist/remote-app-nightly-${GITHUB_SHA::7}.flatpak" com.github.LucYTerM.remote-app
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -73,7 +73,7 @@ jobs:
         run: |
           tag="nightly-$(date -u +%Y%m%d)-${GITHUB_SHA::7}-${GITHUB_RUN_ID}"
           gh release create "$tag" dist/* --prerelease --target "$GITHUB_SHA" --title "Nightly ${GITHUB_SHA::7}" --notes "Automated, unsupported build from master. Start with --channel nightly. Telemetry and crash reporting remain off by default."
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: nightly-${{ github.sha }}
           path: dist/

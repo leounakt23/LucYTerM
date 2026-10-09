@@ -23,7 +23,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref }}
       - uses: dtolnay/rust-toolchain@1.85.1
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.tag }}
       - uses: dtolnay/rust-toolchain@1.85.1
@@ -72,7 +72,7 @@ jobs:
           - aarch64-unknown-linux-gnu
           - aarch64-unknown-linux-musl
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.tag }}
       - uses: dtolnay/rust-toolchain@1.85.1
@@ -94,7 +94,7 @@ jobs:
           cp README.md CHANGELOG.md "dist/remote-app-$VERSION-$TARGET/"
           cargo sbom --output-format cyclone_dx_json_1_4 > "dist/remote-app-$VERSION-$TARGET.sbom.json"
           tar --sort=name --mtime="@$(git log -1 --format=%ct)" --owner=0 --group=0 --numeric-owner -czf "dist/remote-app-$VERSION-$TARGET.tar.gz" -C dist "remote-app-$VERSION-$TARGET"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release-${{ matrix.target }}
           path: |
@@ -107,10 +107,10 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.tag }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: release-x86_64-unknown-linux-gnu
           path: input
@@ -141,7 +141,7 @@ jobs:
           echo "${{ vars.APPIMAGETOOL_SHA256 }}  appimagetool.AppImage" | sha256sum --check --strict
           chmod +x appimagetool.AppImage
           ARCH=x86_64 ./appimagetool.AppImage --appimage-extract-and-run AppDir "dist/remote-app-${VERSION}-x86_64.AppImage"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release-linux-packages
           path: dist/
@@ -156,15 +156,15 @@ jobs:
       packages: write
       discussions: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.tag }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: release-*
           path: dist
           merge-multiple: true
-      - uses: crazy-max/ghaction-import-gpg@v6
+      - uses: crazy-max/ghaction-import-gpg@v7
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -175,7 +175,7 @@ jobs:
           gpg --batch --yes --armor --detach-sign SHA256SUMS
           while IFS= read -r -d '' artifact; do gpg --batch --yes --armor --detach-sign "$artifact"; done < <(find . -type f ! -name '*.asc' ! -name 'SHA256SUMS' -print0)
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.validate.outputs.tag }}
           prerelease: ${{ needs.validate.outputs.prerelease }}
@@ -212,23 +212,23 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.tag }}
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ghcr.io/${{ github.repository_owner }}/remote-app
           tags: |
             type=semver,pattern={{version}},value=${{ needs.validate.outputs.tag }}
             type=raw,value=latest,enable=${{ needs.validate.outputs.prerelease == 'false' }}
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: docker/Dockerfile
@@ -244,7 +244,7 @@ jobs:
     runs-on: ubuntu-24.04
     environment: ${{ needs.validate.outputs.prerelease == 'true' && 'staging' || 'production' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate.outputs.tag }}
       - uses: dtolnay/rust-toolchain@1.85.1
@@ -263,7 +263,7 @@ jobs:
     runs-on: ubuntu-24.04
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Update Homebrew tap
         if: vars.HOMEBREW_TAP_REPOSITORY != ''
         env:
