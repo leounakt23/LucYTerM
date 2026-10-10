@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791622782495,
+  "lastUpdate": 1791623669242,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -389,6 +389,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000619384,
             "range": "± 109945",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "ed6748e0fc2492d3f7710c3d0b5726697e3ea7a3",
+          "message": "fix: xrdp healthcheck, bench noise threshold, nightly runner\n\nThe xrdp image ships no netcat, so its compose healthcheck could never pass (use bash /dev/tcp); the bench alert at 110% flapped on shared-runner CPU noise (subnet_calculate 59 vs 68 ns) — raise to 125%; nightly moves to ubuntu-24.04 whose flatpak-builder 1.4.x resolves sdk-extension refs that 22.04 1.2.2 cannot.",
+          "timestamp": "2026-10-10T11:09:53+02:00",
+          "tree_id": "cfa9fc2b59c056fbfd9ad4d055445f88d0b25bf0",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/ed6748e0fc2492d3f7710c3d0b5726697e3ea7a3"
+        },
+        "date": 1791623668686,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 73179,
+            "range": "± 759",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 100056,
+            "range": "± 241",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 213066,
+            "range": "± 1264",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 395277,
+            "range": "± 4527",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 13336,
+            "range": "± 118",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 2942,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 54,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1464,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000404792,
+            "range": "± 80798",
             "unit": "ns/iter"
           }
         ]
