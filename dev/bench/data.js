@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791626441656,
+  "lastUpdate": 1791627840982,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -623,6 +623,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000538765,
             "range": "± 118068",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "c38a8b08c6c7f58b185c09d883e341545253b7cc",
+          "message": "fix: bare extension id in flatpak sdk-extensions\n\nflatpak-builder appends arch/branch to each sdk-extensions entry itself; explicit //branch (1.2.x style) and full refs both produced doubled refs. The bare id is the correct 1.4.x form.",
+          "timestamp": "2026-10-10T12:19:19+02:00",
+          "tree_id": "497169f060450d6e3ce737c2c97bcfa01783aada",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/c38a8b08c6c7f58b185c09d883e341545253b7cc"
+        },
+        "date": 1791627840477,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80867,
+            "range": "± 1786",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103364,
+            "range": "± 590",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 207193,
+            "range": "± 700",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 433231,
+            "range": "± 7691",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11706,
+            "range": "± 132",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3263,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1915,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000401761,
+            "range": "± 165996",
             "unit": "ns/iter"
           }
         ]
