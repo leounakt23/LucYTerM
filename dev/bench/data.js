@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791621078874,
+  "lastUpdate": 1791622782495,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -311,6 +311,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000382482,
             "range": "± 242235",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "c7c2e957a5f1a5bb8c448971a7566cc4165da721",
+          "message": "test: verify VNC and RDP against real servers\n\nVendored disposable servers: TigerVNC Xvnc (RFB 003.008, SecurityTypes None, BlacklistTimeout=0 so nc healthchecks cannot poison the listener) — vnc_integration passes 5/5 against it; xrdp+openbox — xfreerdp /auth-only passes with credentials, fails with a wrong password. VNC live suite is wired into the e2e workflow.",
+          "timestamp": "2026-10-10T10:51:48+02:00",
+          "tree_id": "c935c26c2d78384ed5e09ce6f388452c3cfbb2ad",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/c7c2e957a5f1a5bb8c448971a7566cc4165da721"
+        },
+        "date": 1791622782084,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 78557,
+            "range": "± 328",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 99375,
+            "range": "± 2383",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 202776,
+            "range": "± 4576",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 431677,
+            "range": "± 6271",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11925,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3260,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 68,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 2019,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000619384,
+            "range": "± 109945",
             "unit": "ns/iter"
           }
         ]
