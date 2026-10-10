@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791627840982,
+  "lastUpdate": 1791632726517,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -701,6 +701,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000401761,
             "range": "± 165996",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "1714e382c050e077ced0070b32a63883bdc04209",
+          "message": "fix: flatpak expects the desktop file under the app id\n\nappstream compose accepts components by app-id; the desktop entry was installed as remote-app.desktop, so the composed catalog had zero components (filters-but-no-output). Install it as com.github.LucYTerM.remote-app.desktop and point the metainfo launchable at the new name. Reproduced and verified locally against appstream-compose 1.0.2.",
+          "timestamp": "2026-10-10T13:40:40+02:00",
+          "tree_id": "24a6c3891514049c124137cdaff361120df47986",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/1714e382c050e077ced0070b32a63883bdc04209"
+        },
+        "date": 1791632725808,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 68784,
+            "range": "± 423",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 94024,
+            "range": "± 1430",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 200069,
+            "range": "± 2499",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 377528,
+            "range": "± 7130",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 12970,
+            "range": "± 195",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 2817,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 51,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1401,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000393094,
+            "range": "± 33057",
             "unit": "ns/iter"
           }
         ]
