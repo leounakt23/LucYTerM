@@ -19,7 +19,9 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # cold-cache clippy compiles the full feature matrix (~12-14 min), so
+    # 15 min was a knife-edge whenever the cache is evicted.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.85.1

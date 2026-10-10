@@ -20,7 +20,12 @@ jobs:
   linux:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 15 min only ever fit warm caches: a cold-cache run measured 11m39s
+    # for the Build step alone (run 38086274044, Ubuntu 24.04), and cold
+    # legs total ~17-19 min. Caches get evicted (LRU, ~10 GB repo limit)
+    # and master pushes cannot read PR-scoped caches, so cold legs are a
+    # regular occurrence, not an edge case.
+    timeout-minutes: 30
     container: ${{ matrix.image }}
     strategy:
       fail-fast: false

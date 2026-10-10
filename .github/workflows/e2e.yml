@@ -16,7 +16,9 @@ concurrency:
 jobs:
   ssh-sftp-forwarding:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # cold-cache legs measured ~12.6 min (run 38086274044) - too close to
+    # 15 min to survive a cache eviction.
+    timeout-minutes: 30
     env:
       MBXT_SFTP_TEST_ADDR: 127.0.0.1:2222
       MBXT_SFTP_TEST_USER: test
