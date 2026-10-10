@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791623669242,
+  "lastUpdate": 1791625180738,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -467,6 +467,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000404792,
             "range": "± 80798",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "1f43b545fadd479b5b2f5549832b7a671c2a15b5",
+          "message": "fix: vnc healthcheck without nc; drop install-deps-from\n\nThe vnc image also ships no netcat (bash /dev/tcp probe). --install-deps-from=flathub rejects valid sdk-extension refs with \"Unknown extension in runtime\"; the workflow installs the rust-stable extension explicitly, so drop the flag and let flatpak-builder 1.4.x resolve against the user installation.",
+          "timestamp": "2026-10-10T11:35:16+02:00",
+          "tree_id": "8725d5de0177602b230a7e78951acd36fb9faa3b",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/1f43b545fadd479b5b2f5549832b7a671c2a15b5"
+        },
+        "date": 1791625180196,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80426,
+            "range": "± 669",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103534,
+            "range": "± 3490",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 206324,
+            "range": "± 2734",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 435689,
+            "range": "± 10134",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11706,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3328,
+            "range": "± 109",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 60,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1920,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000582195,
+            "range": "± 184313",
             "unit": "ns/iter"
           }
         ]
