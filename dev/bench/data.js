@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791618008256,
+  "lastUpdate": 1791619048998,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -155,6 +155,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000564408,
             "range": "± 88693",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "d95805fa4115f69cc6045873f321d98316e7ca3a",
+          "message": "fix: let configure-pages enable the Actions build type\n\nPages was on the legacy/branch source; actions/deploy-pages requires the workflow build type and failed with BlobNotFound. configure-pages enablement switches it on first successful run (runner GITHUB_TOKEN has admin; the local gh token does not).",
+          "timestamp": "2026-10-10T09:51:48+02:00",
+          "tree_id": "b425b2ac46631fc989ca0d23821ca3984f4ff8f3",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/d95805fa4115f69cc6045873f321d98316e7ca3a"
+        },
+        "date": 1791619048315,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80093,
+            "range": "± 2866",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103349,
+            "range": "± 866",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 206551,
+            "range": "± 797",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 455275,
+            "range": "± 10655",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11795,
+            "range": "± 151",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3262,
+            "range": "± 83",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1907,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000591495,
+            "range": "± 210511",
             "unit": "ns/iter"
           }
         ]
