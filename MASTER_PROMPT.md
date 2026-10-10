@@ -21,10 +21,10 @@
 
 | Layer    | Crate / Tool                                                                                                                  | Notes                                                                        |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Language | Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.80, edition 2021                                                           | Earlier sketches said "latest stable"; pin it.                               |
+| Language | Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.80, edition 2021                                                           | Earlier sketches said "latest stable"; pin it. The pin now gates some security fixes (docs/maintenance.md).                               |
 | GUI      | `iced` 0.13.1 (`tokio`, `advanced`), `wgpu` 24                                                                                | Earlier sketches said 0.12; 0.13.1 is implemented.                           |
 | Async    | `tokio` 1.44 with a curated subset (`rt-multi-thread`, `macros`, `sync`, `net`, `time`, `io-util`, `signal`, `fs`, `process`) | Not "full features".                                                         |
-| SSH/SFTP | `russh` 0.45, `russh-sftp` 2.0                                                                                                | Key handling lives in `russh`; there is no separate `russh-keys` dependency. |
+| SSH/SFTP | `russh` 0.45, `russh-sftp` 2.0                                                                                                | Key handling lives in `russh`; there is no separate `russh-keys` dependency. 0.45 carries open advisories; planned migration to 0.61.1 (docs/maintenance.md). |
 | Crypto   | `argon2` 0.5.3, `aes-gcm` 0.10.3, `zeroize` 1.8.1, `secrecy` 0.10.3, `memsec` 0.7                                             | AES-256-GCM only; no `chacha20poly1305` dependency exists.                   |
 | Terminal | `vte` 0.13.0 parser + custom grid/atlas/renderer                                                                              | —                                                                            |
 | Config   | `serde` 1.0 + `ron` 0.8 (+ `rmp-serde` 1.3 compat)                                                                            | —                                                                            |

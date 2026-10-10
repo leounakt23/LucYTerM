@@ -78,6 +78,19 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   requires a toolchain or stack bump; reassess at release time.
   8 unmaintained-crate warnings (instant, paste, …) are transitive
   via pinned GUI/SSH crates.
+- GitHub's advisory service is broader than the RustSec mirror that
+  `cargo audit` consumes: an inventory on 2026-10-10 counted 21
+  advisories (6 high, 12 medium, 3 low) against locked versions —
+  16 against `russh` 0.45.0 plus `hickory-resolver`,
+  `hickory-proto`, `time`, and `lru`. Every reachable entry needs a
+  malicious or compromised SSH peer (or an accepted host-key
+  mismatch); the impact class is client-side denial of service, not
+  code execution or credential disclosure. Blockers are recorded
+  precisely: `russh` 0.61.1 clears the high-severity set on the
+  current rustc 1.85 and is blocked only by its breaking API
+  migration, while `russh` 0.63.2 and `time` 0.3.47 / `hickory`
+  0.26 additionally need rustc ≥ 1.88/1.89. Per-advisory inventory:
+  `docs/threat_model.md`; ordered migration: `docs/maintenance.md`.
 - Secrets: passwords travel over stdin pipes or zeroized memory,
   never argv, logs, or fixtures (argv invariant is unit-tested).
 

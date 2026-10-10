@@ -1,25 +1,36 @@
 # cargo-audit configuration (used by .github/workflows/security.yml).
-# Every ignore needs a reason — no silent allowances. Revisit when the
-# pinned stack crates ship fixes.
+# Every ignore needs a reason — no silent allowances. The full advisory
+# inventory (including GitHub-only advisories that the RustSec mirror
+# does not carry yet) lives in docs/threat_model.md; the migration that
+# retires these ignores lives in docs/maintenance.md.
 [advisories]
 ignore = [
-    # hickory-proto is MASTER_PROMPT-pinned (0.24.x); upstream has no
-    # patched release yet. DNS responses are only accepted from
+    # hickory-proto is MASTER_PROMPT-pinned (0.24.x). A fix exists
+    # (0.26.1) but requires rustc >= 1.88 plus a 0.24 -> 0.26
+    # resolver-stack bump. DNS responses are only accepted from
     # explicitly configured resolvers, so the O(n^2) decode path is not
     # attacker-controlled by default.
     "RUSTSEC-2026-0119",
-    # russh is MASTER_PROMPT-pinned (0.45.x); no patched release yet.
-    # Allocation growth is bounded by negotiated frame limits in
-    # practice; tracked until upstream ships a fix.
+    # russh is MASTER_PROMPT-pinned (0.45.x). Fixed releases exist:
+    # 0.61.1 clears the high-severity set and still builds on the
+    # pinned rustc 1.85, while 0.63.2 clears all advisories but needs
+    # rustc >= 1.89. Taking either means a breaking API migration, so
+    # the pin holds until the planned migration (docs/maintenance.md).
+    # In our client usage allocation growth is bounded by negotiated
+    # frame limits.
     "RUSTSEC-2026-0154",
     # Same pin story as russh itself (russh-cryptovec 0.7.x).
     "RUSTSEC-2026-0153",
-    # rsa Marvin Attack: no patched release. RSA keys are opt-in (the
-    # default is Ed25519); the side channel requires a malicious SSH
-    # server observing many signatures of the same key.
+    # rsa Marvin Attack: genuinely unpatched (the advisory's
+    # `patched = []` is intentional, still affected as of 2026-09).
+    # RSA keys are opt-in (the default is Ed25519); the side channel
+    # requires a malicious SSH server observing many signatures of the
+    # same key.
     "RUSTSEC-2023-0071",
-    # time DoS via stack exhaustion: no patched release; the affected
-    # parsing path is not reached with attacker-controlled input.
+    # time DoS via stack exhaustion: the fix (0.3.47) requires rustc
+    # >= 1.88, above the pinned 1.85.1 toolchain (semver-compatible
+    # otherwise). The affected parsing path is not reached with
+    # attacker-controlled input.
     "RUSTSEC-2026-0009",
     # Unmaintained transitive crates, none of them security-relevant:
     "RUSTSEC-2024-0384", # instant (via dark-light/parking_lot ecosystem)

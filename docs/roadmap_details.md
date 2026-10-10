@@ -85,6 +85,17 @@ desktop conflicts. The editor needs conflict detection, reset/export, reserved-
 shortcut warnings, and keyboard-only operation. Imported mappings are treated
 as data, never commands.
 
+### Security Stack Migration
+
+**Value:** retires the open advisories against the pinned SSH and DNS stack
+instead of documenting them indefinitely. **Scope:** stage 1 migrates
+`russh` 0.45 to 0.61.1 on the current toolchain, clearing every
+high-severity SSH advisory, validated with the full live-server suite;
+stage 2 raises the Rust toolchain pin to at least 1.89 and finishes
+`russh` 0.63.2, `time` 0.3.47, and the `hickory` 0.24 → 0.26 bump. Exact
+blockers and ordering live in `docs/maintenance.md`. Stage 2 amends a
+MASTER_PROMPT pin and needs an explicit decision.
+
 ## v1.2: Connectivity
 
 ### SSH Certificates
