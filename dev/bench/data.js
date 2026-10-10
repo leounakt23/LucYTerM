@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791634373145,
+  "lastUpdate": 1791635848756,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -857,6 +857,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000610600,
             "range": "± 52825",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "d05edc6fff241948ac259278f58eef271797f442",
+          "message": "fix: make nightly artifact signing optional\n\nghaction-import-gpg aborted the whole build when GPG_PRIVATE_KEY is unset. Gate the import and signing steps on a job-level secret-presence flag; SHA256SUMS still publish unsigned until the key is configured.",
+          "timestamp": "2026-10-10T14:32:42+02:00",
+          "tree_id": "6105e1562e99ab9ce575fe44d328d50db64f01ba",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/d05edc6fff241948ac259278f58eef271797f442"
+        },
+        "date": 1791635848079,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80104,
+            "range": "± 808",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 102917,
+            "range": "± 1883",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 206337,
+            "range": "± 1973",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 456244,
+            "range": "± 7292",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11698,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3257,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 61,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1905,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000528770,
+            "range": "± 167125",
             "unit": "ns/iter"
           }
         ]
