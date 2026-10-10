@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791570457551,
+  "lastUpdate": 1791618008256,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -77,6 +77,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000501495,
             "range": "± 158693",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "b41e033b09ffe6376c55597823bc985ae673019a",
+          "message": "fix: let flatpak-builder resolve the rust SDK extension itself\n\nflatpak-builder 1.2.x does not see the user-installed rust-stable extension even though the install step completed; --install-deps-from=flathub makes it resolve sdk-extensions from the manifest.",
+          "timestamp": "2026-10-10T09:35:55+02:00",
+          "tree_id": "191d8d7afbec1643e138aecbb5c9f7cb3890f7b7",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/b41e033b09ffe6376c55597823bc985ae673019a"
+        },
+        "date": 1791618007964,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80675,
+            "range": "± 752",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103499,
+            "range": "± 595",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 208254,
+            "range": "± 679",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 456495,
+            "range": "± 7426",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11738,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3246,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1907,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000564408,
+            "range": "± 88693",
             "unit": "ns/iter"
           }
         ]
