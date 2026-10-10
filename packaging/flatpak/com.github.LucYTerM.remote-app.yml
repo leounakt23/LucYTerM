@@ -1,11 +1,11 @@
 app-id: com.github.LucYTerM.remote-app
 runtime: org.freedesktop.Platform
-runtime-version: "24.08"
+runtime-version: "25.08"
 sdk: org.freedesktop.Sdk
 # The freedesktop SDK ships no Rust toolchain; the stable extension
-# provides cargo for the build module below.
+# provides cargo for the build module below. 24.08 is EOL, hence 25.08.
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.rust-stable//24.08
+  - org.freedesktop.Sdk.Extension.rust-stable//25.08
 command: remote-app
 finish-args:
   - --share=network
