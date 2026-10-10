@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791632726517,
+  "lastUpdate": 1791634373145,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -779,6 +779,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000393094,
             "range": "± 33057",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "e6f0c03bd88eea069b22100fe451d393fe358b18",
+          "message": "fix: install the SVG pixbuf loader for appstream compose\n\nappstream compose processes the scalable app icon through gdk-pixbuf; without librsvg2-common the SVG is unreadable and compose exits with file-read-error.",
+          "timestamp": "2026-10-10T14:08:25+02:00",
+          "tree_id": "195f9bcf18403a9ed4eeee27dec33391b695d9b9",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/e6f0c03bd88eea069b22100fe451d393fe358b18"
+        },
+        "date": 1791634372657,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 81048,
+            "range": "± 1521",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 98276,
+            "range": "± 941",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 201015,
+            "range": "± 8832",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 431592,
+            "range": "± 2089",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11950,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3264,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 66,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 2029,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000610600,
+            "range": "± 52825",
             "unit": "ns/iter"
           }
         ]
