@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791635848756,
+  "lastUpdate": 1791666812371,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -935,6 +935,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000528770,
             "range": "± 167125",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "cce605b158b9fbfd4a11755f42569c5ff540cc9b",
+          "message": "chore: sync the fuzz lockfile with the unix nix dependency",
+          "timestamp": "2026-10-10T23:05:11+02:00",
+          "tree_id": "0a5135b4c3428a9538e0dd699d6f90dd34f79c63",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/cce605b158b9fbfd4a11755f42569c5ff540cc9b"
+        },
+        "date": 1791666812052,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80398,
+            "range": "± 487",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103248,
+            "range": "± 715",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 207017,
+            "range": "± 2115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 428317,
+            "range": "± 1234",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11679,
+            "range": "± 51",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3244,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1908,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000406073,
+            "range": "± 208841",
             "unit": "ns/iter"
           }
         ]
