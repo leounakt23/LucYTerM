@@ -66,6 +66,8 @@ jobs:
           auto-push: ${{ github.event_name == 'push' }}
           comment-always: ${{ github.event_name == 'pull_request' }}
 # 110% tripped on shared-runner CPU noise (59 vs 68 ns subnet_calculate);
-          # 125% keeps real regressions visible without flapping.
+          # 125% tripped again (1464 vs 1920 ns tool_export_json, ±0 code
+          # change). Baselines compare across different runner hardware, so
+          # alerts stay informational: posted as comments, not red.
           alert-threshold: '125%'
-          fail-on-alert: true
+          fail-on-alert: false
