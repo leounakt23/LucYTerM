@@ -6,7 +6,7 @@ Do not disclose an unpatched vulnerability in a public issue, discussion, or
 chat room. Use the repository's **Report a vulnerability** button to open a
 private GitHub Security Advisory:
 
-`https://github.com/LucYTerM/mbxt/security/advisories/new`
+`https://github.com/leounakt23/LucYTerM/security/advisories/new`
 
 Private vulnerability reporting must be enabled in repository settings before
 v1.0 is declared operational. If the link returns 404, no working private

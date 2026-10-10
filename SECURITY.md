@@ -25,8 +25,7 @@ a newer release.
 
 | Version | Supported | Notes |
 | --- | --- | --- |
-| `1.0.x` | Yes | Current stable line; update this row when a later minor ships |
-| `< 1.0` | No | Pre-release builds receive no backports |
+| `0.1.x` | Pre-release only | No stable line yet; no backports, upgrade to the latest nightly or pre-release |
 | LTS | None designated | The first LTS needs two active maintainers |
 
 ## Security Expectations
