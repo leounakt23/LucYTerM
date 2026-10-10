@@ -56,7 +56,9 @@ jobs:
           ARCH=x86_64 ./appimagetool.AppImage --appimage-extract-and-run AppDir "dist/remote-app-nightly-${GITHUB_SHA::7}-x86_64.AppImage"
       - name: Build Flatpak bundle
         run: |
-          flatpak-builder --user --force-clean --repo=flatpak-repo flatpak-build packaging/flatpak/com.github.LucYTerM.remote-app.yml
+          # flatpak-builder 1.2.x fails to resolve user-installed sdk-extensions
+          # on its own; --install-deps-from makes it pull what the manifest needs.
+          flatpak-builder --user --force-clean --install-deps-from=flathub --repo=flatpak-repo flatpak-build packaging/flatpak/com.github.LucYTerM.remote-app.yml
           flatpak build-bundle flatpak-repo "dist/remote-app-nightly-${GITHUB_SHA::7}.flatpak" com.github.LucYTerM.remote-app
       - uses: crazy-max/ghaction-import-gpg@v6
         with:
