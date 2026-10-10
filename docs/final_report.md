@@ -105,10 +105,17 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   and dynamic SOCKS5 forwarding (`linuxserver/openssh-server :2223`
   with vendored `docker/sshd_config`) pass; X11 handshake sets
   remote `DISPLAY` (pass); Telnet echo via `busybox telnetd` passes.
-  VNC against a real server and RDP against a real server stay
-  unverified (no server image vetted yet).
-- `MBXT_*_TEST_*` suites without servers, VNC/RDP live, and
-  key/agent live logins stay ignored/skipped by default.
+  VNC against a real server passes (2026-10-10, disposable TigerVNC
+  Xvnc container `docker/vnc`, `RFB 003.008` handshake + first frame,
+  5/5 runs; `BlacklistTimeout=0` keeps nc healthchecks from poisoning
+  the listener — a throttled listener was observed and worked around).
+  RDP authentication against a real server passes (2026-10-10,
+  disposable xrdp+openbox container `docker/xrdp`, `xfreerdp /auth-only`
+  exit 0 with test:test; wrong password exits 1).
+- `MBXT_*_TEST_*` suites without servers, RDP live-in-CI (server
+  exists; the Rust side spawns the external `xfreerdp` client, so CI
+  wiring stays manual for now), and key/agent live logins stay
+  ignored/skipped by default.
 - Platforms exercised: Ubuntu 24.04 x86_64 only. Fedora/Arch/
   Windows targets compile-check in CI; this machine cannot run them.
 

@@ -45,8 +45,17 @@ Files and tunnels:
 
 Multi-protocol (each needs its live counterpart or emulator):
 
-- [ ] RDP session connects and displays via the managed external process.
-- [ ] VNC session connects and displays (`vnc_integration` live-gated).
+- [x] RDP session connects and displays via the managed external process.
+  (2026-10-10; disposable xrdp+openbox server `docker/xrdp` on :3390,
+  `xfreerdp /auth-only /v:127.0.0.1:3390 /u:test /p:test` exits 0 —
+  TLS + credential auth against the real server; wrong password exits 1.
+  The session window itself still needs a display-bearing desktop, so a
+  full in-app session render remains desktop-only.)
+- [x] VNC session connects and displays (`vnc_integration` live-gated).
+  (2026-10-10; disposable TigerVNC Xvnc server `docker/vnc` on :5901,
+  `MBXT_VNC_TEST_ADDR=127.0.0.1:5901` — RFB 003.008 handshake, security
+  type None, ServerInit 1024x768, first frame delivered and pixel-sane;
+  5/5 consecutive runs. Wired into the e2e workflow.)
 - [x] Telnet connection works against a disposable server. (2026-10-07; tests/telnet_live.rs vs busybox telnetd, echo round-trip)
 - [x] Serial connection opens with a virtual/loopback device. (2026-10-07; unix pty-pair loopback tests, no hardware)
 
