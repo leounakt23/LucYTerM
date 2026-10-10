@@ -14,6 +14,9 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  # job-level mapping so steps can branch on the secret's presence
+  # (secrets are not directly usable in step `if` conditions).
+  GPG_KEY_SET: ${{ secrets.GPG_PRIVATE_KEY != '' }}
 
 jobs:
   build:
@@ -65,11 +68,16 @@ jobs:
           # "Unknown extension in runtime" error even for valid refs.)
           flatpak-builder --user --force-clean --repo=flatpak-repo flatpak-build packaging/flatpak/com.github.LucYTerM.remote-app.yml
           flatpak build-bundle flatpak-repo "dist/remote-app-nightly-${GITHUB_SHA::7}.flatpak" com.github.LucYTerM.remote-app
-      - uses: crazy-max/ghaction-import-gpg@v6
+      # Signing activates automatically once GPG_PRIVATE_KEY is configured;
+      # without it the nightly publishes SHA256SUMS only.
+      - name: Import GPG key
+        if: env.GPG_KEY_SET == 'true'
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Sign artifacts
+        if: env.GPG_KEY_SET == 'true'
         run: |
           cd dist
           sha256sum remote-app-* > SHA256SUMS
