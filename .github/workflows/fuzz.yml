@@ -16,7 +16,12 @@ concurrency:
 jobs:
   fuzz:
     runs-on: ubuntu-24.04
-    timeout-minutes: 70
+    # The 70-min limit killed legs that needed ~73-75 min: measured cold
+    # builds (run 37972916364) took up to ~10 min, plus the fixed
+    # -max_total_time=3600 campaign plus ~2 min of setup. Legs are killed
+    # with "exceeded the maximum execution time of 1h10m0s", never a crash.
+    # Matrix legs run on separate runners, so overlap is not the cause.
+    timeout-minutes: 90
     # rust-toolchain.toml pins 1.85.1 (stable); cargo-fuzz needs -Z
     # flags, so force the installed nightly over the pin (same trick as
     # the coverage workflow).
