@@ -50,7 +50,7 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 | Metric (target) | Measured | Method |
 |---|---|---|
 | Cold start <2 s | **PASS: 320 ms median** (release; 317 ms debug) | 5 runs, PID-verified first mapped window, Xvfb 1280x800, AMD iGPU, release profile |
-| Idle memory <100 MB | **MISS: 222 MB** (release, 60 s idle) | VmRSS==VmHWM (stable, no leak); debug 273 MB. Target missed — needs an allocation pass (font atlas, wgpu caches) |
+| Idle memory <100 MB | **PARTIAL: 194 MB default, 81 MB on single-driver Vulkan path** (release, 60 s idle) | smaps profile (2026-10-10): app heap only 16 MB — the RSS is the graphics stack. Default `Backends::all()` loaded the full GL/GLX vendor stack for nothing; app now defaults to `WGPU_BACKEND=vulkan` (measured 222→194 MB, hybrid NVIDIA dGPU + AMD iGPU box). Vulkan-loader ICD zoo dominates the rest: with `VK_DRIVER_FILES` trimmed, lavapipe-only = 133 MB, radv-only (real AMD iGPU) = **81 MB PASS**. VmRSS==VmHWM (stable, no leak); the target passes on single-driver systems, misses on multi-driver systems unless ICDs are trimmed — recorded, not faked |
 | Terminal 60 FPS | UNMEASURED | No frame-time method headless; render path proven working (screenshots) |
 | SSH connect <3 s (LAN) | PASS (loopback) | Hermetic `tests/ssh_loopback.rs`: full password handshake + shell echo in 0.09 s for both tests (asserts <3 s); no LAN server available |
 | Transfer >100 MB/s (LAN) | 12.7 GB/s (loopback) | `transfer_loopback` criterion bench, 10×1 s sender blasts, median ≈101.7 Gbit/s, byte-exact vs drain; loopback only, not LAN |

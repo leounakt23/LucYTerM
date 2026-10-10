@@ -13,6 +13,15 @@
 
 fn main() -> iced::Result {
     let startup_started = std::time::Instant::now();
+    // Prefer the Vulkan renderer on Linux unless the user overrides it:
+    // instantiating the GL backend loads the full GL/GLX vendor stack
+    // (~30 MB RSS on hybrid-GPU systems) even when Vulkan renders, and
+    // the GL surface path itself crashes on some X11 stacks
+    // ("incompatible window kind").
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("WGPU_BACKEND").is_none() {
+        std::env::set_var("WGPU_BACKEND", "vulkan");
+    }
     let matches = mbxt_cli::build_cli(env!("CARGO_PKG_VERSION"), &remote_app::build_info::long())
         .get_matches();
     if let Err(err) = remote_app::utils::security::initialize() {

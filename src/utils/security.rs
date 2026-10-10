@@ -16,8 +16,11 @@ pub fn initialize() -> std::io::Result<()> {
     }
     #[cfg(target_os = "linux")]
     {
-        // SAFETY: PR_SET_DUMPABLE receives scalar arguments only.
-        if unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } != 0 {
+        // MBXT_DEBUGGABLE=1 keeps the process ptrace-able (smaps readable)
+        // for profiling sessions; the default stays non-dumpable.
+        if std::env::var_os("MBXT_DEBUGGABLE").is_none()
+            && unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } != 0
+        {
             tracing::warn!(error = ?std::io::Error::last_os_error(), "could not disable ptrace dumps");
         }
     }
