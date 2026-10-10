@@ -32,7 +32,7 @@ modules:
     build-commands:
       - cargo build --release --locked --all-features
       - install -Dm755 target/release/remote-app /app/bin/remote-app
-      - install -Dm644 assets/remote-app.desktop /app/share/applications/remote-app.desktop
+      - install -Dm644 assets/remote-app.desktop /app/share/applications/com.github.LucYTerM.remote-app.desktop
       - install -Dm644 assets/remote-app.metainfo.xml /app/share/metainfo/com.github.LucYTerM.remote-app.metainfo.xml
       - install -Dm644 assets/icon.svg /app/share/icons/hicolor/scalable/apps/remote-app.svg
     sources:
