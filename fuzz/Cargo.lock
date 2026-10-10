@@ -4279,6 +4279,7 @@ dependencies = [
  "mbxt-system",
  "mbxt-terminal",
  "memsec",
+ "nix",
  "rmp-serde",
  "ron",
  "rpassword",
