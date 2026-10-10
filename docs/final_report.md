@@ -41,6 +41,14 @@
 - Phase 6 (this report): file-based custom themes + toolbar
   switching, hermetic SSH loopback tests, loopback throughput
   bench, RDP/VNC session creation, packaging static validation.
+- Phase 6 amendment (2026-10-11): session CRUD is now complete in the
+  GUI — per-row Edit/Delete buttons in the sidebar, the new-session
+  dialog reopens prefilled for edits (title/Save switch), and
+  create/update/rename share one validator (non-empty + duplicate
+  names, host required for SSH/Telnet/SFTP/X11/RDP/VNC, port 1–65535
+  with 0 rejected, serial params validated, unknown ids error).
+  Fixed alongside: ids are max+1 (len+1 reused ids after deletes) and
+  deletes toast (were silent). 8 new unit tests; full suite green.
 
 ## Performance Metrics
 
@@ -156,6 +164,13 @@ successes without evidence:
   fuzz smokes and coverage need the nightly toolchain (CI parity);
   Nix flake and install-on-distro packaging steps were statically
   validated only.
+- NEW (2026-10-11): GUI button click-through is unverified under Xvfb:
+  XTEST button events arrive only as slave-device raw events (0 master
+  device ButtonPress over 6 measured clicks) while winit 0.30 selects
+  XI2 on master devices, so release-to-publish never completes for
+  buttons inside scrollables (toolbar buttons, text focus, typing, and
+  shortcuts all work live). Session CRUD button paths are unit-tested;
+  the click-through needs a real display.
 
 ## Future Work
 

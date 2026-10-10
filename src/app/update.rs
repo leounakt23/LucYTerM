@@ -192,11 +192,9 @@ fn handle_session(app: &mut AppState, msg: SessionMsg) -> Result<iced::Task<Mess
             Ok(iced::Task::none())
         },
         SessionMsg::Created(name) => {
-            if name.trim().is_empty() {
-                return Err("session name cannot be empty".to_string());
-            }
+            let name = check_session_name(app, &name, None)?;
             let spec = mbxt_core::SessionSpec {
-                name: name.trim().to_string(),
+                name: name.clone(),
                 protocol: mbxt_core::Protocol::Ssh,
                 host: None,
                 port: None,
@@ -208,7 +206,7 @@ fn handle_session(app: &mut AppState, msg: SessionMsg) -> Result<iced::Task<Mess
                 serial: None,
                 forwards: Vec::new(),
             };
-            let id = app.sessions.len() as SessionId + 1;
+            let id = next_session_id(app);
             app.sessions.push(mbxt_core::Session {
                 id,
                 spec,
@@ -224,30 +222,9 @@ fn handle_session(app: &mut AppState, msg: SessionMsg) -> Result<iced::Task<Mess
             Ok(iced::Task::none())
         },
         SessionMsg::CreateDetailed(spec) => {
-            let name = spec.name.trim().to_string();
-            if name.is_empty() {
-                return Err("session name cannot be empty".to_string());
-            }
-            // Protocol-specific requirements (dialog validation mirrors this).
-            match spec.protocol {
-                mbxt_core::Protocol::Ssh
-                | mbxt_core::Protocol::Telnet
-                | mbxt_core::Protocol::Sftp
-                | mbxt_core::Protocol::X11 => {
-                    if spec.host.as_deref().unwrap_or("").trim().is_empty() {
-                        return Err("host is required".to_string());
-                    }
-                },
-                mbxt_core::Protocol::Serial => {
-                    let params = spec
-                        .serial
-                        .as_ref()
-                        .ok_or("serial settings are missing".to_string())?;
-                    params.validate().map_err(|err| err.to_string())?;
-                },
-                _ => {},
-            }
-            let id = app.sessions.len() as SessionId + 1;
+            let name = check_session_name(app, &spec.name, None)?;
+            check_session_spec_fields(&spec)?;
+            let id = next_session_id(app);
             app.sessions.push(mbxt_core::Session {
                 id,
                 spec: *spec,
@@ -262,13 +239,31 @@ fn handle_session(app: &mut AppState, msg: SessionMsg) -> Result<iced::Task<Mess
             );
             Ok(iced::Task::none())
         },
-        SessionMsg::Renamed(id, name) => match app.session_mut(id) {
-            Some(session) => {
-                session.spec.name = name;
-                app.ui_state.dirty = true;
-                Ok(iced::Task::none())
-            },
-            None => Err(format!("unknown session #{id}")),
+        SessionMsg::UpdateDetailed(id, spec) => {
+            let name = check_session_name(app, &spec.name, Some(id))?;
+            check_session_spec_fields(&spec)?;
+            let stored = app
+                .session_mut(id)
+                .ok_or_else(|| format!("unknown session #{id}"))?;
+            stored.spec = *spec;
+            app.ui_state.dirty = true;
+            app.notify(
+                Level::Success,
+                "Session updated",
+                &format!("\"{name}\" saved"),
+            );
+            Ok(iced::Task::none())
+        },
+        SessionMsg::Renamed(id, name) => {
+            let name = check_session_name(app, &name, Some(id))?;
+            match app.session_mut(id) {
+                Some(session) => {
+                    session.spec.name = name;
+                    app.ui_state.dirty = true;
+                    Ok(iced::Task::none())
+                },
+                None => Err(format!("unknown session #{id}")),
+            }
         },
         SessionMsg::Deleted(id) => {
             let before = app.sessions.len();
@@ -285,6 +280,13 @@ fn handle_session(app: &mut AppState, msg: SessionMsg) -> Result<iced::Task<Mess
             #[cfg(feature = "ssh")]
             crate::connection::forward::ForwardManager::shared().remove_session(id);
             app.ui_state.dirty = true;
+            // Immediate like tunnel deletes; the toast is the undo-less
+            // feedback (no pending-confirm pattern exists for deletes).
+            app.notify(
+                Level::Info,
+                "Session deleted",
+                &format!("session #{id} removed"),
+            );
             Ok(iced::Task::none())
         },
         SessionMsg::Tagged(id, tag) => match app.session_mut(id) {
@@ -1923,6 +1925,63 @@ fn refresh_serial_ports() -> Vec<String> {
     }
 }
 
+/// Next session id that cannot collide with a live session (`len + 1`
+/// reused ids after a delete, so deleted ids must not be recycled).
+fn next_session_id(app: &AppState) -> SessionId {
+    app.sessions.iter().map(|s| s.id).max().unwrap_or(0) + 1
+}
+
+/// Trimmed session name, rejecting empties and duplicates (names address
+/// sessions in headless `connect`, so ambiguity is a validation error;
+/// `exclude` is the edited session itself).
+fn check_session_name(
+    app: &AppState,
+    name: &str,
+    exclude: Option<SessionId>,
+) -> Result<String, String> {
+    let name = name.trim().to_string();
+    if name.is_empty() {
+        return Err("session name cannot be empty".to_string());
+    }
+    if app
+        .sessions
+        .iter()
+        .any(|s| s.spec.name == name && Some(s.id) != exclude)
+    {
+        return Err(format!("session \"{name}\" already exists"));
+    }
+    Ok(name)
+}
+
+/// Protocol-specific spec requirements shared by create and update (the
+/// dialog validation mirrors this so errors surface inline).
+fn check_session_spec_fields(spec: &mbxt_core::SessionSpec) -> Result<(), String> {
+    match spec.protocol {
+        mbxt_core::Protocol::Ssh
+        | mbxt_core::Protocol::Telnet
+        | mbxt_core::Protocol::Sftp
+        | mbxt_core::Protocol::X11
+        | mbxt_core::Protocol::Rdp
+        | mbxt_core::Protocol::Vnc => {
+            if spec.host.as_deref().unwrap_or("").trim().is_empty() {
+                return Err("host is required".to_string());
+            }
+            if spec.port == Some(0) {
+                return Err("port must be 1–65535".to_string());
+            }
+        },
+        mbxt_core::Protocol::Serial => {
+            let params = spec
+                .serial
+                .as_ref()
+                .ok_or("serial settings are missing".to_string())?;
+            params.validate().map_err(|err| err.to_string())?;
+        },
+        _ => {},
+    }
+    Ok(())
+}
+
 /// Build a validated [`SessionSpec`] from the dialog draft (mirrors the
 /// `CreateDetailed` requirements so errors surface inline).
 fn build_session_spec(draft: &super::state::NewSessionDraft) -> Result<SessionSpec, String> {
@@ -1960,7 +2019,13 @@ fn build_session_spec(draft: &super::state::NewSessionDraft) -> Result<SessionSp
                 .trim()
                 .parse::<u16>()
                 .map_err(|_| "port must be 1–65535".to_string())
-                .map(Some)?;
+                .and_then(|port| {
+                    if port == 0 {
+                        Err("port must be 1–65535".to_string())
+                    } else {
+                        Ok(Some(port))
+                    }
+                })?;
         },
         mbxt_core::Protocol::Serial => {
             let params = mbxt_core::SerialParams {
@@ -3305,6 +3370,27 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
             app.new_session = None;
             Ok(iced::Task::none())
         },
+        UiMsg::EditSession(id) => {
+            let stored = app
+                .session(id)
+                .ok_or_else(|| format!("unknown session #{id}"))?;
+            let mut draft = super::state::NewSessionDraft::new(stored.spec.name.clone());
+            draft.editing = Some(id);
+            draft.protocol = stored.spec.protocol;
+            draft.host = stored.spec.host.clone().unwrap_or_default();
+            draft.port = stored
+                .spec
+                .port
+                .map(|port| port.to_string())
+                .unwrap_or_default();
+            if let Some(params) = stored.spec.serial.as_ref() {
+                draft.device = params.device.clone();
+                draft.baud = params.baud_rate.to_string();
+            }
+            draft.serial_ports = refresh_serial_ports();
+            app.new_session = Some(draft);
+            Ok(iced::Task::none())
+        },
         UiMsg::NewSessionFieldChanged(field, value) => {
             if let Some(draft) = app.new_session.as_mut() {
                 draft.error = None;
@@ -3343,9 +3429,29 @@ fn handle_ui(app: &mut AppState, msg: UiMsg) -> Result<iced::Task<Message>, Stri
                 .new_session
                 .clone()
                 .ok_or("session dialog is not open".to_string())?;
-            let spec = build_session_spec(&draft)?;
+            let editing = draft.editing;
+            let submit = (|| {
+                let spec = build_session_spec(&draft)?;
+                // Duplicates are checked before closing so the dialog
+                // stays open on rejection (handler checks again for the
+                // programmatic paths).
+                check_session_name(app, &spec.name, editing)?;
+                Ok::<_, String>((editing, spec))
+            })();
+            let (editing, spec) = match submit {
+                Ok(ok) => ok,
+                Err(reason) => {
+                    if let Some(open) = app.new_session.as_mut() {
+                        open.error = Some(reason.clone());
+                    }
+                    return Err(reason);
+                },
+            };
             app.new_session = None;
-            handle_session(app, SessionMsg::CreateDetailed(Box::new(spec)))
+            match editing {
+                Some(id) => handle_session(app, SessionMsg::UpdateDetailed(id, Box::new(spec))),
+                None => handle_session(app, SessionMsg::CreateDetailed(Box::new(spec))),
+            }
         },
         UiMsg::OpenSettings => {
             app.ui_state.view = crate::app::messages::ViewKind::Settings;
@@ -4072,6 +4178,7 @@ fn handle_clipboard(app: &mut AppState, text: String) -> Result<iced::Task<Messa
 mod tests {
     use super::*;
     use crate::app::notifications::Level;
+    use crate::app::state::NewSessionDraft;
     use mbxt_core::{AuthMethod, Protocol, SessionSpec};
 
     fn app() -> AppState {
@@ -4102,12 +4209,21 @@ mod tests {
     }
 
     fn push_session(app: &mut AppState, name: &str) -> SessionId {
+        let id = app.sessions.iter().map(|s| s.id).max().unwrap_or(0) + 1;
         app.sessions.push(mbxt_core::Session {
-            id: app.sessions.len() as SessionId + 1,
+            id,
             spec: spec(name),
             state: SessionState::Disconnected,
         });
         app.sessions.last().unwrap().id
+    }
+
+    fn has_error(state: &AppState) -> bool {
+        state
+            .notifications
+            .items
+            .iter()
+            .any(|n| n.level == Level::Error)
     }
 
     #[test]
@@ -4156,6 +4272,184 @@ mod tests {
         update(&mut state, Message::Session(SessionMsg::Deleted(id)));
         assert!(state.sessions.is_empty());
         assert_eq!(state.active_session_id, None);
+    }
+
+    #[test]
+    fn session_names_stay_unique() {
+        let mut state = app();
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("web".into())),
+        );
+        assert_eq!(state.sessions.len(), 1);
+        // Duplicate create is rejected, original untouched.
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("  web ".into())),
+        );
+        assert!(has_error(&state));
+        assert_eq!(state.sessions.len(), 1);
+
+        let other = push_session(&mut state, "db");
+        // Rename onto the other name is rejected.
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Renamed(other, "web".into())),
+        );
+        assert!(has_error(&state));
+        assert_eq!(state.sessions[1].spec.name, "db");
+        // Empty rename is rejected; keeping the trimmed own name is fine.
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Renamed(other, "   ".into())),
+        );
+        assert!(has_error(&state));
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Renamed(other, " db ".into())),
+        );
+        assert_eq!(state.sessions[1].spec.name, "db");
+    }
+
+    #[test]
+    fn session_ids_stay_unique_after_delete() {
+        let mut state = app();
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("a".into())),
+        );
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("b".into())),
+        );
+        let first = state.sessions[0].id;
+        update(&mut state, Message::Session(SessionMsg::Deleted(first)));
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("c".into())),
+        );
+        let mut ids: Vec<SessionId> = state.sessions.iter().map(|s| s.id).collect();
+        ids.sort_unstable();
+        ids.dedup();
+        assert_eq!(ids.len(), state.sessions.len());
+        assert_eq!(state.sessions.len(), 2);
+    }
+
+    #[test]
+    fn session_port_zero_rejected() {
+        let mut state = app();
+        // Dialog path: port "0" fails like empty/garbage, dialog stays open.
+        let mut draft = NewSessionDraft::new("lan".into());
+        draft.host = "127.0.0.1".into();
+        draft.port = "0".into();
+        state.new_session = Some(draft);
+        update(&mut state, Message::Ui(UiMsg::NewSessionSubmitted));
+        assert!(has_error(&state));
+        assert!(state.sessions.is_empty());
+        assert!(state.new_session.is_some());
+        assert!(state.new_session.as_ref().unwrap().error.is_some());
+
+        // Direct spec path enforces the same rule.
+        let mut direct = spec("direct");
+        direct.port = Some(0);
+        update(
+            &mut state,
+            Message::Session(SessionMsg::CreateDetailed(Box::new(direct))),
+        );
+        assert!(has_error(&state));
+        assert!(state.sessions.is_empty());
+    }
+
+    #[test]
+    fn session_rdp_and_vnc_require_host() {
+        let mut state = app();
+        for protocol in [Protocol::Rdp, Protocol::Vnc] {
+            let mut missing = spec("viewer");
+            missing.protocol = protocol;
+            missing.host = None;
+            update(
+                &mut state,
+                Message::Session(SessionMsg::CreateDetailed(Box::new(missing))),
+            );
+            assert!(has_error(&state));
+        }
+        assert!(state.sessions.is_empty());
+    }
+
+    #[test]
+    fn session_edit_round_trip() {
+        let mut state = app();
+        // Create through the dialog so the stored spec is realistic.
+        let mut draft = NewSessionDraft::new("lan".into());
+        draft.host = "127.0.0.1".into();
+        state.new_session = Some(draft);
+        update(&mut state, Message::Ui(UiMsg::NewSessionSubmitted));
+        assert_eq!(state.sessions.len(), 1);
+        let id = state.sessions[0].id;
+
+        // Opening the edit flow prefills the draft and marks editing.
+        update(&mut state, Message::Ui(UiMsg::EditSession(id)));
+        let open = state.new_session.as_ref().expect("edit opens dialog");
+        assert_eq!(open.editing, Some(id));
+        assert_eq!(open.name, "lan");
+        assert_eq!(open.host, "127.0.0.1");
+        assert_eq!(open.port, "22");
+
+        // Submit renames + rehosts, keeps the id, closes the dialog.
+        if let Some(open) = state.new_session.as_mut() {
+            open.name = "wan".into();
+            open.host = "10.0.0.9".into();
+        }
+        update(&mut state, Message::Ui(UiMsg::NewSessionSubmitted));
+        assert_eq!(state.sessions.len(), 1);
+        assert_eq!(state.sessions[0].id, id);
+        assert_eq!(state.sessions[0].spec.name, "wan");
+        assert_eq!(state.sessions[0].spec.host.as_deref(), Some("10.0.0.9"));
+        assert!(state.new_session.is_none());
+    }
+
+    #[test]
+    fn session_edit_duplicate_name_rejected() {
+        let mut state = app();
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("a".into())),
+        );
+        update(
+            &mut state,
+            Message::Session(SessionMsg::Created("b".into())),
+        );
+        let second = state.sessions[1].id;
+
+        update(&mut state, Message::Ui(UiMsg::EditSession(second)));
+        if let Some(open) = state.new_session.as_mut() {
+            open.name = "a".into();
+        }
+        update(&mut state, Message::Ui(UiMsg::NewSessionSubmitted));
+        assert!(has_error(&state));
+        // Dialog stays open, stored spec untouched.
+        assert!(state.new_session.is_some());
+        assert_eq!(state.sessions[1].spec.name, "b");
+
+        // Keeping the session's own name is accepted.
+        if let Some(open) = state.new_session.as_mut() {
+            open.name = "b".into();
+            open.host = "127.0.0.1".into();
+            open.port = "22".into();
+        }
+        update(&mut state, Message::Ui(UiMsg::NewSessionSubmitted));
+        assert_eq!(state.sessions[1].spec.name, "b");
+        assert!(state.new_session.is_none());
+    }
+
+    #[test]
+    fn session_edit_and_delete_unknown_session_error() {
+        let mut state = app();
+        update(&mut state, Message::Ui(UiMsg::EditSession(99)));
+        assert!(has_error(&state));
+        assert!(state.new_session.is_none());
+        update(&mut state, Message::Session(SessionMsg::Deleted(99)));
+        assert!(has_error(&state));
     }
 
     #[test]

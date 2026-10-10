@@ -45,8 +45,11 @@ impl TunnelDraft {
 }
 
 /// New-session dialog draft (Prompt 4.4, ephemeral — never saved).
+/// `editing` mirrors the tunnel form: `None` creates, `Some(id)` replaces
+/// that session's spec on submit (id preserved).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NewSessionDraft {
+    pub editing: Option<SessionId>,
     pub name: String,
     pub protocol: Protocol,
     pub host: String,
@@ -62,6 +65,7 @@ pub struct NewSessionDraft {
 impl NewSessionDraft {
     pub fn new(name: String) -> Self {
         Self {
+            editing: None,
             name,
             protocol: Protocol::Ssh,
             host: String::new(),

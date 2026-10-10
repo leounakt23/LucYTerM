@@ -25,6 +25,8 @@ pub enum SessionMsg {
     X11Toggled(SessionId),
     /// Create a session from a full spec (new-session dialog submit).
     CreateDetailed(Box<mbxt_core::SessionSpec>),
+    /// Replace a session's spec (edit dialog submit, id preserved).
+    UpdateDetailed(SessionId, Box<mbxt_core::SessionSpec>),
 }
 
 /// Connection lifecycle events (feature matrix §2.1).
@@ -418,6 +420,8 @@ pub enum UiMsg {
     QuickConnect,
     /// Open the new-session dialog (protocol/host/device picker).
     NewSessionDialogOpened,
+    /// Load an existing session into the dialog for editing.
+    EditSession(SessionId),
     /// Close the dialog without creating.
     NewSessionDialogClosed,
     /// Dialog field edited.

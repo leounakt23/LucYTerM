@@ -27,7 +27,12 @@ fn dialog(draft: &NewSessionDraft) -> iced::Element<'_, Message> {
     .spacing(6);
 
     let mut body = column![
-        text("New session").size(18),
+        text(if draft.editing.is_some() {
+            "Edit session"
+        } else {
+            "New session"
+        })
+        .size(18),
         protocols,
         field("Name", &draft.name, NewSessionField::Name, "session-1"),
     ]
@@ -95,9 +100,16 @@ fn dialog(draft: &NewSessionDraft) -> iced::Element<'_, Message> {
 
     body = body.push(
         row![
-            button(text("Create").size(13))
-                .on_press(Message::Ui(UiMsg::NewSessionSubmitted))
-                .padding([4, 12]),
+            button(
+                text(if draft.editing.is_some() {
+                    "Save"
+                } else {
+                    "Create"
+                })
+                .size(13)
+            )
+            .on_press(Message::Ui(UiMsg::NewSessionSubmitted))
+            .padding([4, 12]),
             button(text("Cancel").size(13))
                 .on_press(Message::Ui(UiMsg::NewSessionDialogClosed))
                 .padding([4, 12]),
@@ -235,5 +247,15 @@ mod tests {
         assert_eq!(draft.protocol, Protocol::Ssh);
         assert_eq!(draft.port, "22");
         assert_eq!(draft.baud, "115200");
+    }
+
+    #[test]
+    fn edit_dialog_renders_with_save_label() {
+        let mut app = test_app();
+        let mut draft = NewSessionDraft::new("lan".into());
+        draft.editing = Some(7);
+        draft.host = "127.0.0.1".into();
+        app.new_session = Some(draft);
+        let _ = view(&app).expect("edit dialog renders");
     }
 }

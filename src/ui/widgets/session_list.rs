@@ -76,6 +76,29 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
                     .padding([2, 6]),
                 );
             }
+            // Per-session edit/delete (verification checklist: sessions
+            // can be created, edited, and deleted; deletes are immediate
+            // with a toast, mirroring tunnel deletes).
+            session_row = session_row.push(
+                crate::ui::theme::chrome_button(
+                    app.theme.clone(),
+                    &format!("edit-{id}"),
+                    button(text("Edit").size(11)),
+                )
+                .on_press(Message::Ui(crate::app::messages::UiMsg::EditSession(id)))
+                .padding([2, 6]),
+            );
+            session_row = session_row.push(
+                crate::ui::theme::chrome_button(
+                    app.theme.clone(),
+                    &format!("delete-{id}"),
+                    button(text("Delete").size(11)),
+                )
+                .on_press(Message::Session(crate::app::messages::SessionMsg::Deleted(
+                    id,
+                )))
+                .padding([2, 6]),
+            );
             list = list.push(session_row);
         }
     }

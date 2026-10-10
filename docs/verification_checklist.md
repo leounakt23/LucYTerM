@@ -28,7 +28,17 @@ Sessions and terminal:
 
 - [x] Application launches and shows the main window (sidebar, content area,
       status bar). (2026-10-07; Xvfb screenshot docs/assets/main-window-xvfb.png)
-- [ ] Sessions can be created, edited, and deleted; validation errors are shown.
+- [x] Sessions can be created, edited, and deleted; validation errors are shown.
+      (2026-10-11; per-row Edit/Delete buttons + edit-dialog reuse, shared
+      validation incl. duplicate names/port-0/RDP-VNC-host/unknown-id, 8 new
+      unit tests green. Live under Xvfb: dialog opens by click, fields accept
+      input (`docs/assets/sessions-dialog-xvfb.png`), toolbar buttons fire.
+      Dialog/sidebar BUTTON actuation is unproven under Xvfb+XTEST: winit
+      selects XI2 on master devices but this Xvfb delivers XTEST button
+      events only as slave-device raw events (0 device ButtonPress over 6
+      measured clicks), so release-to-publish never completes; untouched
+      Cancel fails identically, ruling out a regression. Needs a real
+      display for the click-through of submit/edit/delete.)
 - [ ] SSH connects with password, private key, and agent (three separate
       checks against a disposable OpenSSH container).
 - [ ] Terminal renders VT100 output, 256-color, and true color correctly
