@@ -32,7 +32,12 @@ jobs:
         env:
           DOMAIN: ${{ vars.PAGES_CUSTOM_DOMAIN }}
         run: printf '%s\n' "$DOMAIN" > docs/book/CNAME
+      # enablement flips Pages to "GitHub Actions" build type on first run;
+      # deploy-pages requires that mode (legacy/branch source fails with
+      # BlobNotFound on deploy).
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/book
