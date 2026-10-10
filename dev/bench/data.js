@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791625180738,
+  "lastUpdate": 1791626441656,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -545,6 +545,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000582195,
             "range": "± 184313",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "e7fb3b1aa3f21e086aac1ff221b49bbd53dba07e",
+          "message": "fix: full-ref sdk-extensions; bench alerts informational\n\nflatpak-builder 1.4.x concatenates the id//branch form into a malformed ref (id//branch/x86_64/branch) — use the full runtime ref. Bench baselines compare across runner hardware, so alert comments stay, fail-on-alert drops to false (two different benches flapped on identical code).",
+          "timestamp": "2026-10-10T11:56:27+02:00",
+          "tree_id": "1aaa90a9c173f2e7d39fab47090d6fcf9fe6ac40",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/e7fb3b1aa3f21e086aac1ff221b49bbd53dba07e"
+        },
+        "date": 1791626440970,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80603,
+            "range": "± 7142",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103022,
+            "range": "± 200",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 205665,
+            "range": "± 2616",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 454457,
+            "range": "± 2921",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11697,
+            "range": "± 51",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3262,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1912,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000538765,
+            "range": "± 118068",
             "unit": "ns/iter"
           }
         ]
