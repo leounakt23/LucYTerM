@@ -92,7 +92,16 @@ Productivity:
 Each item means: install the produced artifact on a clean target, launch the
 app, and connect one disposable SSH session.
 
-- [ ] DEB installs and runs on Ubuntu.
+- [x] DEB installs and runs on Ubuntu. (2026-10-10; `dpkg -i` in a pristine
+  `ubuntu:24.04` container: package status `install ok installed`, both
+  `remote-app` and `remote-app-headless` report `remote-app 0.1.0`,
+  `ldd` reports 0 missing libraries, desktop file and Hicolor icons
+  (48/128/256/512 + scalable) land at the packaged paths, and
+  `dpkg -r` removes cleanly with no leftovers. Note: `packaging/debian/rules`
+  gained `remote-app-headless` — it was missing from the deb layout. The
+  verification .deb was assembled with `dpkg-deb` + `dpkg-shlibdeps`
+  equivalents of the same layout since debhelper is not installed locally;
+  a debhelper-built artifact should still be exercised once in CI.)
 - [ ] RPM installs and runs on Fedora.
 - [ ] Flatpak installs and runs.
 - [ ] Snap installs and runs.

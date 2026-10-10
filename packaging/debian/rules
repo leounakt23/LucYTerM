@@ -9,6 +9,7 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	install -Dm755 target/release/remote-app debian/remote-app/usr/bin/remote-app
+	install -Dm755 target/release/remote-app-headless debian/remote-app/usr/bin/remote-app-headless
 	install -Dm644 assets/remote-app.desktop debian/remote-app/usr/share/applications/remote-app.desktop
 	install -Dm644 assets/remote-app.metainfo.xml debian/remote-app/usr/share/metainfo/remote-app.metainfo.xml
 	install -Dm644 docs/remote-app.1 debian/remote-app/usr/share/man/man1/remote-app.1
