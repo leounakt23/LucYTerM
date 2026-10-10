@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791619048998,
+  "lastUpdate": 1791621078874,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -233,6 +233,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000591495,
             "range": "± 210511",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "c11d4aefb5adab5d18e1aa42413581988eaa44df",
+          "message": "fix: move flatpak bundle to freedesktop 25.08\n\nThe 24.08 platform is end-of-life and its rust-stable extension no longer resolves (flatpak-builder: Unknown extension in runtime). Move runtime, sdk-extensions, and the CI install list to 25.08.",
+          "timestamp": "2026-10-10T10:26:13+02:00",
+          "tree_id": "7286f84c51fa5000ce49923048acdfb8c33cd3e2",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/c11d4aefb5adab5d18e1aa42413581988eaa44df"
+        },
+        "date": 1791621078298,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 79902,
+            "range": "± 3650",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103114,
+            "range": "± 428",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 207229,
+            "range": "± 3040",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 456277,
+            "range": "± 7754",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11715,
+            "range": "± 114",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3244,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1919,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000382482,
+            "range": "± 242235",
             "unit": "ns/iter"
           }
         ]
