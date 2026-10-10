@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791666812371,
+  "lastUpdate": 1791668280535,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -1013,6 +1013,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000406073,
             "range": "± 208841",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "871fb45fad8edfdd2221379192ade2c4b8e710b0",
+          "message": "fix: let cold-cache CI legs finish within their limits",
+          "timestamp": "2026-10-10T23:33:10+02:00",
+          "tree_id": "fd07bc2f9663e36c7941cf739aecb4abfd79b10e",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/871fb45fad8edfdd2221379192ade2c4b8e710b0"
+        },
+        "date": 1791668280035,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 69379,
+            "range": "± 426",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 91230,
+            "range": "± 233",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 203503,
+            "range": "± 1709",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 400848,
+            "range": "± 9612",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11935,
+            "range": "± 122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 2695,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 58,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1437,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000416338,
+            "range": "± 65875",
             "unit": "ns/iter"
           }
         ]
