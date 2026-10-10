@@ -29,7 +29,9 @@ jobs:
       - name: Install system and package dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends pkg-config libssl-dev libudev-dev libdbus-1-dev libfuse2 flatpak flatpak-builder
+          sudo apt-get install -y --no-install-recommends pkg-config libssl-dev libudev-dev libdbus-1-dev libfuse2 flatpak flatpak-builder librsvg2-common
+          # librsvg2-common: the gdk-pixbuf SVG loader; appstream compose
+          # reads the app icon and fails with file-read-error without it.
           flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install --user -y flathub org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 org.freedesktop.Sdk.Extension.rust-stable//25.08
       - uses: Swatinem/rust-cache@v2
