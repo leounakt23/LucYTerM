@@ -17,7 +17,9 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    # 24.04 for flatpak-builder 1.4.x: 22.04's 1.2.2 cannot resolve
+    # sdk-extensions refs (Unknown extension in runtime).
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
