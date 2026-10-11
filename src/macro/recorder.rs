@@ -299,4 +299,27 @@ mod tests {
         assert_eq!(macro_.variables[0].name, "host");
         assert!(macro_.variables[0].required);
     }
+
+    #[test]
+    fn recorded_input_plays_back_byte_identical() {
+        use crate::macros::player::{MacroPlayer, StepEffect};
+        use crate::macros::variables::Context;
+
+        let mut recorder = MacroRecorder::new();
+        recorder.start(7);
+        recorder.observe_input(7, b"ls");
+        recorder.observe_input(7, b" -la\r");
+        recorder.observe_output(7, b"total 4\nuser@h:~$ ");
+        let macro_ = recorder.stop("listing".into()).expect("recorded");
+
+        // Playback reproduces the captured keystrokes, then the wait.
+        let mut player = MacroPlayer::new(&macro_, Context::new());
+        assert_eq!(
+            player.step().expect("send"),
+            StepEffect::Send(b"ls -la\r".to_vec())
+        );
+        assert_eq!(player.step().expect("wait"), StepEffect::AwaitPattern);
+        assert!(player.observe_output("user@h:~$ ").expect("match"));
+        assert_eq!(player.step().expect("done"), StepEffect::Finished);
+    }
 }

@@ -59,7 +59,13 @@ Sessions and terminal:
       display-only MISS: no terminal is reachable headless without
       session input, see the Xvfb input note in final_report.md.)
 - [ ] Terminal copy/paste and mouse reporting work on X11 and Wayland sessions.
-- [ ] Master password encrypts session storage; wrong password fails closed.
+      (Blocked on a real display: Xvfb+XTEST delivers no master-device
+      pointer events, so no click path is drivable headless.)
+- [x] Master password encrypts session storage; wrong password fails closed.
+      (2026-10-11; `secure_storage` unit suite, 11 tests: password
+      save/load round-trip + cached-key reopen, wrong-password and
+      passwordless-load rejection, rekey with salt rotation, owner-only
+      file mode, key-material redaction in Debug.)
 
 Files and tunnels:
 
@@ -67,7 +73,11 @@ Files and tunnels:
       (2026-10-07 re-verified 2026-10-11; `sftp_integration` live vs
       `atmoz/sftp:alpine` :2222: list + upload/download round-trip with
       strict host-key verification.)
-- [ ] Upload and download complete; pause/resume continues correctly.
+- [x] Upload and download complete; pause/resume continues correctly.
+      (2026-10-11; live `sftp_integration` round-trip vs disposable
+      `:2222` plus `transfer_manager`/`transfer` unit tests:
+      pause/resume cycle, cancel-token on pause, resume-offset prefix
+      rule.)
 - [x] Local, remote, and dynamic (SOCKS5) forwarding carry traffic. (2026-10-07; all three live vs disposable OpenSSH :2223, banner loopback)
 - [x] X11 forwarding launches a GUI app from a disposable server.
       (2026-10-07 re-verified 2026-10-11; `x11_integration` live vs
@@ -94,13 +104,26 @@ Multi-protocol (each needs its live counterpart or emulator):
 
 Productivity:
 
-- [ ] Multi-exec broadcasts input to all selected sessions.
-- [ ] Macro recorder captures input; playback reproduces actions.
+- [x] Multi-exec broadcasts input to all selected sessions.
+      (2026-10-11; 14 `multi_exec` unit tests — targets, stagger,
+      host-filter, destructive gate — plus an update-level test that
+      asserts the per-target rendered bytes (`$SESSION_HOST`
+      substitution) on both receivers.)
+- [x] Macro recorder captures input; playback reproduces actions.
+      (2026-10-11; recorder suite — lifecycle, session isolation, noise
+      filtering, prompt waits, coalescing — plus a new record→playback
+      round-trip test asserting byte-identical `Send` and the terminal
+      wait; 30 macro tests green. Player substitution/loops covered in
+      `player.rs`.)
 - [x] Network tools return sane results: ping, traceroute, DNS, whois, port (2026-10-07; subnet run executed in-app with correct output, docs/assets/tools-run-xvfb.png; backends unit+hermetic tested)
       scan (`network_tools` tests + manual spot-check).
 - [x] Built-in themes switch; a custom theme file loads. (2026-10-08; switch verified visually on real desktop by maintainer; loader unit-tested incl. malformed-skip)
 - [ ] Session import works per the published importer matrix; unknown fields
       are reported, never guessed; nothing is overwritten silently.
+      (Honest MISS as of 2026-10-11: no third-party importer and no
+      published matrix exist — MobaXterm/PuTTY/OpenSSH import is v1.1
+      roadmap scope. Only the encrypted-file export/import round-trip
+      is tested (`export_import_round_trip_to_arbitrary_path`).)
 
 ## Performance Verification (Measure, Do Not Assert)
 
