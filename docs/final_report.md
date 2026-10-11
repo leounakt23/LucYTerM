@@ -123,6 +123,13 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   and dynamic SOCKS5 forwarding (`linuxserver/openssh-server :2223`
   with vendored `docker/sshd_config`) pass; X11 handshake sets
   remote `DISPLAY` (pass); Telnet echo via `busybox telnetd` passes.
+- Live amendment (2026-10-11): SSH auth triad added as
+  `tests/ssh_auth_live.rs` vs the same disposable OpenSSH :2223 —
+  password login + shell echo, throwaway ed25519 key
+  (generated/installed/key-login), and spawned-`ssh-agent` login —
+  all with strict host-key verification; wired into the e2e workflow
+  (`MBXT_SSH_TEST_*`). SFTP and X11 suites re-verified green the same
+  day; X11 now verifies strictly too (was `AcceptAll`).
   VNC against a real server passes (2026-10-10, disposable TigerVNC
   Xvnc container `docker/vnc`, `RFB 003.008` handshake + first frame,
   5/5 runs; `BlacklistTimeout=0` keeps nc healthchecks from poisoning

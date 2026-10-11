@@ -4,7 +4,12 @@
 //! enabled (e.g. OpenSSH with `X11Forwarding yes` in CI):
 //!
 //! ```sh
-//! MBXT_X11_TEST_ADDR=127.0.0.1:2222 \
+//! docker run -d --name openssh-test -p 2223:22 \
+//!   -e PUID=1000 -e PGID=1000 -e USER_NAME=test -e USER_PASSWORD=test \
+//!   -e PASSWORD_ACCESS=true \
+//!   -v $PWD/docker/sshd_config:/config/sshd/sshd_config \
+//!   lscr.io/linuxserver/openssh-server:latest
+//! MBXT_X11_TEST_ADDR=127.0.0.1:2223 \
 //! MBXT_X11_TEST_USER=test MBXT_X11_TEST_PASSWORD=test \
 //! cargo test --test x11_integration -- --ignored
 //! ```
@@ -39,28 +44,48 @@ async fn x11_request_sets_remote_display() {
     use std::time::Duration;
 
     #[derive(Debug)]
-    struct AcceptAll;
+    struct StrictHostKey {
+        host: String,
+        port: u16,
+    }
     #[async_trait::async_trait]
-    impl client::Handler for AcceptAll {
+    impl client::Handler for StrictHostKey {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            _key: &russh::keys::key::PublicKey,
+            key: &russh::keys::key::PublicKey,
         ) -> Result<bool, Self::Error> {
-            Ok(true)
+            // Production behavior: fail closed on unknown keys. The key
+            // is learned into a throwaway HOME below, never the user's.
+            match russh::keys::check_known_hosts(&self.host, self.port, key) {
+                Ok(accepted) => Ok(accepted),
+                Err(error) => {
+                    tracing::warn!(%error, host = %self.host, "known_hosts check failed");
+                    Ok(false)
+                },
+            }
         }
     }
 
     let Some((addr, user, password)) = live_config() else {
         return;
     };
+    let (host, port) = addr.rsplit_once(':').expect("HOST:PORT");
+    remote_app::test_utils::learn_live_host_key(&addr);
     let config = Arc::new(client::Config {
         inactivity_timeout: Some(Duration::from_secs(10)),
         ..Default::default()
     });
-    let mut handle = client::connect(config, addr.as_str(), AcceptAll)
-        .await
-        .expect("ssh connect");
+    let mut handle = client::connect(
+        config,
+        addr.as_str(),
+        StrictHostKey {
+            host: host.to_string(),
+            port: port.parse().expect("numeric port"),
+        },
+    )
+    .await
+    .expect("ssh connect");
     assert!(handle
         .authenticate_password(user, password)
         .await

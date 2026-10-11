@@ -39,8 +39,14 @@ Sessions and terminal:
       measured clicks), so release-to-publish never completes; untouched
       Cancel fails identically, ruling out a regression. Needs a real
       display for the click-through of submit/edit/delete.)
-- [ ] SSH connects with password, private key, and agent (three separate
+- [x] SSH connects with password, private key, and agent (three separate
       checks against a disposable OpenSSH container).
+      (2026-10-11; new `tests/ssh_auth_live.rs` vs `linuxserver/openssh-server`
+      :2223 with the vendored `docker/sshd_config`: password login + shell
+      echo, throwaway ed25519 key generated/installed/key-login, spawned
+      `ssh-agent` + `ssh-add` agent login with env cleanup. Strict host-key
+      verification throughout (throwaway HOME + `ssh-keyscan`, fail closed);
+      plain `cargo test` stays green via `requires_live_server_env`.)
 - [x] Terminal renders VT100 output, 256-color, and true color correctly
       (use the repo's fixture scripts, not production output).
       (2026-10-11; new `tests/fixtures/terminal_{vt100,vt100_scroll,
@@ -57,10 +63,18 @@ Sessions and terminal:
 
 Files and tunnels:
 
-- [ ] SFTP browser lists remote files on a disposable server.
+- [x] SFTP browser lists remote files on a disposable server.
+      (2026-10-07 re-verified 2026-10-11; `sftp_integration` live vs
+      `atmoz/sftp:alpine` :2222: list + upload/download round-trip with
+      strict host-key verification.)
 - [ ] Upload and download complete; pause/resume continues correctly.
 - [x] Local, remote, and dynamic (SOCKS5) forwarding carry traffic. (2026-10-07; all three live vs disposable OpenSSH :2223, banner loopback)
-- [ ] X11 forwarding launches a GUI app from a disposable server.
+- [x] X11 forwarding launches a GUI app from a disposable server.
+      (2026-10-07 re-verified 2026-10-11; `x11_integration` live vs
+      disposable OpenSSH :2223: channel `x11` request accepted and the
+      server sets remote `DISPLAY`; strict host-key verification since
+      2026-10-11 (was `AcceptAll`). Rendering an actual remote app
+      stays manual — needs a local X server.)
 
 Multi-protocol (each needs its live counterpart or emulator):
 

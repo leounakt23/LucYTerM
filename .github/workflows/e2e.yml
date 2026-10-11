@@ -23,6 +23,9 @@ jobs:
       MBXT_SFTP_TEST_ADDR: 127.0.0.1:2222
       MBXT_SFTP_TEST_USER: test
       MBXT_SFTP_TEST_PASSWORD: test
+      MBXT_SSH_TEST_ADDR: 127.0.0.1:2223
+      MBXT_SSH_TEST_USER: test
+      MBXT_SSH_TEST_PASSWORD: test
       MBXT_FORWARD_TEST_ADDR: 127.0.0.1:2223
       MBXT_FORWARD_TEST_USER: test
       MBXT_FORWARD_TEST_PASSWORD: test
@@ -42,6 +45,7 @@ jobs:
       - name: Run live integration tests
         run: |
           cargo test --locked --all-features --test sftp_integration -- --ignored --nocapture
+          cargo test --locked --all-features --test ssh_auth_live -- --ignored --nocapture
           cargo test --locked --all-features --test forward_integration -- --ignored --nocapture
           cargo test --locked --all-features --test x11_integration -- --ignored --nocapture
           cargo test --locked --all-features --test telnet_live -- --ignored --nocapture
