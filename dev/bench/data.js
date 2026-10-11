@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791674921459,
+  "lastUpdate": 1791677199221,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -1325,6 +1325,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000324748,
             "range": "± 114678",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "2c1626a1f539a63e92895089ea840d043ec8d7dd",
+          "message": "test: fixture-driven terminal rendering checks for VT100 and colors",
+          "timestamp": "2026-10-11T02:02:45+02:00",
+          "tree_id": "86d0676c65ff4c80ff7f9f29c44a04ab000eb342",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/2c1626a1f539a63e92895089ea840d043ec8d7dd"
+        },
+        "date": 1791677198512,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 49135,
+            "range": "± 363",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 68779,
+            "range": "± 550",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 142937,
+            "range": "± 638",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 261209,
+            "range": "± 2501",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 8999,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 1733,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 54,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1107,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000415790,
+            "range": "± 143581",
             "unit": "ns/iter"
           }
         ]
