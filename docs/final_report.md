@@ -178,6 +178,19 @@ successes without evidence:
   running Xvfb (e.g. its `/tmp/.X11-unix/X99` socket) breaks the X11
   negative tests (`missing_socket_*`, `without_x_server`,
   `unreachable_display`) — stop Xvfb before `cargo test`.
+- NEW (2026-10-11, resolved): a nested **Xephyr** server (:98,
+  1024x768) delivers XTEST button events as master-device events, so
+  winit 0.30 receives complete press+release pairs. Full session CRUD
+  was clicked through live there — quick-create, dialog create, edit +
+  save, delete, and all three inline validations (empty name, missing
+  RDP host, duplicate name), each confirmed by screenshot and toast
+  (`docs/assets/session-{create,edit,validation,delete}-xephyr.png`).
+  Capture caveat: under Xephyr the wgpu Vulkan WSI presents the
+  framebuffer horizontally circularly shifted (measured S=761 px at
+  1024x768); input coordinates are correct (verified by an iced event
+  probe logging `CursorMoved`), only screenshots are shifted — a
+  left-roll unwrap restores app coordinates. Xvfb remains input-dead
+  as documented above.
 
 ## Future Work
 

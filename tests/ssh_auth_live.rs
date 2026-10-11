@@ -94,10 +94,7 @@ async fn expect_output_contains(
     })
     .await
     .expect("probe output in time");
-    assert!(
-        found,
-        "probe bytes missing from shell output ({buffer:?})"
-    );
+    assert!(found, "probe bytes missing from shell output ({buffer:?})");
 }
 
 fn start_and_probe(spec: &SessionSpec, auth: ConnectionAuth) {

@@ -31,14 +31,18 @@ Sessions and terminal:
 - [x] Sessions can be created, edited, and deleted; validation errors are shown.
       (2026-10-11; per-row Edit/Delete buttons + edit-dialog reuse, shared
       validation incl. duplicate names/port-0/RDP-VNC-host/unknown-id, 8 new
-      unit tests green. Live under Xvfb: dialog opens by click, fields accept
-      input (`docs/assets/sessions-dialog-xvfb.png`), toolbar buttons fire.
-      Dialog/sidebar BUTTON actuation is unproven under Xvfb+XTEST: winit
-      selects XI2 on master devices but this Xvfb delivers XTEST button
-      events only as slave-device raw events (0 device ButtonPress over 6
-      measured clicks), so release-to-publish never completes; untouched
-      Cancel fails identically, ruling out a regression. Needs a real
-      display for the click-through of submit/edit/delete.)
+      unit tests green. FULL GUI CLICK-THROUGH 2026-10-11 under Xephyr
+      (nested X server; XTEST button events reach the app as master-device
+      events there): quick-create (`+ session`), dialog create via
+      `quick connect` (`docs/assets/session-create-xephyr.png`), edit +
+      save with `[ok] Session updated` toast
+      (`docs/assets/session-edit-xephyr.png`), delete with
+      `[info] Session deleted` toast
+      (`docs/assets/session-delete-xephyr.png`), and all three inline
+      validations — empty name, missing RDP host, duplicate name — each
+      shown inline AND as toast (`docs/assets/session-validation-xephyr.png`).
+      The earlier Xvfb-only caveat (no master-device button events) stays
+      on record for Xvfb; Xephyr is the proven interactive path.)
 - [x] SSH connects with password, private key, and agent (three separate
       checks against a disposable OpenSSH container).
       (2026-10-11; new `tests/ssh_auth_live.rs` vs `linuxserver/openssh-server`
@@ -59,8 +63,10 @@ Sessions and terminal:
       display-only MISS: no terminal is reachable headless without
       session input, see the Xvfb input note in final_report.md.)
 - [ ] Terminal copy/paste and mouse reporting work on X11 and Wayland sessions.
-      (Blocked on a real display: Xvfb+XTEST delivers no master-device
-      pointer events, so no click path is drivable headless.)
+      (Method unblocked 2026-10-11: a nested Xephyr server delivers real
+      pointer events — proven by the session CRUD click-through — so the
+      sequence is drivable headless now; the copy/paste + mouse-reporting
+      run itself is still pending. Xvfb+XTEST remains input-dead.)
 - [x] Master password encrypts session storage; wrong password fails closed.
       (2026-10-11; `secure_storage` unit suite, 11 tests: password
       save/load round-trip + cached-key reopen, wrong-password and
