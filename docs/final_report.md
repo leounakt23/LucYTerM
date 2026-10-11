@@ -41,14 +41,11 @@
 - Phase 6 (this report): file-based custom themes + toolbar
   switching, hermetic SSH loopback tests, loopback throughput
   bench, RDP/VNC session creation, packaging static validation.
-- Phase 6 amendment (2026-10-11): session CRUD is now complete in the
-  GUI — per-row Edit/Delete buttons in the sidebar, the new-session
-  dialog reopens prefilled for edits (title/Save switch), and
-  create/update/rename share one validator (non-empty + duplicate
-  names, host required for SSH/Telnet/SFTP/X11/RDP/VNC, port 1–65535
-  with 0 rejected, serial params validated, unknown ids error).
-  Fixed alongside: ids are max+1 (len+1 reused ids after deletes) and
-  deletes toast (were silent). 8 new unit tests; full suite green.
+- Phase 6 amendment (2026-10-11): terminal rendering has fixture
+  coverage — `tests/fixtures/terminal_{vt100,vt100_scroll,colors}.sh`
+  feed deterministic escape streams into a real `Terminal` and assert
+  anchor cells (CUP/ED/EL, scroll overflow, 16/256/truecolor fg+bg,
+  attributes); pixel-level proof stays display-only.
 
 ## Performance Metrics
 
@@ -170,7 +167,10 @@ successes without evidence:
   XI2 on master devices, so release-to-publish never completes for
   buttons inside scrollables (toolbar buttons, text focus, typing, and
   shortcuts all work live). Session CRUD button paths are unit-tested;
-  the click-through needs a real display.
+  the click-through needs a real display. Local reproduction note: a
+  running Xvfb (e.g. its `/tmp/.X11-unix/X99` socket) breaks the X11
+  negative tests (`missing_socket_*`, `without_x_server`,
+  `unreachable_display`) — stop Xvfb before `cargo test`.
 
 ## Future Work
 

@@ -41,8 +41,17 @@ Sessions and terminal:
       display for the click-through of submit/edit/delete.)
 - [ ] SSH connects with password, private key, and agent (three separate
       checks against a disposable OpenSSH container).
-- [ ] Terminal renders VT100 output, 256-color, and true color correctly
+- [x] Terminal renders VT100 output, 256-color, and true color correctly
       (use the repo's fixture scripts, not production output).
+      (2026-10-11; new `tests/fixtures/terminal_{vt100,vt100_scroll,
+      colors}.sh` + `tests/terminal_rendering.rs`: CUP/ED/EL addressing,
+      scroll overflow into history, SGR 16/256/truecolor fg+bg with
+      bold/italic/underline/reverse — all anchor-asserted on real grid
+      cells, fixtures proven deterministic by double-run. Parser fuzz
+      (`vte_parser` 5/5 nightly) and renderer color/instance unit tests
+      cover the rest of the pipeline. On-screen pixel proof stays
+      display-only MISS: no terminal is reachable headless without
+      session input, see the Xvfb input note in final_report.md.)
 - [ ] Terminal copy/paste and mouse reporting work on X11 and Wayland sessions.
 - [ ] Master password encrypts session storage; wrong password fails closed.
 
