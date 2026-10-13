@@ -82,10 +82,9 @@ Sessions and terminal:
       has no cell geometry) — encoder + delivery path unit-tested;
       (b) a real X11 copy bug found live and fixed: throwaway
       clipboard contexts lose selection ownership instantly
-      (`throwaway_set_loses_ownership`), so writes go through a
-      persistent `ClipboardOwner` in app state
-      (`owner_set_survives_reread`; both wired into e2e CI under
-      Xvfb). A minimal per-row **Connect** button was added (the GUI
+      (`owned_writes_survive_throwaway_does_not`, wired into e2e CI
+      under Xvfb — one deterministic test; the first two-test shape
+      raced itself in CI and was merged). A minimal per-row **Connect** button was added (the GUI
       had no path to `ConnectRequested` at all) to make input usable
       and provable; disconnect-from-GUI stays a follow-up.)
 - [x] Master password encrypts session storage; wrong password fails closed.

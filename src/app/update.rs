@@ -826,7 +826,7 @@ fn handle_terminal(app: &mut AppState, msg: TerminalMsg) -> Result<iced::Task<Me
             }
             // Writes go through the persistent selection owner: X11/Wayland
             // content dies with a throwaway context (`ClipboardOwner` docs;
-            // proven by `throwaway_set_loses_ownership`). Headless failure
+            // proven by `owned_writes_survive_throwaway_does_not`). Headless failure
             // surfaces as an honest error, never a silent drop.
             app.clipboard.owner.set_text(&selected).map_err(|_| {
                 "copy failed: clipboard backend unavailable (headless?)".to_string()

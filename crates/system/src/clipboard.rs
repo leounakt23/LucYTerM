@@ -80,35 +80,33 @@ impl ClipboardOwner {
 mod tests {
     use super::*;
 
-    /// X11 ownership probe: set via a throwaway context (as `set_text`
-    /// does), then re-read from a fresh one. Needs a display clipboard
-    /// (Xephyr :98 or real X11); ignored otherwise. Proves the documented
-    /// ownership loss — writes must go through `ClipboardOwner`.
+    /// Clipboard ownership round-trip (single test by design: two tests
+    /// would race — Rust runs them in parallel threads against the same
+    /// selection and steal each other's ownership, which failed CI once).
+    /// Needs a display clipboard (Xvfb in e2e CI, Xephyr :98 or real X11
+    /// locally); ignored otherwise.
     #[test]
-    #[ignore = "needs a display clipboard (Xephyr :98 or real X11)"]
-    fn throwaway_set_loses_ownership() {
-        let probe = format!("mbxt-clip-probe-{}", std::process::id());
-        Clipboard::new().set_text(&probe).expect("set_text works");
-        let back = Clipboard::new().get_text();
+    #[ignore = "needs a display clipboard (Xvfb in e2e CI, Xephyr :98, real X11)"]
+    fn owned_writes_survive_throwaway_does_not() {
+        let pid = std::process::id();
+        // 1. Throwaway write (as `Clipboard::set_text` does) loses
+        //    ownership on drop: re-read must NOT return the probe. This
+        //    documents why every write path uses `ClipboardOwner`.
+        let lost = format!("mbxt-clip-probe-{pid}");
+        Clipboard::new().set_text(&lost).expect("set_text works");
         assert_ne!(
-            back.as_deref(),
-            Some(probe.as_str()),
+            Clipboard::new().get_text().as_deref(),
+            Some(lost.as_str()),
             "throwaway write must NOT survive (else the owner is unnecessary)"
         );
-    }
-
-    /// Owner-kept writes survive re-reads from a fresh context.
-    #[test]
-    #[ignore = "needs a display clipboard (Xephyr :98 or real X11)"]
-    fn owner_set_survives_reread() {
-        let probe = format!("mbxt-clip-owned-{}", std::process::id());
+        // 2. Owner-kept write survives a re-read from a fresh context.
+        let kept = format!("mbxt-clip-owned-{pid}");
         let mut owner = ClipboardOwner::new();
-        owner.set_text(&probe).expect("owner set works");
+        owner.set_text(&kept).expect("owner set works");
         // The owner stays alive while a *fresh* context reads back.
-        let back = Clipboard::new().get_text();
         assert_eq!(
-            back.as_deref(),
-            Some(probe.as_str()),
+            Clipboard::new().get_text().as_deref(),
+            Some(kept.as_str()),
             "owned clipboard content must survive"
         );
         // Debug never leaks content (there is none stored, but assert the shape).

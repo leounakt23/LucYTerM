@@ -202,7 +202,13 @@ successes without evidence:
   through throwaway copypasta contexts lose selection ownership instantly
   (re-read returned `Some("")`), so the app holds a persistent
   `ClipboardOwner`; both directions are ignored-live-tested and wired
-  into e2e CI under Xvfb. Pre-fix observation (not a claim): one
+  into e2e CI under Xvfb. Test-design lesson (2026-10-13, CI red once):
+  the first shape was TWO ignored tests that raced each other — Rust runs
+  tests in parallel threads against the same selection, so they stole
+  each other's ownership and `owner_set_survives_reread` failed under CI
+  while passing locally. Merged into one deterministic test
+  (`owned_writes_survive_throwaway_does_not`); never parallel tests
+  against one selection again. Pre-fix observation (not a claim): one
   mid-sequence capture showed an empty grid with the session still
   Connected; the fixed-build rerun from scratch was clean at every step
   — recorded here, not investigated further. Follow-ups: mouse-drag
