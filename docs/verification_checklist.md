@@ -84,9 +84,16 @@ Sessions and terminal:
       clipboard contexts lose selection ownership instantly
       (`owned_writes_survive_throwaway_does_not`, wired into e2e CI
       under Xvfb — one deterministic test; the first two-test shape
-      raced itself in CI and was merged). A minimal per-row **Connect** button was added (the GUI
-      had no path to `ConnectRequested` at all) to make input usable
-      and provable; disconnect-from-GUI stays a follow-up.)
+      raced itself in CI and was merged). A minimal per-row **Connect**
+      button was added (the GUI had no path to `ConnectRequested` at
+      all) to make input usable and provable, plus the symmetric
+      per-row **Disconnect** button (2026-10-14; `DisconnectRequested`
+      handler already cleaned SFTP/forward/X11/VNC, new
+      `disconnect_request_sends_shutdown_to_actor` update test asserts
+      the `Shutdown` control message; live Xephyr roundtrip
+      `docs/assets/session-{connect,disconnect}-xephyr.png`: connected
+      `echo (live)` with Disconnect offered → click → `disconnected`
+      with Connect offered back.)
 - [x] Master password encrypts session storage; wrong password fails closed.
       (2026-10-11; `secure_storage` unit suite, 11 tests: password
       save/load round-trip + cached-key reopen, wrong-password and

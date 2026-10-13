@@ -79,9 +79,9 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             // Per-session edit/delete (verification checklist: sessions
             // can be created, edited, and deleted; deletes are immediate
             // with a toast, mirroring tunnel deletes).
-            // Connect affordance (#23): disconnected sessions offer one
-            // click to dial (terminal input needs a live actor); connected
-            // rows already show the ● marker.
+            // Connect/disconnect affordance (#23): disconnected sessions
+            // offer one click to dial (terminal input needs a live actor);
+            // connected rows offer disconnect instead (● marker stays).
             if !connected {
                 session_row = session_row.push(
                     crate::ui::theme::chrome_button(
@@ -90,6 +90,16 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
                         button(text("Connect").size(11)),
                     )
                     .on_press(Message::Connection(ConnectionMsg::ConnectRequested(id)))
+                    .padding([2, 6]),
+                );
+            } else {
+                session_row = session_row.push(
+                    crate::ui::theme::chrome_button(
+                        app.theme.clone(),
+                        &format!("disconnect-{id}"),
+                        button(text("Disconnect").size(11)),
+                    )
+                    .on_press(Message::Connection(ConnectionMsg::DisconnectRequested(id)))
                     .padding([2, 6]),
                 );
             }
@@ -240,5 +250,20 @@ mod tests {
         let app = app_with_sessions();
         let _element = view(&app);
         let _actions = quick_actions();
+    }
+
+    #[test]
+    fn connected_rows_offer_disconnect() {
+        let mut app = app_with_sessions();
+        app.session_states.insert(1, SessionState::Connected);
+        // Exercises the Disconnect branch of the row builder.
+        let _element = view(&app);
+        let groups = grouped_sessions(&app);
+        let row = groups
+            .iter()
+            .flat_map(|(_, rows)| rows.iter())
+            .find(|(id, _, _, _)| *id == 1)
+            .expect("session row");
+        assert!(row.2, "connected flag set");
     }
 }

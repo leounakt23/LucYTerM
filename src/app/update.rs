@@ -4945,6 +4945,23 @@ mod tests {
     }
 
     #[test]
+    fn disconnect_request_sends_shutdown_to_actor() {
+        use crate::connection::actor::{SessionCtl, SessionManager};
+
+        let mut state = app();
+        let id = push_session(&mut state, "web-1");
+        let mut rx = SessionManager::shared().inject_test_target(id);
+        update(
+            &mut state,
+            Message::Connection(ConnectionMsg::DisconnectRequested(id)),
+        );
+        match rx.try_recv() {
+            Ok(SessionCtl::Shutdown) => {},
+            other => panic!("expected Shutdown, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn connected_updates_status_and_shared_map() {
         let mut state = app();
         let id = push_session(&mut state, "web-1");

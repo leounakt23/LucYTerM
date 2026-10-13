@@ -213,9 +213,10 @@ successes without evidence:
   Connected; the fixed-build rerun from scratch was clean at every step
   — recorded here, not investigated further. Follow-ups: mouse-drag
   selection + click-to-cell mapping (needs the interactive terminal
-  widget), disconnect-from-GUI (a Connect button was added because the
-  GUI had no path to `ConnectRequested` at all; disconnect still has
-  none).
+  widget). Connect/disconnect symmetry closed 2026-10-14: per-row
+  Disconnect button added next to Connect (the handler already tore
+  down SFTP/forward/X11/VNC), proven by a live Xephyr connect→
+  disconnect roundtrip (`session-{connect,disconnect}-xephyr.png`).
 
 ## Future Work
 
