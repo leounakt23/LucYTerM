@@ -207,9 +207,13 @@ pub struct MultiExecMode {
 
 /// Clipboard mirror kept for dedup in the change watcher + privacy wipe on
 /// screen lock (never displayed, never logged — security §6.2).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ClipboardState {
     pub last_content: String,
+    /// Persistent selection owner: X11/Wayland clipboard content dies with
+    /// the owning connection, so writes go through here, never a throwaway
+    /// context (`ClipboardOwner` docs). Not cloned with the mirror.
+    pub owner: mbxt_system::clipboard::ClipboardOwner,
 }
 
 /// Shell/UI layout state (feature matrix #41–45).

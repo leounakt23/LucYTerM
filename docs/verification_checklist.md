@@ -62,11 +62,32 @@ Sessions and terminal:
       cover the rest of the pipeline. On-screen pixel proof stays
       display-only MISS: no terminal is reachable headless without
       session input, see the Xvfb input note in final_report.md.)
-- [ ] Terminal copy/paste and mouse reporting work on X11 and Wayland sessions.
-      (Method unblocked 2026-10-11: a nested Xephyr server delivers real
-      pointer events — proven by the session CRUD click-through — so the
-      sequence is drivable headless now; the copy/paste + mouse-reporting
-      run itself is still pending. Xvfb+XTEST remains input-dead.)
+- [x] Terminal copy/paste and mouse reporting work on X11 and Wayland sessions.
+      (2026-10-13; slice implemented + proven live under Xephyr against
+      disposable `busybox telnetd -l /bin/cat` :23232. Typing: unified
+      iced `listen_with` subscription preserves key text and routes only
+      `Ignored` presses to the visible PTY (`TerminalMsg::KeyInput`,
+      mode-aware `encode_key`; `Ctrl+C` still sends ETX, shortcuts and
+      Meta keys never leak, dead PTYs eat keystrokes silently, modals
+      capture their own keys). Copy/paste: `Ctrl+Shift+A` selects the
+      visible grid, `Ctrl+Shift+C` copies trimmed selection text,
+      `Ctrl+Shift+V` pastes via the 1 s clipboard mirror with 2004
+      wrapping. Mouse: `encode_mouse` (X10 + SGR/1006, range-clamped)
+      with a `MouseInput` delivery path honoring the session mode.
+      Live evidence: `docs/assets/terminal-{live-session,typing,copy,
+      paste}-xephyr.png` — typed `step1` echoed, 25-char trimmed copy,
+      pasted screen lines echoed back by the remote `cat`.
+      Honest partials: (a) mouse-*drag selection* and click-to-cell
+      reporting need the interactive terminal widget (placeholder text
+      has no cell geometry) — encoder + delivery path unit-tested;
+      (b) a real X11 copy bug found live and fixed: throwaway
+      clipboard contexts lose selection ownership instantly
+      (`throwaway_set_loses_ownership`), so writes go through a
+      persistent `ClipboardOwner` in app state
+      (`owner_set_survives_reread`; both wired into e2e CI under
+      Xvfb). A minimal per-row **Connect** button was added (the GUI
+      had no path to `ConnectRequested` at all) to make input usable
+      and provable; disconnect-from-GUI stays a follow-up.)
 - [x] Master password encrypts session storage; wrong password fails closed.
       (2026-10-11; `secure_storage` unit suite, 11 tests: password
       save/load round-trip + cached-key reopen, wrong-password and

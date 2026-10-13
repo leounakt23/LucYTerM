@@ -678,6 +678,43 @@ fn broadcast_multicast(
     Ok(iced::Task::none())
 }
 
+/// Session behind the focused tab when it hosts a terminal (#23 input
+/// routing: typing, copy/paste, and mouse all target the visible PTY).
+fn active_terminal_session(app: &AppState) -> Option<SessionId> {
+    app.tabs.get(app.active_tab).and_then(|tab| match tab.kind {
+        TabKind::TerminalPlaceholder(id) => Some(id),
+        _ => None,
+    })
+}
+
+/// Whether keystrokes/mouse may hit the wire: only a live actor receives
+/// input (a dead PTY eats keystrokes silently instead of toast-spamming).
+/// Explicit actions (paste) still attempt delivery so failures surface.
+fn session_is_live(app: &AppState, id: SessionId) -> bool {
+    matches!(
+        app.session_states.get(&id),
+        Some(SessionState::Connected) | Some(SessionState::Connecting)
+    )
+}
+
+/// Shared PTY delivery: activity stamp, macro-recorder hook, then
+/// multi-exec broadcast or a direct session write.
+fn deliver_input(
+    app: &mut AppState,
+    id: SessionId,
+    bytes: Vec<u8>,
+) -> Result<iced::Task<Message>, String> {
+    app.last_activity.insert(id, now_secs());
+    // Macro recorder hook (Prompt 5.2): O(1) append, never blocks.
+    app.macro_recorder.observe_input(id, &bytes);
+    if app.multi_exec_mode.enabled {
+        broadcast_multicast(app, id, bytes)
+    } else {
+        crate::connection::actor::SessionManager::shared().write(id, bytes)?;
+        Ok(iced::Task::none())
+    }
+}
+
 fn handle_terminal(app: &mut AppState, msg: TerminalMsg) -> Result<iced::Task<Message>, String> {
     match msg {
         TerminalMsg::Output(id, bytes) => {
@@ -737,16 +774,140 @@ fn handle_terminal(app: &mut AppState, msg: TerminalMsg) -> Result<iced::Task<Me
             }
             Ok(iced::Task::none())
         },
-        TerminalMsg::Input(id, bytes) => {
-            app.last_activity.insert(id, now_secs());
-            // Macro recorder hook (Prompt 5.2): O(1) append, never blocks.
-            app.macro_recorder.observe_input(id, &bytes);
-            if app.multi_exec_mode.enabled {
-                broadcast_multicast(app, id, bytes)
-            } else {
-                crate::connection::actor::SessionManager::shared().write(id, bytes)?;
-                Ok(iced::Task::none())
+        TerminalMsg::Input(id, bytes) => deliver_input(app, id, bytes),
+        TerminalMsg::KeyInput {
+            key,
+            text,
+            ctrl,
+            alt,
+        } => {
+            let Some(id) = active_terminal_session(app) else {
+                return Ok(iced::Task::none());
+            };
+            // Modal dialogs own the keyboard; a stray KeyInput while one is
+            // open is dropped rather than sent to the PTY.
+            if app.new_session.is_some() || app.auth_dialog.is_some() {
+                return Ok(iced::Task::none());
             }
+            if !session_is_live(app, id) {
+                return Ok(iced::Task::none());
+            }
+            let mode = app
+                .terminals
+                .get(&id)
+                .map(|terminal| terminal.mode.clone())
+                .unwrap_or_default();
+            let bytes = match (ctrl, alt, text) {
+                // Printable typing: the OS already applied Shift/layout.
+                (false, false, Some(produced)) => produced.into_bytes(),
+                _ => mbxt_terminal::input::encode_key(key, ctrl, alt, &mode),
+            };
+            if bytes.is_empty() {
+                return Ok(iced::Task::none());
+            }
+            deliver_input(app, id, bytes)
+        },
+        TerminalMsg::CopyActive => {
+            let Some(id) = active_terminal_session(app) else {
+                return Ok(iced::Task::none());
+            };
+            let selected = app
+                .terminals
+                .get(&id)
+                .and_then(|terminal| terminal.selection_text())
+                .unwrap_or_default();
+            if selected.is_empty() {
+                app.notify(
+                    Level::Info,
+                    "Nothing selected",
+                    "use Ctrl+Shift+A to select the visible screen first",
+                );
+                return Ok(iced::Task::none());
+            }
+            // Writes go through the persistent selection owner: X11/Wayland
+            // content dies with a throwaway context (`ClipboardOwner` docs;
+            // proven by `throwaway_set_loses_ownership`). Headless failure
+            // surfaces as an honest error, never a silent drop.
+            app.clipboard.owner.set_text(&selected).map_err(|_| {
+                "copy failed: clipboard backend unavailable (headless?)".to_string()
+            })?;
+            app.notify(
+                Level::Info,
+                "Copied to clipboard",
+                &format!("{} characters", selected.chars().count()),
+            );
+            Ok(iced::Task::none())
+        },
+        TerminalMsg::PasteActive => {
+            let Some(id) = active_terminal_session(app) else {
+                return Ok(iced::Task::none());
+            };
+            // The 1 s clipboard watcher mirrors system content into
+            // `last_content`, so paste never blocks on a backend call.
+            let text = app.clipboard.last_content.clone();
+            if text.is_empty() {
+                app.notify(Level::Info, "Clipboard empty", "copy text locally first");
+                return Ok(iced::Task::none());
+            }
+            let mode = app
+                .terminals
+                .get(&id)
+                .map(|terminal| terminal.mode.clone())
+                .unwrap_or_default();
+            deliver_input(app, id, mbxt_terminal::input::encode_paste(&text, &mode))
+        },
+        TerminalMsg::SelectAllActive => {
+            let Some(id) = active_terminal_session(app) else {
+                return Ok(iced::Task::none());
+            };
+            let Some(terminal) = app.terminals.get_mut(&id) else {
+                app.notify(
+                    Level::Info,
+                    "No terminal output yet",
+                    "connect first, then select",
+                );
+                return Ok(iced::Task::none());
+            };
+            let (cols, rows) = (terminal.grid.cols(), terminal.grid.rows());
+            terminal.start_selection(
+                mbxt_terminal::Pos { row: 0, col: 0 },
+                mbxt_terminal::SelectionMode::Keyboard,
+            );
+            terminal.update_selection(mbxt_terminal::Pos {
+                row: rows.saturating_sub(1),
+                col: cols.saturating_sub(1),
+            });
+            app.notify(
+                Level::Info,
+                "Screen selected",
+                "Ctrl+Shift+C copies it to the clipboard",
+            );
+            Ok(iced::Task::none())
+        },
+        TerminalMsg::MouseInput {
+            button,
+            pressed,
+            col,
+            row,
+        } => {
+            let Some(id) = active_terminal_session(app) else {
+                return Ok(iced::Task::none());
+            };
+            if !session_is_live(app, id) {
+                return Ok(iced::Task::none());
+            }
+            let mode = app
+                .terminals
+                .get(&id)
+                .map(|terminal| terminal.mode.clone())
+                .unwrap_or_default();
+            // Empty when reporting is off (or X10 out of range): selection
+            // stays a local gesture and nothing hits the wire.
+            let bytes = mbxt_terminal::input::encode_mouse(button, pressed, col, row, &mode);
+            if bytes.is_empty() {
+                return Ok(iced::Task::none());
+            }
+            deliver_input(app, id, bytes)
         },
         TerminalMsg::Bell(id) => {
             app.notify(Level::Info, "Terminal bell", &format!("session #{id}"));
@@ -4982,6 +5143,239 @@ mod tests {
             .items
             .iter()
             .any(|n| n.title == "Multi-exec delivery failed"));
+    }
+
+    /// Live terminal tab fixture: session + mock actor + focused tab + grid.
+    fn terminal_tab(
+        state: &mut AppState,
+        id: SessionId,
+    ) -> tokio::sync::mpsc::Receiver<crate::connection::actor::SessionCtl> {
+        use crate::connection::actor::SessionManager;
+        state.sessions.push(mbxt_core::Session {
+            id,
+            spec: spec("tty"),
+            state: SessionState::Disconnected,
+        });
+        state.tabs.push(Tab {
+            title: "tty".into(),
+            kind: TabKind::TerminalPlaceholder(id),
+        });
+        state.active_tab = state.tabs.len() - 1;
+        state
+            .terminals
+            .insert(id, mbxt_terminal::Terminal::new(80, 24, 100));
+        state.session_states.insert(id, SessionState::Connected);
+        SessionManager::shared().inject_test_target(id)
+    }
+
+    #[test]
+    fn typed_keys_reach_the_visible_session() {
+        use crate::connection::actor::SessionCtl;
+        use mbxt_terminal::input::Key as TermKey;
+
+        let mut state = app();
+        let id = 9401;
+        let mut rx = terminal_tab(&mut state, id);
+
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::KeyInput {
+                key: TermKey::Char('x'),
+                text: Some("x".into()),
+                ctrl: false,
+                alt: false,
+            }),
+        );
+        match rx.try_recv() {
+            Ok(SessionCtl::Write(bytes)) => assert_eq!(bytes, b"x"),
+            other => panic!("expected typed write, got {other:?}"),
+        }
+        // Special keys encode per mode (application cursor off → CSI).
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::KeyInput {
+                key: TermKey::Enter,
+                text: None,
+                ctrl: false,
+                alt: false,
+            }),
+        );
+        match rx.try_recv() {
+            Ok(SessionCtl::Write(bytes)) => assert_eq!(bytes, b"\r"),
+            other => panic!("expected enter write, got {other:?}"),
+        }
+        // Ctrl+C (no shift) sends ETX, never the copy binding.
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::KeyInput {
+                key: TermKey::Char('c'),
+                text: None,
+                ctrl: true,
+                alt: false,
+            }),
+        );
+        match rx.try_recv() {
+            Ok(SessionCtl::Write(bytes)) => assert_eq!(bytes, vec![3]),
+            other => panic!("expected ETX write, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn dead_sessions_eat_keystrokes_silently() {
+        let mut state = app();
+        let id = 9405;
+        let mut rx = terminal_tab(&mut state, id);
+        // Mirror says dead: no write, no toast storm.
+        state.session_states.insert(id, SessionState::Disconnected);
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::KeyInput {
+                key: mbxt_terminal::input::Key::Char('x'),
+                text: Some("x".into()),
+                ctrl: false,
+                alt: false,
+            }),
+        );
+        assert!(rx.try_recv().is_err(), "dead PTY eats keystrokes");
+        assert!(state.notifications.items.is_empty());
+    }
+
+    #[test]
+    fn key_input_without_terminal_tab_is_dropped() {
+        let mut state = app();
+        let _id = push_session(&mut state, "plain");
+        // No tabs at all: nothing to type into, no notification, no panic.
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::KeyInput {
+                key: mbxt_terminal::input::Key::Char('x'),
+                text: Some("x".into()),
+                ctrl: false,
+                alt: false,
+            }),
+        );
+        assert!(state.notifications.items.is_empty());
+    }
+
+    #[test]
+    fn paste_uses_the_clipboard_mirror_with_mode_wrapping() {
+        use crate::connection::actor::SessionCtl;
+
+        let mut state = app();
+        let id = 9402;
+        let mut rx = terminal_tab(&mut state, id);
+
+        // Empty mirror notifies instead of writing.
+        update(&mut state, Message::Terminal(TerminalMsg::PasteActive));
+        assert!(state
+            .notifications
+            .items
+            .iter()
+            .any(|n| n.title == "Clipboard empty"));
+        assert!(rx.try_recv().is_err(), "no write on empty clipboard");
+
+        state.clipboard.last_content = "echo hi".into();
+        update(&mut state, Message::Terminal(TerminalMsg::PasteActive));
+        match rx.try_recv() {
+            Ok(SessionCtl::Write(bytes)) => assert_eq!(bytes, b"echo hi"),
+            other => panic!("expected paste write, got {other:?}"),
+        }
+
+        // Bracketed-paste mode (2004) wraps the payload.
+        state
+            .terminals
+            .get_mut(&id)
+            .expect("terminal")
+            .mode
+            .bracketed_paste = true;
+        update(&mut state, Message::Terminal(TerminalMsg::PasteActive));
+        match rx.try_recv() {
+            Ok(SessionCtl::Write(bytes)) => assert_eq!(bytes, b"\x1b[200~echo hi\x1b[201~"),
+            other => panic!("expected wrapped paste, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn select_all_then_copy_paths() {
+        let mut state = app();
+        let id = 9403;
+        let _rx = terminal_tab(&mut state, id);
+
+        // Nothing selected: guidance, not an error.
+        update(&mut state, Message::Terminal(TerminalMsg::CopyActive));
+        assert!(state
+            .notifications
+            .items
+            .iter()
+            .any(|n| n.title == "Nothing selected"));
+
+        // Select-all covers the visible grid; selection text holds output.
+        state
+            .terminals
+            .get_mut(&id)
+            .expect("terminal")
+            .write_bytes(b"hello");
+        update(&mut state, Message::Terminal(TerminalMsg::SelectAllActive));
+        let selected = state.terminals.get(&id).expect("terminal").selection_text();
+        assert!(selected.expect("selection").contains("hello"));
+
+        // Headless CI has no clipboard backend: the failure surfaces as an
+        // honest error notification, never a panic or silent drop.
+        update(&mut state, Message::Terminal(TerminalMsg::CopyActive));
+        assert!(
+            has_error(&state)
+                || state
+                    .notifications
+                    .items
+                    .iter()
+                    .any(|n| n.title == "Copied to clipboard"),
+            "copy resolves to a notification either way"
+        );
+    }
+
+    #[test]
+    fn mouse_input_encodes_per_mode_and_drops_when_off() {
+        use crate::connection::actor::SessionCtl;
+        use mbxt_terminal::input::MouseButton;
+
+        let mut state = app();
+        let id = 9404;
+        let mut rx = terminal_tab(&mut state, id);
+
+        // Reporting off: nothing hits the wire.
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::MouseInput {
+                button: MouseButton::Left,
+                pressed: true,
+                col: 0,
+                row: 0,
+            }),
+        );
+        assert!(rx.try_recv().is_err(), "no write while reporting is off");
+
+        // X10 on: press encodes to a 6-byte sequence.
+        state
+            .terminals
+            .get_mut(&id)
+            .expect("terminal")
+            .mode
+            .mouse_mode = mbxt_terminal::MouseMode::X10;
+        update(
+            &mut state,
+            Message::Terminal(TerminalMsg::MouseInput {
+                button: MouseButton::Left,
+                pressed: true,
+                col: 0,
+                row: 0,
+            }),
+        );
+        match rx.try_recv() {
+            Ok(SessionCtl::Write(bytes)) => {
+                assert_eq!(bytes, vec![0x1b, b'[', b'M', 32, 33, 33])
+            },
+            other => panic!("expected mouse write, got {other:?}"),
+        }
     }
 
     #[test]

@@ -4,7 +4,7 @@
 
 use iced::widget::{button, column, container, row, scrollable, text, text_input};
 
-use crate::app::messages::{Message, UiMsg};
+use crate::app::messages::{ConnectionMsg, Message, UiMsg};
 use crate::app::state::AppState;
 
 /// Sidebar contents: search + grouped session list.
@@ -79,6 +79,20 @@ pub fn view(app: &AppState) -> iced::Element<'_, Message> {
             // Per-session edit/delete (verification checklist: sessions
             // can be created, edited, and deleted; deletes are immediate
             // with a toast, mirroring tunnel deletes).
+            // Connect affordance (#23): disconnected sessions offer one
+            // click to dial (terminal input needs a live actor); connected
+            // rows already show the ● marker.
+            if !connected {
+                session_row = session_row.push(
+                    crate::ui::theme::chrome_button(
+                        app.theme.clone(),
+                        &format!("connect-{id}"),
+                        button(text("Connect").size(11)),
+                    )
+                    .on_press(Message::Connection(ConnectionMsg::ConnectRequested(id)))
+                    .padding([2, 6]),
+                );
+            }
             session_row = session_row.push(
                 crate::ui::theme::chrome_button(
                     app.theme.clone(),

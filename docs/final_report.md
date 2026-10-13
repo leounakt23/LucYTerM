@@ -191,6 +191,25 @@ successes without evidence:
   probe logging `CursorMoved`), only screenshots are shifted — a
   left-roll unwrap restores app coordinates. Xvfb remains input-dead
   as documented above.
+- NEW (2026-10-13): terminal input slice (typing, select-all/copy/paste,
+  mouse-reporting encoder + delivery) implemented and proven live under
+  Xephyr against disposable `busybox telnetd` (`terminal-{live-session,
+  typing,copy,paste}-xephyr.png`). Calibration correction: the WSI shift
+  is NOT stable per run — it varies per present (observed 1017, 0, 15,
+  58-spurious), consistent with swapchain-image cycling. Every capture is
+  now auto-calibrated (button-blue templates for toolbar + dialog views,
+  cut-line split cost as tiebreak). Live-found X11 clipboard bug: writes
+  through throwaway copypasta contexts lose selection ownership instantly
+  (re-read returned `Some("")`), so the app holds a persistent
+  `ClipboardOwner`; both directions are ignored-live-tested and wired
+  into e2e CI under Xvfb. Pre-fix observation (not a claim): one
+  mid-sequence capture showed an empty grid with the session still
+  Connected; the fixed-build rerun from scratch was clean at every step
+  — recorded here, not investigated further. Follow-ups: mouse-drag
+  selection + click-to-cell mapping (needs the interactive terminal
+  widget), disconnect-from-GUI (a Connect button was added because the
+  GUI had no path to `ConnectRequested` at all; disconnect still has
+  none).
 
 ## Future Work
 

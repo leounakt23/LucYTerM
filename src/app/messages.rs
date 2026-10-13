@@ -48,6 +48,34 @@ pub enum TerminalMsg {
     Output(SessionId, Vec<u8>),
     /// Raw input bytes destined for the PTY (keyboard, multi-exec).
     Input(SessionId, Vec<u8>),
+    /// A key press on the active terminal tab (from the global keyboard
+    /// subscription; resolved to the visible session in `update`). `text`
+    /// is the produced text for printable keys; special keys arrive as
+    /// `key` with `text == None` and are encoded per the session mode.
+    KeyInput {
+        key: mbxt_terminal::input::Key,
+        text: Option<String>,
+        ctrl: bool,
+        alt: bool,
+    },
+    /// Copy the active terminal's selection to the system clipboard
+    /// (`Ctrl+Shift+C`); selects nothing by itself.
+    CopyActive,
+    /// Paste the clipboard mirror into the active terminal (`Ctrl+Shift+V`,
+    /// bracketed-paste wrapped when the remote end enabled 2004).
+    PasteActive,
+    /// Select the whole visible grid of the active terminal
+    /// (`Ctrl+Shift+A`; keyboard-driven selection for copy).
+    SelectAllActive,
+    /// A mouse event on the active terminal tab at zero-based cell
+    /// coordinates (encoded per the session mouse mode; dropped when
+    /// reporting is off).
+    MouseInput {
+        button: mbxt_terminal::input::MouseButton,
+        pressed: bool,
+        col: u16,
+        row: u16,
+    },
     Bell(SessionId),
     TitleChanged(SessionId, String),
 }

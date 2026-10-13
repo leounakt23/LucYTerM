@@ -247,23 +247,30 @@ impl Terminal {
     }
 
     /// Selected text (simple linear sweep between normalized bounds).
+    /// Trailing blanks of every row are trimmed so copies don't carry
+    /// full-width padding.
     pub fn selection_text(&self) -> Option<String> {
         let selection = self.selection.as_ref()?;
         let (start, end) = selection.bounds();
-        let mut out = String::new();
+        let mut rows = Vec::new();
         for row in start.row..=end.row {
+            let mut line = String::new();
             for col in start.col..=end.col {
                 if let Some(cell) = self.grid.get_cell(row, col) {
                     if cell.width > 0 {
-                        out.push(cell.ch);
+                        line.push(cell.ch);
                     }
                 }
             }
-            if row < end.row {
-                out.push('\n');
-            }
+            // First/last rows keep only their selected span; middle rows
+            // are full-width by construction.
+            rows.push(line.trim_end().to_string());
         }
-        Some(out.trim_end_matches('\n').to_string())
+        // Drop untouched trailing rows (a select-all over empty space).
+        while rows.last().is_some_and(|line| line.is_empty()) {
+            rows.pop();
+        }
+        Some(rows.join("\n"))
     }
 
     // -- internal helpers shared with the Perform impl (pub(crate)) --------
@@ -494,5 +501,15 @@ mod tests {
         term.start_selection(Pos { row: 0, col: 0 }, SelectionMode::Mouse);
         term.update_selection(Pos { row: 0, col: 4 });
         assert_eq!(term.selection_text().as_deref(), Some("hello"));
+    }
+
+    #[test]
+    fn selection_text_trims_row_padding_and_empty_tail() {
+        let mut term = Terminal::new(10, 3, 0);
+        term.write_bytes(b"hi");
+        // Whole-grid selection must not carry full-width space padding.
+        term.start_selection(Pos { row: 0, col: 0 }, SelectionMode::Keyboard);
+        term.update_selection(Pos { row: 2, col: 9 });
+        assert_eq!(term.selection_text().as_deref(), Some("hi"));
     }
 }

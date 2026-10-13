@@ -16,8 +16,11 @@ interactive prompts. Passwords are not written to logs.
 
 ## Terminal input
 
-Type normally, paste with the platform clipboard, and use the terminal's
-native mouse selection. Multi-exec mode can broadcast input to selected
+Type normally into the focused terminal tab. `Ctrl+Shift+A` selects the
+visible screen, `Ctrl+Shift+C` copies the selection to the clipboard, and
+`Ctrl+Shift+V` pastes (bracketed-paste wrapped when the remote end enabled
+it). Mouse-drag selection and click-to-cell mouse reporting land with the
+interactive terminal widget. Multi-exec mode can broadcast input to selected
 sessions; keep it disabled when typing commands intended for one host.
 
 ## Headless session operations

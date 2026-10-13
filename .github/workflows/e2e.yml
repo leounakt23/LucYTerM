@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.85.1
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev busybox
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev busybox xvfb
       - uses: Swatinem/rust-cache@v2
         with:
           shared-key: e2e-${{ hashFiles('Cargo.lock') }}
@@ -50,6 +50,10 @@ jobs:
           cargo test --locked --all-features --test x11_integration -- --ignored --nocapture
           cargo test --locked --all-features --test telnet_live -- --ignored --nocapture
           MBXT_VNC_TEST_ADDR=127.0.0.1:5901 cargo test --locked --all-features --test vnc_integration -- --ignored --nocapture
+          # Clipboard ownership needs any X server (no pointer input, so
+          # Xvfb is fine): throwaway writes must lose ownership (documents
+          # why the persistent owner exists) and owned writes must survive.
+          xvfb-run -a cargo test --locked -p mbxt-system --lib clipboard -- --ignored --nocapture
       - name: Service logs
         if: failure()
         run: docker compose -f docker/compose.e2e.yml logs
