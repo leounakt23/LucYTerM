@@ -161,6 +161,14 @@ successes without evidence:
 - RDP is an external-process integration, not a native binding; VNC, serial,
   and some protocol paths require live counterparts to verify.
 - Performance numbers are targets until measured per the checklist.
+- NEW (2026-10-14): first real perf numbers (`docs/performance.md`
+  Results Log, all independently re-run except where marked).
+  60 FPS: PASS on the headless CPU path (p95 55 µs, 100% ≤ 16.7 ms;
+  compositor present unmeasured). SSH: 108 ms median, ~28× headroom.
+  Transfer: SPLIT — upload 433 MB/s passes, download 37 MB/s fails;
+  1 GiB stall finding owned by the connections workstream (russh
+  relevance noted for the migration decision). 10-session memory:
+  harness proxy flat at ~171 MB peak, app-level 8 h soak UNMEASURED.
 - NEW (2026-10-14): secrets-hardening slice — audit-found RDP password
   leak via `SpawnPlan` derived `Debug` (`Zeroizing` forwards `Debug` to
   cleartext) fixed with hand-impl (`<redacted>`); `SessionSpec`/

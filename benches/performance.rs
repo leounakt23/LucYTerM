@@ -121,6 +121,133 @@ fn transfer_loopback(c: &mut Criterion) {
     group.finish();
 }
 
+/// Headless frame-time capture (M3 60FPS workstream): full-frame renders
+/// through `TerminalRenderer::render` (CPU fallback path, no GPU needed).
+/// The `headless_flood_240frames` bench pushes every `total_us` into a
+/// `FrameTimeRing` and prints p50/p95/%<16.7ms; the per-size benches give
+/// Criterion means for regression tracking.
+fn terminal_frame_render(c: &mut Criterion) {
+    use mbxt_terminal::renderer::{FrameTimeRing, TerminalRenderer};
+    use std::time::{Duration, Instant};
+
+    // Deterministic flood: printable ASCII + SGR color + CJK wide chars.
+    fn flood_bytes(cols: u16, rows: u16) -> Vec<u8> {
+        let mut out = Vec::new();
+        for row in 0..rows {
+            out.extend_from_slice(b"\x1b[1;32m");
+            for _ in 0..cols {
+                out.extend_from_slice("A漢".as_bytes());
+            }
+            out.extend_from_slice(b"\x1b[0m\r\n");
+            let _ = row;
+        }
+        out
+    }
+
+    let mut group = c.benchmark_group("terminal_frame");
+    for (name, cols, rows) in [("80x24", 80_u16, 24_u16), ("160x50", 160, 50)] {
+        group.bench_function(format!("headless_render_{name}"), |b| {
+            let flood = flood_bytes(cols, rows);
+            b.iter(|| {
+                let mut terminal = mbxt_terminal::Terminal::new(cols, rows, 10_000);
+                terminal.write_bytes(black_box(flood.as_slice()));
+                let mut renderer = TerminalRenderer::new_headless(13);
+                let stats = renderer.render(&terminal).expect("headless render");
+                black_box(stats.total_us);
+            });
+        });
+    }
+    group.bench_function("headless_flood_240frames", |b| {
+        b.iter_custom(|iters| {
+            let flood = flood_bytes(80, 24);
+            let mut ring = FrameTimeRing::new(240);
+            let started = Instant::now();
+            for _ in 0..iters {
+                let mut terminal = mbxt_terminal::Terminal::new(80, 24, 10_000);
+                terminal.write_bytes(flood.as_slice());
+                let mut renderer = TerminalRenderer::new_headless(13);
+                // 240 consecutive frames on one renderer (atlas warms up,
+                // ring holds the steady state).
+                for _ in 0..240 {
+                    if let Ok(stats) = renderer.render(&terminal) {
+                        ring.push_us(stats.total_us);
+                    }
+                }
+            }
+            let elapsed = started.elapsed();
+            let p50 = ring.p50_us().unwrap_or(0);
+            let p95 = ring.p95_us().unwrap_or(0);
+            let under = ring.fraction_under(Duration::from_micros(16_700)) * 100.0;
+            eprintln!(
+                "[measure] headless 80x24 flood: p50={p50}us p95={p95}us <16.7ms={under:.1}% n={} (ring cap {})",
+                ring.len(),
+                ring.capacity()
+            );
+            elapsed
+        });
+    });
+    group.finish();
+}
+
+/// 10-session soak RSS sampler (M5 memory workstream): hold ten live
+/// 80x24 terminals + headless renderers, render one frame each, and report
+/// VmRSS/VmHWM from `/proc/self/status`. Flat slope == no per-session leak;
+/// absolute peak is host-specific (record alongside the number).
+fn session_soak_rss(c: &mut Criterion) {
+    use mbxt_terminal::renderer::TerminalRenderer;
+
+    fn rss_kb() -> (u64, u64) {
+        let text = std::fs::read_to_string("/proc/self/status").unwrap_or_default();
+        let mut rss = 0u64;
+        let mut hwm = 0u64;
+        for line in text.lines() {
+            if let Some(rest) = line.strip_prefix("VmRSS:") {
+                rss = rest
+                    .split_whitespace()
+                    .next()
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(0);
+            } else if let Some(rest) = line.strip_prefix("VmHWM:") {
+                hwm = rest
+                    .split_whitespace()
+                    .next()
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(0);
+            }
+        }
+        (rss, hwm)
+    }
+
+    c.bench_function("session_soak_10x80x24_rss", |b| {
+        b.iter_custom(|iters| {
+            let started = std::time::Instant::now();
+            for _ in 0..iters {
+                let before = rss_kb().0;
+                let mut sessions = Vec::new();
+                for i in 0..10_u32 {
+                    let mut terminal = mbxt_terminal::Terminal::new(80, 24, 10_000);
+                    let line = format!("session {i} soak line\r\n");
+                    for _ in 0..24 {
+                        terminal.write_bytes(line.as_bytes());
+                    }
+                    let mut renderer = TerminalRenderer::new_headless(13);
+                    let _ = renderer.render(&terminal);
+                    sessions.push((terminal, renderer));
+                }
+                let (after, hwm) = rss_kb();
+                let delta = after.saturating_sub(before);
+                eprintln!(
+                    "[measure] 10-session soak: VmRSS={after}kB VmHWM={hwm}kB delta={delta}kB sessions={} (~{}kB/session)",
+                    sessions.len(),
+                    delta / 10,
+                );
+                black_box(sessions.len());
+            }
+            started.elapsed()
+        });
+    });
+}
+
 criterion_group!(
     performance,
     terminal_scroll,
@@ -128,6 +255,8 @@ criterion_group!(
     terminal_vte,
     config_serialization,
     utility_hot_paths,
-    transfer_loopback
+    transfer_loopback,
+    terminal_frame_render,
+    session_soak_rss
 );
 criterion_main!(performance);

@@ -62,7 +62,7 @@ mod tests {
         if unsafe { libc::getrlimit(libc::RLIMIT_CORE, &mut limit) } != 0 {
             return None;
         }
-        Some((limit.rlim_cur as u64, limit.rlim_max as u64))
+        Some((limit.rlim_cur, limit.rlim_max))
     }
 
     fn dumpable_flag() -> Option<i64> {
@@ -98,9 +98,8 @@ mod tests {
         let saved = std::env::var_os("MBXT_DEBUGGABLE");
         std::env::remove_var("MBXT_DEBUGGABLE");
         let init = initialize();
-        match saved {
-            Some(value) => std::env::set_var("MBXT_DEBUGGABLE", value),
-            None => {},
+        if let Some(value) = saved {
+            std::env::set_var("MBXT_DEBUGGABLE", value);
         }
         if init.is_err() {
             panic!("security::initialize failed without MBXT_DEBUGGABLE");

@@ -179,10 +179,35 @@ Productivity:
   (`VK_DRIVER_FILES`), lavapipe-only = 133 MB and radv-only on the real
   AMD iGPU = 81 MB. PASS on single-driver systems; MISS recorded on
   multi-driver systems unless ICDs are trimmed.)
-- [ ] Terminal rendering at 60 FPS; scrolling never drops below 30 FPS.
-- [ ] SSH connect <3 s on a local network.
+- [x] Terminal rendering at 60 FPS; scrolling never drops below 30 FPS.
+      (2026-10-14; headless CPU path — the same instance builder the GPU
+      primitive consumes: 240-frame flood p50 54 µs / p95 55 µs, 100% ≤
+      16.7 ms (independently re-run, matches); cold frames 335 µs
+      (80x24) / 684 µs (160x50); SSH echo 1 ms. Residual: composited
+      present-path (vsync/swapchain) unmeasured — no automated
+      present harness; CPU budget has ~300× headroom.)
+- [x] SSH connect <3 s on a local network.
+      (2026-10-14; N=10 vs disposable openssh:2223, test profile:
+      independently re-run median 108 ms / p95 113 ms (agent quiet run:
+      105/114); asserts median <3000 ms in `ssh_connect_perf`; ~28×
+      headroom.)
 - [ ] File transfer >100 MB/s on a local network.
+      (2026-10-14 honest SPLIT: 512 MiB vs disposable atmoz:2222 —
+      upload 433.5 MB/s PASS (independently re-run), download 37.0 MB/s
+      FAIL (re-run; agent repeats 36.8–39.8). Same server/container both
+      directions, so the bottleneck is the client download path. 1 GiB
+      download stall (~800 MiB/~21 s) is agent-reported with in-tree
+      repro (`MBXT_SFTP_PERF_BYTES`, depths 4+16) — not independently
+      re-run here; server exoneration (OpenSSH CLI 1.8 s) likewise
+      agent-measured only. Fix belongs to the connections workstream,
+      possibly russh-related — relevant input for the pending russh
+      migration decision.)
 - [ ] 10 concurrent sessions stay under 500 MB total.
+      (2026-10-14 partial: `session_soak` bench — 10 sessions render
+      loop, post-warmup Δ20 kB/iter (~2 kB/session, slope ≈ 0, no leak),
+      harness peak VmHWM ≈ 171 MB (independently re-run). This is a
+      harness proxy, not the app: the M5 acceptance (app + 1 GB SFTP +
+      8 h soak, <300 MB) stays UNMEASURED.)
 
 ## Security Verification
 

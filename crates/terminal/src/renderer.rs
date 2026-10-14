@@ -194,6 +194,129 @@ pub struct RenderStats {
     pub atlas_glyphs: usize,
     /// Whether this frame rebuilt every instance.
     pub full_redraw: bool,
+    /// Microseconds spent rebuilding cell instances (CPU stage).
+    pub build_us: u64,
+    /// Microseconds for the whole `render` call (build + upload + submit).
+    pub total_us: u64,
+}
+
+/// Fixed-capacity ring of recent frame times (microseconds).
+///
+/// Headless-friendly 60fps accounting: [`TerminalRenderer::render`] pushes
+/// one sample per frame; percentiles and budget fractions derive without
+/// further timing. Bounded memory (default 240 frames ≈ 4 s at 60fps), no
+/// allocation per push beyond the backing store.
+#[derive(Debug, Clone)]
+pub struct FrameTimeRing {
+    samples: Vec<u64>,
+    capacity: usize,
+}
+
+impl FrameTimeRing {
+    /// New ring holding at most `capacity` recent samples (`capacity == 0`
+    /// becomes 1 so `push` never divides by zero).
+    pub fn new(capacity: usize) -> Self {
+        let capacity = capacity.max(1);
+        Self {
+            samples: Vec::with_capacity(capacity),
+            capacity,
+        }
+    }
+
+    /// Default ring: 240 frames (≈ 4 s at 60fps).
+    pub fn default_ring() -> Self {
+        Self::new(240)
+    }
+
+    /// Record one frame time.
+    pub fn push(&mut self, elapsed: std::time::Duration) {
+        self.push_us(elapsed.as_micros().min(u128::from(u64::MAX)) as u64);
+    }
+
+    /// Record one frame time in microseconds.
+    pub fn push_us(&mut self, us: u64) {
+        if self.samples.len() >= self.capacity {
+            self.samples.remove(0);
+        }
+        self.samples.push(us);
+    }
+
+    /// Number of stored samples.
+    pub fn len(&self) -> usize {
+        self.samples.len()
+    }
+
+    /// `true` when no frame has been recorded yet.
+    pub fn is_empty(&self) -> bool {
+        self.samples.is_empty()
+    }
+
+    /// Maximum samples retained.
+    pub fn capacity(&self) -> usize {
+        self.capacity
+    }
+
+    /// Sorted copy of the samples (ascending microseconds).
+    pub fn sorted(&self) -> Vec<u64> {
+        let mut out = self.samples.clone();
+        out.sort_unstable();
+        out
+    }
+
+    /// Nearest-rank percentile in microseconds (`p` in 0.0..=100.0).
+    /// Returns `None` when empty.
+    pub fn percentile(&self, p: f64) -> Option<u64> {
+        if self.samples.is_empty() {
+            return None;
+        }
+        let p = p.clamp(0.0, 100.0);
+        let sorted = self.sorted();
+        let rank = ((p / 100.0) * (sorted.len() as f64)).ceil() as usize;
+        sorted
+            .get(rank.saturating_sub(1).min(sorted.len() - 1))
+            .copied()
+    }
+
+    /// Median frame time in microseconds (`None` when empty).
+    pub fn p50_us(&self) -> Option<u64> {
+        self.percentile(50.0)
+    }
+
+    /// 95th-percentile frame time in microseconds (`None` when empty).
+    pub fn p95_us(&self) -> Option<u64> {
+        self.percentile(95.0)
+    }
+
+    /// Mean frame time in microseconds (`None` when empty).
+    pub fn mean_us(&self) -> Option<f64> {
+        if self.samples.is_empty() {
+            return None;
+        }
+        let sum: u128 = self.samples.iter().map(|v| u128::from(*v)).sum();
+        Some(sum as f64 / self.samples.len() as f64)
+    }
+
+    /// Fraction of samples at or below `budget` (0.0..=1.0; 1.0 when empty
+    /// is meaningless, so empty returns 0.0).
+    pub fn fraction_under(&self, budget: std::time::Duration) -> f64 {
+        if self.samples.is_empty() {
+            return 0.0;
+        }
+        let budget_us = budget.as_micros().min(u128::from(u64::MAX)) as u64;
+        let hits = self.samples.iter().filter(|v| **v <= budget_us).count();
+        hits as f64 / self.samples.len() as f64
+    }
+
+    /// Drop all samples.
+    pub fn clear(&mut self) {
+        self.samples.clear();
+    }
+}
+
+impl Default for FrameTimeRing {
+    fn default() -> Self {
+        Self::default_ring()
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -243,6 +366,8 @@ pub struct TerminalRenderer {
     full_redraw: bool,
     /// Monotonic frame counter.
     frame: u64,
+    /// Recent frame times (one sample per `render` call).
+    frame_times: FrameTimeRing,
 }
 
 impl std::fmt::Debug for TerminalRenderer {
@@ -274,6 +399,7 @@ impl TerminalRenderer {
             dirty: Vec::new(),
             full_redraw: true,
             frame: 0,
+            frame_times: FrameTimeRing::default(),
         }
     }
 
@@ -383,20 +509,22 @@ impl TerminalRenderer {
 
     /// Render one frame: rebuild instances (single batched upload) and, when
     /// a GPU context exists, issue the single instanced draw call.
+    ///
+    /// Timing: `build_us` covers [`Self::build_instances`]; `total_us`
+    /// covers the whole call. One sample per call is pushed to the
+    /// [`FrameTimeRing`] (see [`Self::frame_times`]).
     pub fn render(&mut self, terminal: &Terminal) -> Result<RenderStats, RendererError> {
+        let total_started = std::time::Instant::now();
         let full = self.full_redraw;
+        let build_started = std::time::Instant::now();
         self.build_instances(terminal);
+        let build_us = build_started
+            .elapsed()
+            .as_micros()
+            .min(u128::from(u64::MAX)) as u64;
         self.frame += 1;
         self.full_redraw = false;
         self.dirty.clear();
-
-        let stats = RenderStats {
-            cells: self.instances.len(),
-            instances: self.instances.len(),
-            draw_calls: 1,
-            atlas_glyphs: self.glyph_atlas.len(),
-            full_redraw: full,
-        };
 
         if self.glyph_atlas.take_dirty() {
             self.upload_atlas();
@@ -404,7 +532,34 @@ impl TerminalRenderer {
         if let Err(err) = self.submit_frame() {
             tracing::warn!(%err, "GPU submit failed; frame kept as CPU stats");
         }
+        let total_us = total_started
+            .elapsed()
+            .as_micros()
+            .min(u128::from(u64::MAX)) as u64;
+        self.frame_times.push_us(total_us);
+
+        let stats = RenderStats {
+            cells: self.instances.len(),
+            instances: self.instances.len(),
+            draw_calls: 1,
+            atlas_glyphs: self.glyph_atlas.len(),
+            full_redraw: full,
+            build_us,
+            total_us,
+        };
+
         Ok(stats)
+    }
+
+    /// Recent frame times (one sample per `render` call, oldest dropped
+    /// past capacity).
+    pub fn frame_times(&self) -> &FrameTimeRing {
+        &self.frame_times
+    }
+
+    /// Number of frames rendered so far.
+    pub fn frame_count(&self) -> u64 {
+        self.frame
     }
 
     /// Staged instances for the current frame (single draw call source).
@@ -919,5 +1074,43 @@ mod tests {
         let stats = renderer.render(&term).unwrap();
         assert_eq!(stats.instances, 6);
         let _ = Attributes::default();
+    }
+
+    #[test]
+    fn render_records_timing_and_frame_ring() {
+        let mut renderer = TerminalRenderer::new_headless(13);
+        assert!(renderer.frame_times().is_empty());
+        let mut term = Terminal::new(10, 4, 0);
+        term.write_bytes(b"hi");
+        let stats = renderer.render(&term).unwrap();
+        assert_eq!(renderer.frame_count(), 1);
+        assert_eq!(renderer.frame_times().len(), 1);
+        assert_eq!(stats.total_us, renderer.frame_times().p50_us().unwrap());
+        assert!(stats.total_us >= stats.build_us);
+    }
+
+    #[test]
+    fn frame_time_ring_percentiles_and_budget() {
+        use std::time::Duration;
+        let mut ring = FrameTimeRing::new(10);
+        assert!(ring.is_empty());
+        assert_eq!(ring.percentile(50.0), None);
+        for us in [1000_u64, 2000, 3000, 4000] {
+            ring.push(Duration::from_micros(us));
+        }
+        assert_eq!(ring.len(), 4);
+        assert_eq!(ring.p50_us(), Some(2000));
+        assert_eq!(ring.p95_us(), Some(4000));
+        assert!((ring.fraction_under(Duration::from_micros(16_700)) - 1.0).abs() < f64::EPSILON);
+        assert!((ring.fraction_under(Duration::from_micros(1500)) - 0.25).abs() < 1e-9);
+        assert!(ring.mean_us().unwrap() > 0.0);
+        // Capacity evicts the oldest sample first.
+        let mut small = FrameTimeRing::new(2);
+        small.push_us(1);
+        small.push_us(2);
+        small.push_us(3);
+        assert_eq!(small.sorted(), vec![2, 3]);
+        small.clear();
+        assert!(small.is_empty());
     }
 }

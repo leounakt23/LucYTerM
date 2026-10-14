@@ -45,12 +45,32 @@ experiments without affecting default startup.
 
 ## Results Log
 
-| Workload | Baseline | Current | Host/profile |
-| --- | --- | --- | --- |
-| Terminal scroll | pending | measured by Criterion | record in PR |
-| Terminal search | pending | measured by Criterion | record in PR |
-| SFTP copy throughput | pending | measure on local network | record in PR |
-| Cold start / idle memory | pending | measure packaged release | record in PR |
+Measured 2026-10-14 on KT23-OMEN-EDITION (Ubuntu 24.04.5, AMD Ryzen AI 7
+350 16-thread, 30 GiB RAM, AMD Radeon 860M Mesa 25.2.8 + NVIDIA dGPU
+present). Profiles are recorded per row: `bench` = bench profile
+(release-derived: fat LTO, opt-level z); `test` = debug test profile.
+
+| Workload | Result | Host/profile |
+| --- | --- | --- |
+| Criterion `terminal/scroll_region_up/24` | 40.135 µs/iter (100 × scroll) | KT23 / bench |
+| Criterion `terminal/scroll_region_up/100` | 57.265 µs/iter | KT23 / bench |
+| Criterion `terminal/scroll_region_up/500` | 123.15 µs/iter | KT23 / bench |
+| Criterion `terminal_search_160x500` | 226.23 µs/iter | KT23 / bench |
+| Criterion `terminal_vte_output` | 8.0423 µs/iter | KT23 / bench |
+| Criterion `config_ron_serialization` | 1.6090 µs/iter | KT23 / bench |
+| Criterion `subnet_calculate` | 42.736 ns/iter | KT23 / bench |
+| Criterion `tool_export_json` | 899.69 ns/iter | KT23 / bench |
+| Loopback goodput `transfer_loopback` | 12.58 GB/s mean over 10 × 1 s iters (100.7 Gbit/s, raw TCP, no SSH) | KT23 / bench |
+| Headless frame `terminal_frame/headless_render_80x24` | 335.03 µs/frame (cold: terminal + atlas build each iter) | KT23 / bench |
+| Headless frame `terminal_frame/headless_render_160x50` | 684.34 µs/frame | KT23 / bench |
+| Headless flood 240 frames (steady state) | p50 ≈ 54 µs, p95 ≈ 55–60 µs, 100% ≤ 16.7 ms | KT23 / bench |
+| SSH handshake N=10 vs disposable openssh:2223 | median 105 ms, p95 114 ms, max 114 ms (target < 3000 ms) | KT23 / test |
+| SSH shell echo probe | 1 ms round trip | KT23 / test |
+| SFTP 512 MiB vs disposable atmoz:2222 (depth 16) | up 435.7 MB/s (1.23 s), down 36.8 MB/s (14.61 s); repeat run 406.9/39.8; 128 MiB run 419.4/37.8 | KT23 / test |
+| SFTP 1 GiB download vs disposable atmoz:2222 | STALLS ~800 MiB / ~21 s, reproducible (depths 4+16, fresh connections); server exonerated per agent run (OpenSSH CLI: 1 GiB in 1.8 s — agent-measured, not independently re-verified here: no sshpass on this machine); upload 1 GiB completes (~430 MB/s). Connections workstream owns the fix. | KT23 / test |
+| 10-session soak (80×24 + headless renderer) | 2.4603 ms/iter; slope 0 (ΔVmRSS = 0 kB over 4000+ iters post-warmup); peak VmHWM ≈ 171 MB in-harness | KT23 / bench |
+| Composited present path (Xephyr/GPU frame times) | UNMEASURED: no automated present harness; display :1 (7680×3600) and GPU present, headless CPU path above drives the same instance builder | — |
+| Cold start / idle memory of packaged release | UNMEASURED: no packaged release built in this workstream | — |
 
 No numeric result is claimed until it is captured on a named host. PRs
 changing hot paths must include the before/after Criterion output and the

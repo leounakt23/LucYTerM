@@ -331,11 +331,114 @@ impl Primitive for TerminalPrimitive {
 // Program + widget entry points
 // ---------------------------------------------------------------------------
 
-/// Per-widget GPU state (frame counter for profiling).
+/// Per-widget GPU state (frame counter + CPU-side frame recorder).
 #[derive(Debug, Default)]
 pub struct TerminalShaderState {
     /// Frames drawn through this widget.
     pub frames: u64,
+    /// CPU-side frame-time recorder (mirrors `FrameTimeRing` accounting for
+    /// the fallback path where no GPU timestamps exist).
+    pub recorder: FrameRecorder,
+}
+
+impl TerminalShaderState {
+    /// Record one drawn frame (increments the counter and the recorder).
+    pub fn record_frame(&mut self, elapsed: std::time::Duration) {
+        self.frames += 1;
+        self.recorder.record(elapsed);
+    }
+}
+
+/// CPU-side frame-time recorder for the widget fallback path.
+///
+/// Bounded ring (default 240 samples ≈ 4 s at 60fps) with percentile and
+/// 16.7ms-budget accounting. The GPU primitive path has no CPU-readable
+/// timestamps, so the widget records the CPU snapshot + draw-dispatch time
+/// per frame; headless flood benches feed the same type.
+#[derive(Debug, Clone)]
+pub struct FrameRecorder {
+    samples: Vec<u64>,
+    capacity: usize,
+}
+
+impl FrameRecorder {
+    /// New recorder holding at most `capacity` recent samples.
+    pub fn new(capacity: usize) -> Self {
+        let capacity = capacity.max(1);
+        Self {
+            samples: Vec::with_capacity(capacity),
+            capacity,
+        }
+    }
+
+    /// Record one frame time.
+    pub fn record(&mut self, elapsed: std::time::Duration) {
+        let us = elapsed.as_micros().min(u128::from(u64::MAX)) as u64;
+        if self.samples.len() >= self.capacity {
+            self.samples.remove(0);
+        }
+        self.samples.push(us);
+    }
+
+    /// Number of stored samples.
+    pub fn len(&self) -> usize {
+        self.samples.len()
+    }
+
+    /// `true` when no frame has been recorded yet.
+    pub fn is_empty(&self) -> bool {
+        self.samples.is_empty()
+    }
+
+    /// Sorted copy of the samples (ascending microseconds).
+    pub fn sorted_us(&self) -> Vec<u64> {
+        let mut out = self.samples.clone();
+        out.sort_unstable();
+        out
+    }
+
+    /// Nearest-rank percentile in microseconds (`None` when empty).
+    pub fn percentile_us(&self, p: f64) -> Option<u64> {
+        if self.samples.is_empty() {
+            return None;
+        }
+        let p = p.clamp(0.0, 100.0);
+        let sorted = self.sorted_us();
+        let rank = ((p / 100.0) * (sorted.len() as f64)).ceil() as usize;
+        sorted
+            .get(rank.saturating_sub(1).min(sorted.len() - 1))
+            .copied()
+    }
+
+    /// Median frame time (`None` when empty).
+    pub fn p50_us(&self) -> Option<u64> {
+        self.percentile_us(50.0)
+    }
+
+    /// 95th-percentile frame time (`None` when empty).
+    pub fn p95_us(&self) -> Option<u64> {
+        self.percentile_us(95.0)
+    }
+
+    /// Fraction of frames at or below `budget_us` microseconds.
+    pub fn fraction_under_budget(&self, budget_us: u64) -> f64 {
+        if self.samples.is_empty() {
+            return 0.0;
+        }
+        let hits = self.samples.iter().filter(|v| **v <= budget_us).count();
+        hits as f64 / self.samples.len() as f64
+    }
+
+    /// Fraction of frames inside the 60fps budget (≤ 16_700 µs).
+    pub fn fraction_at_60fps(&self) -> f64 {
+        self.fraction_under_budget(16_700)
+    }
+}
+
+impl Default for FrameRecorder {
+    fn default() -> Self {
+        Self::new(240)
+    }
 }
 
 /// Snapshot program: owns CPU instances, emits one [`TerminalPrimitive`].
@@ -468,6 +571,26 @@ mod tests {
             Rectangle::new(iced::Point::ORIGIN, iced::Size::new(800.0, 600.0)),
         );
         assert_eq!(primitive.instance_count(), 8);
+    }
+
+    #[test]
+    fn frame_recorder_tracks_budget_and_state_counter() {
+        use std::time::Duration;
+        let mut recorder = FrameRecorder::new(4);
+        assert!(recorder.is_empty());
+        assert_eq!(recorder.p50_us(), None);
+        recorder.record(Duration::from_micros(1000));
+        recorder.record(Duration::from_micros(2000));
+        recorder.record(Duration::from_micros(20_000));
+        assert_eq!(recorder.len(), 3);
+        assert_eq!(recorder.p50_us(), Some(2000));
+        assert_eq!(recorder.p95_us(), Some(20_000));
+        assert!((recorder.fraction_at_60fps() - 2.0 / 3.0).abs() < 1e-9);
+
+        let mut state = TerminalShaderState::default();
+        state.record_frame(Duration::from_micros(500));
+        assert_eq!(state.frames, 1);
+        assert_eq!(state.recorder.len(), 1);
     }
 
     #[test]
