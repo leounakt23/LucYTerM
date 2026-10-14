@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791942850164,
+  "lastUpdate": 1791951737003,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2027,6 +2027,84 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000594099,
             "range": "± 102182",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "e18beedf671b62ba84aff9ef89a5f367346df488",
+          "message": "docs: record distribution recipe hardening, keep install boxes unchecked",
+          "timestamp": "2026-10-14T06:16:47+02:00",
+          "tree_id": "e333a672f2d606782e1611ca3a82674b3a9e5ee3",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/e18beedf671b62ba84aff9ef89a5f367346df488"
+        },
+        "date": 1791951736207,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 62937,
+            "range": "± 2118",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 76246,
+            "range": "± 522",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 154656,
+            "range": "± 551",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 334474,
+            "range": "± 2704",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 9279,
+            "range": "± 50",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 2596,
+            "range": "± 83",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 50,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1590,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000464833,
+            "range": "± 41725",
             "unit": "ns/iter"
           }
         ]
