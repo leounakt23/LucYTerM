@@ -11,8 +11,8 @@ in `doc/feature_requirements.md` remains the historical v1 delivery baseline;
 it does not commit or prohibit later candidates.
 
 Detailed value propositions and risks are in
-[`docs/roadmap_details.md`](https://github.com/LucYTerM/mbxt/blob/main/docs/roadmap_details.md). Public requests and votes
-belong in [GitHub Discussions](https://github.com/LucYTerM/mbxt/discussions)
+[`docs/roadmap_details.md`](https://github.com/leounakt23/LucYTerM/blob/main/docs/roadmap_details.md). Public requests and votes
+belong in [GitHub Discussions](https://github.com/leounakt23/LucYTerM/discussions)
 and the repository's public Projects view.
 
 ## Now

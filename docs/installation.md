@@ -5,13 +5,14 @@
 Use the DEB package on Debian, Ubuntu, Mint, Pop!_OS, or elementary. Use the
 RPM package on Fedora, RHEL, CentOS Stream, or OpenSUSE. Arch users can build
 the `packaging/arch/PKGBUILD`; Nix users can run `nix run` from
-`packaging/nix`.
+`packaging/nix`. DEB/RPM/AUR/Snap/Nix ship both `remote-app` and
+`remote-app-headless`; Flatpak/AppImage are GUI-only.
 
 ```text
 sudo apt install ./remote-app_*.deb
 sudo rpm -Uvh ./remote-app-*.rpm
 makepkg -si -p packaging/arch/PKGBUILD
-nix run github:LucYTerM/mbxt?dir=packaging/nix
+nix run github:leounakt23/LucYTerM?dir=packaging/nix
 ```
 
 ## Portable Formats

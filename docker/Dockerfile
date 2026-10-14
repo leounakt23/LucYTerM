@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 
 FROM debian:bookworm-slim
 
-LABEL org.opencontainers.image.source="https://github.com/LucYTerM/mbxt" \
+LABEL org.opencontainers.image.source="https://github.com/leounakt23/LucYTerM" \
       org.opencontainers.image.description="Remote App headless client"
 
 RUN apt-get update \

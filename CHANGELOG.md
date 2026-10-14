@@ -28,5 +28,5 @@ Semantic Versioning.
 - Initial native remote application workspace and session model.
 - SSH, terminal, SFTP, forwarding, macro, and multi-exec foundations.
 
-[Unreleased]: https://github.com/LucYTerM/mbxt/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/LucYTerM/mbxt/releases/tag/v0.1.0
+[Unreleased]: https://github.com/leounakt23/LucYTerM/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/leounakt23/LucYTerM/releases/tag/v0.1.0

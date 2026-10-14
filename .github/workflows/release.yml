@@ -130,8 +130,8 @@ jobs:
           cp assets/remote-app.desktop package-root/usr/share/applications/
           cp assets/remote-app.metainfo.xml package-root/usr/share/metainfo/
           cp assets/icon.svg package-root/usr/share/icons/hicolor/scalable/apps/remote-app.svg
-          fpm -s dir -C package-root -t deb -n remote-app -v "$VERSION" --depends libdbus-1-3 --depends libudev1 --license 'MIT OR Apache-2.0' --url 'https://github.com/LucYTerM/mbxt' --description 'Secure native remote computing client' -p "dist/remote-app_${VERSION}_amd64.deb" .
-          fpm -s dir -C package-root -t rpm -n remote-app -v "$VERSION" --depends dbus-libs --depends systemd-libs --license 'MIT OR Apache-2.0' --url 'https://github.com/LucYTerM/mbxt' --description 'Secure native remote computing client' -p "dist/remote-app-${VERSION}-1.x86_64.rpm" .
+          fpm -s dir -C package-root -t deb -n remote-app -v "$VERSION" --depends libdbus-1-3 --depends libudev1 --license 'MIT OR Apache-2.0' --url 'https://github.com/leounakt23/LucYTerM' --description 'Secure native remote computing client' -p "dist/remote-app_${VERSION}_amd64.deb" .
+          fpm -s dir -C package-root -t rpm -n remote-app -v "$VERSION" --depends dbus-libs --depends systemd-libs --license 'MIT OR Apache-2.0' --url 'https://github.com/leounakt23/LucYTerM' --description 'Secure native remote computing client' -p "dist/remote-app-${VERSION}-1.x86_64.rpm" .
           mv package-root AppDir
           cp assets/icon.svg AppDir/remote-app.svg
           cp assets/remote-app.desktop AppDir/remote-app.desktop

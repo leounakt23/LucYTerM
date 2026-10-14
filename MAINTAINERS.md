@@ -4,7 +4,7 @@
 
 | Maintainer | Role | Status |
 | --- | --- | --- |
-| [@LucYTerM](https://github.com/LucYTerM) | Project owner and release maintainer | Active |
+| [@leounakt23](https://github.com/leounakt23) | Project owner and release maintainer | Active |
 | Vacant | Backup maintainer | Recruitment target |
 | Vacant | Backup maintainer | Recruitment target |
 

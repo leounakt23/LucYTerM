@@ -49,7 +49,7 @@ response to any behavior that they deem inappropriate, threatening, offensive,
 or harmful.
 
 Current capacity: the project has a single active maintainer
-([@LucYTerM](https://github.com/LucYTerM)) and no separately trained moderator
+([@leounakt23](https://github.com/leounakt23)) and no separately trained moderator
 team yet. Enforcement duties therefore rest with the project owner until
 moderators are appointed. All rules apply equally to maintainers; the owner
 recuses from decisions involving their own conduct by asking a trusted

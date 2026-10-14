@@ -11,7 +11,7 @@ opt-in: names appear here and in release notes only with explicit consent.
 
 | Name | GitHub | Contributions |
 | --- | --- | --- |
-| LucYTerM | [@LucYTerM](https://github.com/LucYTerM) | 💻 🔧 📖 🛡️ 🚇 |
+| LucYTerM | [@leounakt23](https://github.com/leounakt23) | 💻 🔧 📖 🛡️ 🚇 |
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->

@@ -8,7 +8,7 @@ confidentially.
 
 ## Roles
 
-- **Project owner (BDFN):** [@LucYTerM](https://github.com/LucYTerM). Final
+- **Project owner (BDFN):** [@leounakt23](https://github.com/leounakt23). Final
   reviewer for architecture, releases, and governance changes while the team is
   small. Bound by the Code of Conduct like every contributor.
 - **Maintainers:** appointed per `MAINTAINERS.md` after sustained, high-quality
