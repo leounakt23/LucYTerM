@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791952037907,
+  "lastUpdate": 1791954077590,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2183,6 +2183,108 @@ window.BENCHMARK_DATA = {
             "name": "transfer_loopback/bandwidth_sender_1s",
             "value": 1000444897,
             "range": "± 158490",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "dd2221556465ff4fdc4488d1ece1152f11ee2b5d",
+          "message": "perf: frame/ssh/sftp/soak harness with measured results",
+          "timestamp": "2026-10-14T06:52:06+02:00",
+          "tree_id": "a592450b474bbf18ae48ff9b970647f152c394a7",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/dd2221556465ff4fdc4488d1ece1152f11ee2b5d"
+        },
+        "date": 1791954077079,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 78335,
+            "range": "± 1299",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 98759,
+            "range": "± 1012",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 201016,
+            "range": "± 498",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 423213,
+            "range": "± 14686",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11971,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3349,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 67,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1928,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000629504,
+            "range": "± 46874",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 475258,
+            "range": "± 1173",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1208676,
+            "range": "± 7669",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 28987225,
+            "range": "± 64316",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 5951711,
+            "range": "± 28672",
             "unit": "ns/iter"
           }
         ]
