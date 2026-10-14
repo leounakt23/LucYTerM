@@ -1,0 +1,16 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\edge%20box]
+"HostName"="192.0.2.20"
+"HostName"="192.0.2.21"
+"PortNumber"=dword:ZZZZZZZZ
+"Protocol"="ssh"
+"UserName"="testuser"
+"BogusThing"="xyz"
+"WeirdDword"=dword:00000001
+
+[HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\raw%20box]
+"HostName"="192.0.2.22"
+"PortNumber"=dword:00000017
+"Protocol"="raw"
+"UserName"="testuser"

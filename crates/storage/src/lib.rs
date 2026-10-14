@@ -6,10 +6,12 @@
 
 pub mod config;
 pub mod crypto;
+pub mod import;
 pub mod sessions;
 
 pub use config::{Config, ConfigStore};
 pub use crypto::{CryptoError, CryptoVault};
+pub use import::{ImportError, ImportReport, ImportedSession};
 pub use sessions::SessionStore;
 
 /// Storage-layer errors (thiserror per-crate enum, architecture §7).
@@ -21,6 +23,8 @@ pub enum StorageError {
     Serialize(String),
     #[error("crypto error: {0}")]
     Crypto(String),
+    #[error("import error: {0}")]
+    Import(#[from] ImportError),
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 }

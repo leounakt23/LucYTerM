@@ -151,12 +151,23 @@ Productivity:
 - [x] Network tools return sane results: ping, traceroute, DNS, whois, port (2026-10-07; subnet run executed in-app with correct output, docs/assets/tools-run-xvfb.png; backends unit+hermetic tested)
       scan (`network_tools` tests + manual spot-check).
 - [x] Built-in themes switch; a custom theme file loads. (2026-10-08; switch verified visually on real desktop by maintainer; loader unit-tested incl. malformed-skip)
-- [ ] Session import works per the published importer matrix; unknown fields
+- [x] Session import works per the published importer matrix; unknown fields
       are reported, never guessed; nothing is overwritten silently.
-      (Honest MISS as of 2026-10-11: no third-party importer and no
-      published matrix exist — MobaXterm/PuTTY/OpenSSH import is v1.1
-      roadmap scope. Only the encrypted-file export/import round-trip
-      is tested (`export_import_round_trip_to_arbitrary_path`).)
+      (2026-10-14; `mbxt-storage::import`: model/report/merge foundation
+      + three parsers — ssh_config (precedence, Include, quarantine),
+      PuTTY/KiTTY `.reg`, MobaXterm XML (no new deps, XXE-safe) — 27
+      tests green (3 merge + 5/8/7 per-source incl. password-drop,
+      proxy no-exec with absent-file proof, caps). Published matrix
+      `docs/compatibility_import.md` verified row-by-row against
+      behavior (two cells corrected to match: PuTTY proxy reported not
+      mapped, PuTTY serial without line params). CLI
+      `import --from … --file …` (dry-run default, `--commit`
+      materializes with re-merge + fresh ids); live headless proof vs
+      real fixtures: 2 committed, re-commit 0 new/2 skipped (no
+      overwrite), quarantine warnings + no-exec file absent,
+      ProxyPassword dropped. User doc `docs/src/user/import.md`.
+      Fixtures are RFC-5737-only; `ImportedSession` has no password
+      field by construction.)
 
 ## Performance Verification (Measure, Do Not Assert)
 

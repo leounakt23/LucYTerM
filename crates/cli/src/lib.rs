@@ -73,6 +73,33 @@ pub fn build_cli(version: &str, build_info: &str) -> Command {
                         .action(ArgAction::Set)
                         .help("Decryption password (INSECURE in ps/shell history; omit to be prompted, or use $MBXT_MASTER_PASSWORD)"),
                 ),
+            Command::new("import")
+                .about("Preview or import sessions from a third-party file (one-way; never overwrites)")
+                .arg(
+                    Arg::new("from")
+                        .long("from")
+                        .required(true)
+                        .value_parser(["mobaxterm", "putty", "ssh-config"])
+                        .help("Source format"),
+                )
+                .arg(
+                    Arg::new("file")
+                        .long("file")
+                        .required(true)
+                        .help("Source file path (.xml, .reg, or ssh_config)"),
+                )
+                .arg(
+                    Arg::new("dry-run")
+                        .long("dry-run")
+                        .action(ArgAction::SetTrue)
+                        .help("Preview only: print the report without storing anything (default)"),
+                )
+                .arg(
+                    Arg::new("commit")
+                        .long("commit")
+                        .action(ArgAction::SetTrue)
+                        .help("Materialize the preview into the encrypted store (requires confirmation report)"),
+                ),
             Command::new("forward")
                 .about("Open SSH tunnels for a stored session (stays up until Ctrl-C)")
                 .arg(

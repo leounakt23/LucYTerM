@@ -1,0 +1,10 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\9bis.com\KiTTY\Sessions\kitty%20box]
+"HostName"="192.0.2.12"
+"PortNumber"=dword:00000016
+"Protocol"="ssh"
+"UserName"="testuser"
+"Autocommand"="uptime"
+"Autocommanddelay"=dword:00000005
+"BackgroundImage"="C:\\Images\\kitty-bg.png"

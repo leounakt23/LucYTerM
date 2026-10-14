@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MobaXterm>
+  <Session name="ssh-ok" protocol="ssh" host="192.0.2.10" port="22" username="testuser"/>
+  <Session name="telnet-ok" protocol="telnet" host="192.0.2.11" port="23" username="ops"/>
+  <Session name="rdp-ok" protocol="rdp" host="192.0.2.20" port="3389" username="ops"/>
+  <Session name="vnc-ok" protocol="vnc" host="192.0.2.21" port="5900" username="reporter"/>
+  <Session name="serial-ok" protocol="serial" device="/dev/ttyUSB0" baud="115200"/>
+  <Session name="weird-proto" protocol="mosh" host="192.0.2.30" port="6000" username="testuser"/>
+</MobaXterm>

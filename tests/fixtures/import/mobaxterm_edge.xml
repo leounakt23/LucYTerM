@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MobaXterm>
+  <Folder name="Edge">
+    <Session name="empty-host" protocol="ssh" host="" port="22" username="testuser"/>
+    <Session name="bad-port" protocol="ssh" host="192.0.2.12" port="notaport" username="ops"/>
+    <Session name="dup" protocol="ssh" host="192.0.2.13" port="22" username="testuser"/>
+    <Session name="dup" protocol="ssh" host="192.0.2.14" port="22" username="ops"/>
+    <Session name="fancy-üñîcode-日本語" protocol="ssh" host="192.0.2.15" port="22" username="reporter" color="#ff0000" keepAlive="yes" frobnicate="zzz"/>
+  </Folder>
+</MobaXterm>

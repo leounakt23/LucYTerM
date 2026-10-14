@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MobaXterm>
+  <Folder name="Prod">
+    <Session name="web-ssh" protocol="ssh" host="192.0.2.10" port="22" username="testuser"/>
+    <Session name="db-telnet" protocol="telnet" host="192.0.2.11" port="2323" username="ops"/>
+    <Folder name="DC1">
+      <Session name="db-main" protocol="ssh" host="db.example.com" port="2222" username="reporter"/>
+    </Folder>
+  </Folder>
+  <Session name="top-rdp" protocol="rdp" host="192.0.2.20" port="3389" username="ops"/>
+</MobaXterm>

@@ -1,0 +1,16 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\web%20front]
+"HostName"="192.0.2.10"
+"PortNumber"=dword:00000016
+"Protocol"="ssh"
+"UserName"="testuser"
+"TermType"="xterm"
+"CloseOnExit"=dword:00000000
+
+[HKEY_CURRENT_USER\Software\SimonTatham\PuTTY\Sessions\db%20replica]
+"HostName"="192.0.2.11"
+"PortNumber"=dword:00000017
+"Protocol"="telnet"
+"UserName"="testuser"
+"TermType"="vt100"

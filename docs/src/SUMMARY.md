@@ -6,6 +6,7 @@
   - [Basic Usage](user/basic-usage.md)
   - [Advanced Features](user/advanced-features.md)
   - [Session Management](user/session-management.md)
+  - [Importing Sessions](user/import.md)
   - [File Transfers](user/file-transfers.md)
   - [Terminal](user/terminal.md)
   - [Theming](user/theming.md)

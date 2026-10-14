@@ -172,6 +172,12 @@ successes without evidence:
   source-sweep + canary unit-test + headless-trace evidence; crash-dump
   sample inspection stays honestly open (dumps disabled by default —
   no sample exists).
+- NEW (2026-10-14): session import closed — was the honest v1.1 MISS.
+  Three one-way parsers + published matrix (`docs/
+  compatibility_import.md`) + CLI `import --from/--file/--commit` +
+  user doc; 27 tests; live headless roundtrip (commit 2, re-commit
+  0 new/2 skipped, quarantine + secret-drop proven). No passwords
+  anywhere by construction; no overwrite path exists.
 - NEW (Phase 6): GUI cold start, idle memory, FPS, and 10-session memory
   are UNMEASURED (no display server here); coverage tooling is
   non-responsive as documented above; RDP viewer windows are external

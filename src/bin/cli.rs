@@ -89,6 +89,12 @@ async fn main() -> anyhow::Result<()> {
                 merged.len()
             );
         },
+        Some(("import", args)) => {
+            let from = args.get_one::<String>("from").expect("required arg");
+            let file = PathBuf::from(args.get_one::<String>("file").expect("required arg"));
+            let commit = args.get_flag("commit");
+            import_third_party(&paths, from, &file, commit)?;
+        },
         Some(("reset-config", _)) => {
             let config = paths.config_dir.join("config.ron");
             let store = paths
@@ -796,6 +802,151 @@ fn list_sessions(paths: &AppPaths) -> anyhow::Result<()> {
     for name in store.list()? {
         println!("{name}");
     }
+    Ok(())
+}
+
+/// Third-party import (`import --from … --file … [--commit]`).
+///
+/// Preview is the default: parse, merge-preview, print the report, store
+/// nothing. `--commit` materializes drafts into the encrypted store with
+/// the no-overwrite policy (fresh ids, rename suggestions reported, never
+/// applied silently).
+fn import_third_party(
+    paths: &AppPaths,
+    from: &str,
+    file: &std::path::Path,
+    commit: bool,
+) -> anyhow::Result<()> {
+    use mbxt_storage::import::{self, Source};
+
+    let text = std::fs::read_to_string(file)
+        .map_err(|e| anyhow::anyhow!("cannot read {}: {e}", file.display()))?;
+    let file_name = file
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| "import".to_string());
+    let (source, drafts, mut report) = match from {
+        "mobaxterm" => {
+            let (drafts, report) = import::mobaxterm::parse_mobaxterm_xml(&text, &file_name)?;
+            (Source::MobaXterm, drafts, report)
+        },
+        "putty" => {
+            let (drafts, report) = import::putty::parse_putty_reg(&text, &file_name)?;
+            (Source::Putty, drafts, report)
+        },
+        "ssh-config" => {
+            let parent = file.parent().map(|p| p.to_path_buf()).unwrap_or_default();
+            let include = |pattern: &str| {
+                // Sandboxed: relative patterns resolve under the imported
+                // file's directory only; absolute paths are refused.
+                let rel = pattern.trim();
+                if rel.starts_with('/') || rel.contains("..") {
+                    return None;
+                }
+                let candidate = parent.join(rel);
+                std::fs::read_to_string(&candidate).ok()
+            };
+            let (drafts, report) =
+                import::ssh_config::parse_ssh_config(&text, &file_name, &include)?;
+            (Source::SshConfig, drafts, report)
+        },
+        other => anyhow::bail!("unknown source '{other}' (mobaxterm|putty|ssh-config)"),
+    };
+    report.imported = drafts.len();
+
+    let storage = SecureStorage::new(&paths.config_dir);
+    let existing: Vec<String> = if storage.has_store() {
+        // Preview needs names only; the store stays locked until commit.
+        Vec::new()
+    } else {
+        Vec::new()
+    };
+    // Names for merge: read the store without a password when possible
+    // (passwordless stores), else merge against an empty set in preview
+    // and re-merge at commit time.
+    let existing_names: Vec<String> = storage
+        .load_sessions(None)
+        .map(|entries| entries.iter().map(|e| e.name.clone()).collect())
+        .unwrap_or(existing);
+    let outcome = import::apply(&existing_names, drafts, source);
+    for warning in &report.warnings {
+        println!(
+            "warn [{}]{}: {}",
+            warning.code.as_str(),
+            warning.line.map(|l| format!(":{l}")).unwrap_or_default(),
+            warning.detail
+        );
+    }
+    for warning in &outcome.report.warnings {
+        println!("warn [{}]: {}", warning.code.as_str(), warning.detail);
+    }
+    println!(
+        "parsed {} session(s), {} rejected; merge: {} to create, {} skipped",
+        report.imported,
+        report.rejected,
+        outcome.to_create.len(),
+        outcome.skipped.len(),
+    );
+    for skipped in &outcome.skipped {
+        println!(
+            "skip '{}' ({}) — suggested rename: '{}'",
+            skipped.proposed_name,
+            skipped.reason.as_str(),
+            skipped.suggested_rename
+        );
+    }
+    if !commit {
+        println!("dry run: nothing stored (re-run with --commit to materialize)");
+        return Ok(());
+    }
+    let password = prompt_password(None)?;
+    let password_opt = Some(password.as_str());
+    let mut merged: Vec<SessionEntry> = if storage.has_store() {
+        storage.load_sessions(password_opt).unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    // Re-merge against the unlocked store (names may differ from preview).
+    let live_names: Vec<String> = merged.iter().map(|e| e.name.clone()).collect();
+    let outcome = import::apply(&live_names, outcome.to_create, source);
+    let mut next_id = merged.iter().map(|e| e.id).max().unwrap_or(0) + 1;
+    let before = merged.len();
+    for draft in outcome.to_create {
+        let mut tags = draft.spec.tags.clone();
+        for tag in [source.tag(), "imported"] {
+            if !tags.contains(&tag.to_string()) {
+                tags.push(tag.to_string());
+            }
+        }
+        let notes = if draft.spec.notes.is_empty() {
+            draft.provenance.clone()
+        } else {
+            format!("{}\n{}", draft.spec.notes, draft.provenance)
+        };
+        merged.push(SessionEntry {
+            id: next_id,
+            name: draft.proposed_name,
+            protocol: draft.spec.protocol,
+            host: draft.spec.host,
+            port: draft.spec.port,
+            username: draft.spec.username,
+            auth: draft.spec.auth,
+            tags,
+            notes,
+            x11_forwarding: draft.spec.x11_forwarding,
+            serial: draft.spec.serial,
+            forwards: draft.spec.forwards,
+            created_secs: remote_app::app::state::now_secs(),
+        });
+        next_id += 1;
+    }
+    storage.save_sessions(&merged, password_opt)?;
+    println!(
+        "import complete: {} new, {} total ({} skipped)",
+        merged.len() - before,
+        merged.len(),
+        outcome.skipped.len(),
+    );
     Ok(())
 }
 
