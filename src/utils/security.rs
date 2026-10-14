@@ -44,3 +44,109 @@ pub fn unlock_memory(bytes: &mut [u8]) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Serializes tests that mutate the process-wide `MBXT_DEBUGGABLE` flag
+    /// (environment mutation is process-global, so parallel tests would race).
+    static ENV_SERIAL: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    fn core_limits() -> Option<(u64, u64)> {
+        let mut limit = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+        // SAFETY: refers to a live local; libc only writes through it.
+        if unsafe { libc::getrlimit(libc::RLIMIT_CORE, &mut limit) } != 0 {
+            return None;
+        }
+        Some((limit.rlim_cur as u64, limit.rlim_max as u64))
+    }
+
+    fn dumpable_flag() -> Option<i64> {
+        // SAFETY: scalar prctl query with no pointer arguments.
+        let rc = unsafe { libc::prctl(libc::PR_GET_DUMPABLE, 0, 0, 0, 0) };
+        if rc < 0 {
+            None
+        } else {
+            Some(rc as i64)
+        }
+    }
+
+    #[test]
+    fn initialize_zeroes_core_rlimit() {
+        if initialize().is_err() {
+            panic!("security::initialize failed");
+        }
+        match core_limits() {
+            Some((0, 0)) => {},
+            Some((cur, max)) => {
+                panic!("RLIMIT_CORE not zeroed: cur={cur} max={max}");
+            },
+            None => panic!("getrlimit(RLIMIT_CORE) failed"),
+        }
+    }
+
+    #[test]
+    fn default_process_is_non_dumpable() {
+        let _serial = match ENV_SERIAL.lock() {
+            Ok(guard) => guard,
+            Err(_) => panic!("env serial mutex poisoned"),
+        };
+        let saved = std::env::var_os("MBXT_DEBUGGABLE");
+        std::env::remove_var("MBXT_DEBUGGABLE");
+        let init = initialize();
+        match saved {
+            Some(value) => std::env::set_var("MBXT_DEBUGGABLE", value),
+            None => {},
+        }
+        if init.is_err() {
+            panic!("security::initialize failed without MBXT_DEBUGGABLE");
+        }
+        match dumpable_flag() {
+            Some(0) => {},
+            Some(flag) => panic!("process still dumpable by default: flag={flag}"),
+            None => panic!("prctl(PR_GET_DUMPABLE) failed"),
+        }
+    }
+
+    #[test]
+    fn debuggable_flag_keeps_process_dumpable() {
+        let _serial = match ENV_SERIAL.lock() {
+            Ok(guard) => guard,
+            Err(_) => panic!("env serial mutex poisoned"),
+        };
+        // Establish the fresh-process precondition explicitly: test execution
+        // order is undefined and a sibling test may have already disabled
+        // dumping for this process.
+        // SAFETY: scalar prctl with no pointer arguments.
+        if unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 1, 0, 0, 0) } < 0 {
+            panic!("could not precondition dumpable=1");
+        }
+        let saved = std::env::var_os("MBXT_DEBUGGABLE");
+        std::env::set_var("MBXT_DEBUGGABLE", "1");
+        let init = initialize();
+        // Observe the flag while the opt-out is still active, then restore
+        // the default hardening so later tests see a clean process.
+        let flag = dumpable_flag();
+        match saved {
+            Some(value) => std::env::set_var("MBXT_DEBUGGABLE", value),
+            None => std::env::remove_var("MBXT_DEBUGGABLE"),
+        }
+        if init.is_err() {
+            panic!("security::initialize failed with MBXT_DEBUGGABLE=1");
+        }
+        match flag {
+            Some(1) => {},
+            Some(other) => {
+                panic!("MBXT_DEBUGGABLE=1 did not keep the process dumpable: {other}");
+            },
+            None => panic!("prctl(PR_GET_DUMPABLE) failed"),
+        }
+        if initialize().is_err() {
+            panic!("security::initialize failed while restoring defaults");
+        }
+    }
+}

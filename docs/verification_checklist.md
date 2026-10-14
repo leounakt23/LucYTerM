@@ -205,13 +205,31 @@ Productivity:
       correlation). CLI `--password` now warns + prefers
       `$MBXT_MASTER_PASSWORD`/`$MBXT_SSH_PASSWORD`.)
 - [x] Config directory is `0700`, config files `0600` on a fresh profile. (2026-10-07; enforced in paths.rs, 0600 test-asserted)
-- [ ] Crash dumps/minidumps contain no sensitive data (inspect a sample).
-      (2026-10-14 partial: `RLIMIT_CORE=0` + `PR_SET_DUMPABLE=0` unless
-      `MBXT_DEBUGGABLE`, sentry minidump behind two opt-in flags, panic
-      payloads scrubbed before logging — but no dump sample exists to
-      inspect because dumps are disabled by default, so this stays
-      honestly open until a sample is produced and grepped.)
-- [ ] `cargo audit` and `cargo deny` pass at release time.
+- [x] Crash dumps/minidumps contain no sensitive data (inspect a sample).
+      (2026-10-14; inspected behavior, not just code: throwaway harness
+      mirroring `initialize()` — default `RLIMIT_CORE=0/0` + non-dumpable
+      → SIGABRT yields WCOREDUMP=False, no `core*` artifact, and ancestor
+      ptrace attach fails EPERM (canary unreadable). Positive control
+      (debuggable): live memory DOES contain canary password/host/key —
+      justifies the hardening + sentry scrubbing. Nuance found:
+      `RLIMIT_CORE=0` alone does not stop piped handlers (apport invoked
+      despite it); `PR_SET_DUMPABLE=0` is what suppresses them, and
+      `MBXT_DEBUGGABLE=1` re-exposes abort-dumps to apport. apport left
+      no new `/var/crash` artifact across ~6 SIGABRTs. Residual: sentry
+      test minidump unproduced (needs crash-reporting build + DSN +
+      consent + minidumper server) — opt-in path ships scrubbed
+      (`before_send` strips values, `send_default_pii=false`). New
+      `utils::security` tests: rlimit zeroed, default non-dumpable,
+      debuggable dumpable; 3 green.)
+- [x] `cargo audit` and `cargo deny` pass at release time.
+      (2026-10-14; `cargo audit`: 0 vulnerabilities (2 allowed unsound
+      warnings; 9 advisories ignore-listed with reasons in
+      `.cargo/audit.toml`); `cargo deny check`: advisories/bans/
+      licenses/sources ok. Unfiltered inventory: russh pair (needs the
+      approved 0.45→0.61.1 migration — NOT performed), hickory-proto +
+      time fixes require rustc ≥1.88 (over the 1.85.1 pin — NOT
+      applied), rsa/lru/unmaintained set has no compatible fix
+      (accepted-risk, documented). Re-verify at release tagging.)
 
 ## Quality Verification
 

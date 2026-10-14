@@ -183,6 +183,14 @@ successes without evidence:
   makepkg, nix) exists on this machine; per-artifact follow-ups recorded
   in the workstream report (Fedora container, flatpak-builder host,
   snap-LXD, jammy AppImage runner, Arch makepkg+namcap, nix flake check).
+- NEW (2026-10-14): crash-dump behavior inspected, not just read.
+  Default hardening yields no dump at all (WCOREDUMP=False, no artifact,
+  ptrace EPERM); debuggable-mode live memory does carry secrets
+  (positive control — justifies RLIMIT/DUMPABLE/scrub defaults); piped
+  handlers need DUMPABLE=0, not just RLIMIT=0. Sentry minidump path
+  untested (no DSN) — ships scrubbed by construction. Audit: 0 vulns
+  with documented ignores, deny clean; russh-pair/hickory/time fixes
+  blocked on approval/toolchain-pin, all recorded.
 - NEW (2026-10-14): session import closed — was the honest v1.1 MISS.
   Three one-way parsers + published matrix (`docs/
   compatibility_import.md`) + CLI `import --from/--file/--commit` +
