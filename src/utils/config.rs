@@ -16,7 +16,10 @@ use mbxt_core::{AuthMethod, Protocol, SessionId, SessionSpec};
 // ---------------------------------------------------------------------------
 
 /// One stored session as persisted in `sessions.enc` (feature matrix #10–13).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// `Debug` is hand-implemented like `mbxt_core::SessionSpec`: host,
+/// username, tags, notes, serial, and forwards print as `<redacted>`.
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SessionEntry {
     pub id: SessionId,
@@ -58,6 +61,26 @@ impl Default for SessionEntry {
             forwards: Vec::new(),
             created_secs: 0,
         }
+    }
+}
+
+impl std::fmt::Debug for SessionEntry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SessionEntry")
+            .field("id", &self.id)
+            .field("name", &self.name)
+            .field("protocol", &self.protocol)
+            .field("host", &self.host.as_ref().map(|_| "<redacted>"))
+            .field("port", &self.port)
+            .field("username", &self.username.as_ref().map(|_| "<redacted>"))
+            .field("auth", &self.auth)
+            .field("tags", &"<redacted>")
+            .field("notes", &"<redacted>")
+            .field("x11_forwarding", &self.x11_forwarding)
+            .field("serial", &self.serial.as_ref().map(|_| "<redacted>"))
+            .field("forwards", &"<redacted>")
+            .field("created_secs", &self.created_secs)
+            .finish()
     }
 }
 
@@ -373,6 +396,32 @@ pub fn write_private(path: std::path::PathBuf, bytes: &[u8]) -> std::io::Result<
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn session_entry_debug_redacts_host_user_and_notes() {
+        let entry = SessionEntry {
+            name: "web".to_string(),
+            host: Some("canary-host.invalid".to_string()),
+            username: Some("canary-user".to_string()),
+            notes: "canary-note hunter2".to_string(),
+            tags: vec!["canary-tag".to_string()],
+            ..SessionEntry::default()
+        };
+        let rendered = format!("{entry:?}");
+        for canary in [
+            "canary-host",
+            "canary-user",
+            "canary-tag",
+            "canary-note",
+            "hunter2",
+        ] {
+            assert!(!rendered.contains(canary), "leaked {canary}: {rendered}");
+        }
+        assert!(
+            rendered.contains("web"),
+            "name stays for correlation: {rendered}"
+        );
+    }
 
     #[test]
     fn round_trip_preserves_all_sections() {

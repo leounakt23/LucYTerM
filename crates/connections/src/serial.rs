@@ -99,7 +99,8 @@ pub struct SerialConn {
 impl std::fmt::Debug for SerialConn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SerialConn")
-            .field("spec", &self.spec)
+            .field("session", &self.spec.name)
+            .field("protocol", &self.spec.protocol)
             .finish_non_exhaustive()
     }
 }
@@ -173,7 +174,7 @@ impl Connection for SerialConn {
         self.port = Some(port);
         self.reader = Some(task);
         self.events = Some(rx);
-        tracing::info!(session = %self.spec.name, device = %params.device, baud = params.baud_rate, "serial opened");
+        tracing::info!(session = %self.spec.name, baud = params.baud_rate, "serial opened");
         Ok(())
     }
 

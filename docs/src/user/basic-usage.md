@@ -35,6 +35,8 @@ remote-app-headless completions bash
 remote-app-headless reset-config
 ```
 
-Commands requiring the master password prompt without echo. The `connect`
+Commands requiring the master password prompt without echo (or read
+`$MBXT_MASTER_PASSWORD` / `$MBXT_SSH_PASSWORD` when set; `--password`
+works but warns — it is visible in `ps` output and shell history). The `connect`
 subcommand is currently a CLI routing placeholder; use the GUI for interactive
 connections.

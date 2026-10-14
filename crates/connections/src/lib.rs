@@ -223,11 +223,26 @@ pub mod spawn {
     /// Launch descriptor: program + argv (never containing secrets) plus
     /// an optional password delivered over stdin. Pure constructor, so
     /// tests can assert the argv invariant without spawning anything.
-    #[derive(Debug)]
+    ///
+    /// `Debug` is hand-implemented: `stdin_password` prints as
+    /// `<redacted>` (`Zeroizing` would forward `Debug` to the cleartext).
     pub struct SpawnPlan {
         pub program: PathBuf,
         pub args: Vec<String>,
         pub stdin_password: Option<Zeroizing<String>>,
+    }
+
+    impl std::fmt::Debug for SpawnPlan {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.debug_struct("SpawnPlan")
+                .field("program", &self.program)
+                .field("args", &self.args)
+                .field(
+                    "stdin_password",
+                    &self.stdin_password.as_ref().map(|_| "<redacted>"),
+                )
+                .finish()
+        }
     }
 
     /// Resolve the viewer binary: an explicit `MBXT_*` override wins,
@@ -565,6 +580,40 @@ mod tests {
                 Some("s3cret")
             );
         });
+    }
+
+    #[test]
+    fn spawn_plan_debug_redacts_stdin_password() {
+        use std::path::PathBuf;
+        let plan = spawn::SpawnPlan {
+            program: PathBuf::from("/bin/true"),
+            args: vec!["/v:example.invalid:3389".to_string()],
+            stdin_password: Some(Zeroizing::new("s3cret".into())),
+        };
+        let rendered = format!("{plan:?}");
+        assert!(!rendered.contains("s3cret"), "password leaked: {rendered}");
+        assert!(
+            rendered.contains("<redacted>"),
+            "marker missing: {rendered}"
+        );
+    }
+
+    #[test]
+    fn connection_debugs_redact_host() {
+        let spec = SessionSpec {
+            name: "web".to_string(),
+            protocol: Protocol::Ssh,
+            host: Some("canary-host.invalid".to_string()),
+            username: Some("canary-user".to_string()),
+            ..spec(Protocol::Ssh)
+        };
+        let rendered = format!("{:?}", crate::ssh::SshConn::new(&spec));
+        assert!(!rendered.contains("canary-host"), "leaked: {rendered}");
+        assert!(!rendered.contains("canary-user"), "leaked: {rendered}");
+        let rendered = format!("{:?}", crate::telnet::TelnetConn::new(&spec));
+        assert!(!rendered.contains("canary-host"), "leaked: {rendered}");
+        let rendered = format!("{:?}", crate::serial::SerialConn::new(&spec));
+        assert!(!rendered.contains("canary-host"), "leaked: {rendered}");
     }
 
     #[test]

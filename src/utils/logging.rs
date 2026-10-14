@@ -86,9 +86,15 @@ pub fn install_panic_hook() {
             .unwrap_or_else(|| "<non-string panic payload>".to_string());
         let location = info.location().map(|l| l.to_string()).unwrap_or_default();
 
+        // Never log raw panic text: it may carry user/remote strings
+        // (passwords, hosts, cookies, terminal bytes). Log the scrubbed
+        // preview + length; the feedback allow-list drops panic lines
+        // from shipped reports anyway.
+        let scrubbed = scrub_panic_payload(&payload);
         tracing::error!(
             target: "panic",
-            message = %payload,
+            message = %scrubbed,
+            payload_len = payload.len(),
             %location,
             "panic caught; see report output and log directory"
         );
@@ -99,6 +105,48 @@ pub fn install_panic_hook() {
         );
         previous(info);
     }));
+}
+
+/// Scrub a panic payload for logging: keep a short printable preview with
+/// secret-shaped `key=value` pairs redacted. Pure function, unit-tested.
+fn scrub_panic_payload(payload: &str) -> String {
+    let printable: String = payload
+        .chars()
+        .filter(|c| !c.is_control() || *c == '\n')
+        .take(300)
+        .collect();
+    let mut scrubbed = printable;
+    for key in [
+        "password",
+        "passwd",
+        "passphrase",
+        "secret",
+        "token",
+        "cookie",
+    ] {
+        let mut out = String::with_capacity(scrubbed.len());
+        let lower = scrubbed.to_lowercase();
+        let mut rest = 0;
+        while let Some(hit) = lower[rest..].find(key) {
+            let start = rest + hit;
+            out.push_str(&scrubbed[rest..start + key.len()]);
+            let mut end = start + key.len();
+            let bytes = scrubbed.as_bytes();
+            while end < bytes.len()
+                && (bytes[end] == b' ' || bytes[end] == b':' || bytes[end] == b'=')
+            {
+                end += 1;
+            }
+            while end < bytes.len() && !bytes[end].is_ascii_whitespace() {
+                end += 1;
+            }
+            out.push_str("=<redacted>");
+            rest = end;
+        }
+        out.push_str(&scrubbed[rest..]);
+        scrubbed = out;
+    }
+    scrubbed
 }
 
 #[cfg(test)]
@@ -145,5 +193,18 @@ mod tests {
         // Install twice: proves take_hook/set_hook chaining is idempotent.
         install_panic_hook();
         install_panic_hook();
+    }
+
+    #[test]
+    fn panic_scrub_redacts_secrets_and_strips_escapes() {
+        let scrubbed = scrub_panic_payload("password=hunter2\ntoken: abc123 \x1b[6n ok");
+        assert!(!scrubbed.contains("hunter2"), "secret leaked: {scrubbed}");
+        assert!(!scrubbed.contains("abc123"), "token leaked: {scrubbed}");
+        assert!(!scrubbed.contains('\x1b'), "escape leaked: {scrubbed:?}");
+        assert!(
+            scrubbed.contains("<redacted>"),
+            "redaction marker missing: {scrubbed}"
+        );
+        assert!(scrubbed.contains("ok"), "context preserved: {scrubbed}");
     }
 }

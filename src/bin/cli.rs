@@ -799,13 +799,26 @@ fn list_sessions(paths: &AppPaths) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Resolve the password: explicit `--password` value or interactive prompt
-/// (no echo). Held in `SecurePassword` so the copy is zeroized on drop.
+/// Resolve the password: explicit `--password` value (warned: visible in
+/// `ps`/shell history), then `$MBXT_MASTER_PASSWORD`/`$MBXT_SSH_PASSWORD`,
+/// then interactive prompt (no echo). Held in `SecurePassword` so the copy
+/// is zeroized on drop.
 fn prompt_password(explicit: Option<&String>) -> anyhow::Result<SecurePassword> {
-    let value = match explicit {
-        Some(p) => p.clone(),
-        None => rpassword::prompt_password("Master password: ")?,
-    };
+    if let Some(p) = explicit {
+        eprintln!(
+            "warning: --password is visible in `ps` output and shell history; \
+             prefer the prompt or $MBXT_MASTER_PASSWORD/$MBXT_SSH_PASSWORD"
+        );
+        return Ok(SecurePassword::new(p));
+    }
+    for var in ["MBXT_MASTER_PASSWORD", "MBXT_SSH_PASSWORD"] {
+        if let Ok(value) = std::env::var(var) {
+            if !value.trim().is_empty() {
+                return Ok(SecurePassword::new(&value));
+            }
+        }
+    }
+    let value = rpassword::prompt_password("Master password: ")?;
     Ok(SecurePassword::new(&value))
 }
 

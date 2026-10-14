@@ -4948,8 +4948,15 @@ mod tests {
     fn disconnect_request_sends_shutdown_to_actor() {
         use crate::connection::actor::{SessionCtl, SessionManager};
 
+        // Fixed high id: the shared SessionManager outlives any one test,
+        // so mock actors must never collide across parallel tests.
         let mut state = app();
-        let id = push_session(&mut state, "web-1");
+        let id = 9601;
+        state.sessions.push(mbxt_core::Session {
+            id,
+            spec: spec("web-1"),
+            state: SessionState::Disconnected,
+        });
         let mut rx = SessionManager::shared().inject_test_target(id);
         update(
             &mut state,

@@ -161,6 +161,17 @@ successes without evidence:
 - RDP is an external-process integration, not a native binding; VNC, serial,
   and some protocol paths require live counterparts to verify.
 - Performance numbers are targets until measured per the checklist.
+- NEW (2026-10-14): secrets-hardening slice — audit-found RDP password
+  leak via `SpawnPlan` derived `Debug` (`Zeroizing` forwards `Debug` to
+  cleartext) fixed with hand-impl (`<redacted>`); `SessionSpec`/
+  `SessionEntry` print host/user/tags/notes/serial/forwards as
+  `<redacted>`; conn `Debug`s print session name only; `%host`/`device`
+  values dropped from all `tracing!` calls (sweeps clean); panic
+  payloads scrubbed (secret-patterns redacted, escapes stripped, first
+  300 chars, length kept). Checklist "No secrets in logs" checked with
+  source-sweep + canary unit-test + headless-trace evidence; crash-dump
+  sample inspection stays honestly open (dumps disabled by default —
+  no sample exists).
 - NEW (Phase 6): GUI cold start, idle memory, FPS, and 10-session memory
   are UNMEASURED (no display server here); coverage tooling is
   non-responsive as documented above; RDP viewer windows are external

@@ -36,7 +36,7 @@ impl client::Handler for ClientHandler {
         match russh::keys::check_known_hosts(&self.host, self.port, server_public_key) {
             Ok(accepted) => Ok(accepted),
             Err(error) => {
-                tracing::warn!(%error, host = %self.host, "known_hosts check failed");
+                tracing::warn!(%error, "known_hosts check failed");
                 Ok(false)
             },
         }
@@ -110,7 +110,8 @@ pub struct SshConn {
 impl std::fmt::Debug for SshConn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SshConn")
-            .field("spec", &self.spec)
+            .field("session", &self.spec.name)
+            .field("protocol", &self.spec.protocol)
             .finish_non_exhaustive()
     }
 }
@@ -342,7 +343,7 @@ impl Connection for SshConn {
         self.handle = Some(handle);
         self.channel = Some(channel);
         self.forwarded_rx = Some(forwarded_rx);
-        tracing::info!(session = %self.spec.name, %host, port, "SSH shell opened");
+        tracing::info!(session = %self.spec.name, port, "SSH shell opened");
         Ok(())
     }
 

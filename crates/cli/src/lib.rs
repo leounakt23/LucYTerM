@@ -62,7 +62,7 @@ pub fn build_cli(version: &str, build_info: &str) -> Command {
                     Arg::new("password")
                         .long("password")
                         .action(ArgAction::Set)
-                        .help("Encryption password (omit to be prompted)"),
+                        .help("Encryption password (INSECURE in ps/shell history; omit to be prompted, or use $MBXT_MASTER_PASSWORD)"),
                 ),
             Command::new("import-sessions")
                 .about("Import sessions from an encrypted file")
@@ -71,7 +71,7 @@ pub fn build_cli(version: &str, build_info: &str) -> Command {
                     Arg::new("password")
                         .long("password")
                         .action(ArgAction::Set)
-                        .help("Decryption password (omit to be prompted)"),
+                        .help("Decryption password (INSECURE in ps/shell history; omit to be prompted, or use $MBXT_MASTER_PASSWORD)"),
                 ),
             Command::new("forward")
                 .about("Open SSH tunnels for a stored session (stays up until Ctrl-C)")
@@ -102,7 +102,7 @@ pub fn build_cli(version: &str, build_info: &str) -> Command {
                     Arg::new("password")
                         .long("password")
                         .action(ArgAction::Set)
-                        .help("SSH password (omit to be prompted)"),
+                        .help("SSH password (INSECURE in ps/shell history; omit to be prompted, or use $MBXT_SSH_PASSWORD)"),
                 )
                 .arg(
                     Arg::new("key-file")

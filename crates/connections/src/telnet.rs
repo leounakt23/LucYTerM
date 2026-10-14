@@ -210,7 +210,8 @@ pub struct TelnetConn {
 impl std::fmt::Debug for TelnetConn {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TelnetConn")
-            .field("spec", &self.spec)
+            .field("session", &self.spec.name)
+            .field("protocol", &self.spec.protocol)
             .finish_non_exhaustive()
     }
 }
@@ -246,7 +247,7 @@ impl Connection for TelnetConn {
             .write_all(&TelnetParser::naws_message(size.cols, size.rows))
             .await?;
         self.stream = Some(stream);
-        tracing::info!(session = %self.spec.name, %host, port, "telnet connected");
+        tracing::info!(session = %self.spec.name, port, "telnet connected");
         Ok(())
     }
 

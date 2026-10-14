@@ -178,9 +178,28 @@ Productivity:
 - [x] No plaintext secrets in storage; sessions encrypted with AES-256-GCM, (2026-10-07; Argon2id m=64MiB/t=3/p=4, zeroized secrets, redacted Debug, argv invariant tested)
       keys derived with Argon2id.
 - [x] SSH host keys are verified; mismatches block with a clear warning. (2026-10-07; hermetic accept+refuse tests in tests/ssh_loopback.rs)
-- [ ] No secrets, host data, or terminal content in logs (grep release logs).
+- [x] No secrets, host data, or terminal content in logs (grep release logs).
+      (2026-10-14; code-level: `SessionSpec`/`SessionEntry` custom `Debug`
+      redact host/username/tags/notes/serial/forwards (canary tests),
+      `SshConn`/`TelnetConn`/`SerialConn` print session name only,
+      `SpawnPlan` redacts `stdin_password` (RDP password printed clear
+      before — found by audit), all `%host`/`device` values dropped from
+      `tracing!` calls, panic payloads scrubbed (secret-patterns +
+      escapes, length kept). Source sweeps clean: no `tracing!` formats
+      host/user/password/secret values; remaining `{:?}` hits are
+      test-only or the `Protocol` enum. Runtime: throwaway-HOME
+      headless `list-sessions` at `RUST_LOG=trace`, secret-pattern grep
+      over the profile PASS (only `require_master_password` key hit).
+      Session *names* stay in logs (user labels, needed for
+      correlation). CLI `--password` now warns + prefers
+      `$MBXT_MASTER_PASSWORD`/`$MBXT_SSH_PASSWORD`.)
 - [x] Config directory is `0700`, config files `0600` on a fresh profile. (2026-10-07; enforced in paths.rs, 0600 test-asserted)
 - [ ] Crash dumps/minidumps contain no sensitive data (inspect a sample).
+      (2026-10-14 partial: `RLIMIT_CORE=0` + `PR_SET_DUMPABLE=0` unless
+      `MBXT_DEBUGGABLE`, sentry minidump behind two opt-in flags, panic
+      payloads scrubbed before logging — but no dump sample exists to
+      inspect because dumps are disabled by default, so this stays
+      honestly open until a sample is produced and grepped.)
 - [ ] `cargo audit` and `cargo deny` pass at release time.
 
 ## Quality Verification

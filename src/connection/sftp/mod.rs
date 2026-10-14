@@ -186,7 +186,7 @@ impl russh::client::Handler for SftpClientHandler {
         match russh::keys::check_known_hosts(&self.host, self.port, server_public_key) {
             Ok(accepted) => Ok(accepted),
             Err(error) => {
-                tracing::warn!(%error, host = %self.host, "known_hosts check failed");
+                tracing::warn!(%error, "known_hosts check failed");
                 Ok(false)
             },
         }
@@ -281,7 +281,7 @@ async fn dial_sftp(spec: SessionSpec, auth: ConnectionAuth) -> Result<SftpSessio
         .map_err(|err| SftpError::Ssh(err.to_string()))?;
     let stream = channel.into_stream();
     let session = SftpSession::new(stream).await?;
-    tracing::info!(session = %spec.name, %host, port, "SFTP subsystem opened");
+    tracing::info!(session = %spec.name, port, "SFTP subsystem opened");
     Ok(session)
 }
 

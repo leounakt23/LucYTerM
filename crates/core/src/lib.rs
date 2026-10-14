@@ -38,7 +38,12 @@ pub enum AuthMethod {
 }
 
 /// Everything needed to open one connection (one storage row).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// `Debug` is hand-implemented: host, username, tags, notes, serial
+/// params, and forwards are host/user data that must never land in logs
+/// (verification checklist "No secrets in logs"). Only the session name,
+/// protocol, port, auth selector, and x11 flag print.
+#[derive(Clone, Serialize, Deserialize)]
 pub struct SessionSpec {
     pub name: String,
     pub protocol: Protocol,
@@ -62,6 +67,24 @@ pub struct SessionSpec {
     /// Port-forward definitions (Prompt 5.3, SSH sessions).
     #[serde(default)]
     pub forwards: Vec<ForwardDef>,
+}
+
+impl std::fmt::Debug for SessionSpec {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SessionSpec")
+            .field("name", &self.name)
+            .field("protocol", &self.protocol)
+            .field("host", &self.host.as_ref().map(|_| "<redacted>"))
+            .field("port", &self.port)
+            .field("username", &self.username.as_ref().map(|_| "<redacted>"))
+            .field("auth", &self.auth)
+            .field("tags", &"<redacted>")
+            .field("notes", &"<redacted>")
+            .field("x11_forwarding", &self.x11_forwarding)
+            .field("serial", &self.serial.as_ref().map(|_| "<redacted>"))
+            .field("forwards", &"<redacted>")
+            .finish()
+    }
 }
 
 /// Port-forwarding shape (Prompt 5.3 spec): local (`-L`), remote (`-R`),
@@ -307,4 +330,40 @@ pub enum MbxtError {
     Unsupported(&'static str),
     #[error("{0}")]
     Other(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn session_spec_debug_redacts_host_user_and_notes() {
+        let spec = SessionSpec {
+            name: "web".to_string(),
+            protocol: Protocol::Ssh,
+            host: Some("canary-host.invalid".to_string()),
+            port: Some(22),
+            username: Some("canary-user".to_string()),
+            auth: AuthMethod::Password,
+            tags: vec!["canary-tag".to_string()],
+            notes: "canary-note hunter2".to_string(),
+            x11_forwarding: false,
+            serial: None,
+            forwards: vec![],
+        };
+        let rendered = format!("{spec:?}");
+        for canary in [
+            "canary-host",
+            "canary-user",
+            "canary-tag",
+            "canary-note",
+            "hunter2",
+        ] {
+            assert!(!rendered.contains(canary), "leaked {canary}: {rendered}");
+        }
+        assert!(
+            rendered.contains("web"),
+            "name stays for correlation: {rendered}"
+        );
+    }
 }
