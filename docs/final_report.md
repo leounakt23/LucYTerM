@@ -172,6 +172,17 @@ successes without evidence:
   source-sweep + canary unit-test + headless-trace evidence; crash-dump
   sample inspection stays honestly open (dumps disabled by default —
   no sample exists).
+- NEW (2026-10-14): distribution recipes hardened without owning a
+  build host — AUR `depends`/`source` real bugs fixed, headless binary
+  added to RPM/AUR/Snap/Nix recipes (DEB already had it), feature
+  divergence documented per recipe (default everywhere, `--all-features`
+  only Flatpak), new `packaging/scripts/dist-matrix-smoke.sh` probe
+  (currently 0 PASS / 6 MISS, all missing-tool, none broken static
+  refs). The six install-and-run boxes stay honestly unchecked: no
+  builder (rpmbuild/fpm, flatpak-builder, snapcraft, appimagetool,
+  makepkg, nix) exists on this machine; per-artifact follow-ups recorded
+  in the workstream report (Fedora container, flatpak-builder host,
+  snap-LXD, jammy AppImage runner, Arch makepkg+namcap, nix flake check).
 - NEW (2026-10-14): session import closed — was the honest v1.1 MISS.
   Three one-way parsers + published matrix (`docs/
   compatibility_import.md`) + CLI `import --from/--file/--commit` +
