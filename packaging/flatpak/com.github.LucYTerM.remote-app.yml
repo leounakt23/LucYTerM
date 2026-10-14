@@ -1,4 +1,9 @@
 app-id: com.github.LucYTerM.remote-app
+# Feature-set note (distribution matrix): this Flatpak intentionally builds
+# `--all-features` (full protocol matrix) while the DEB/RPM/Snap/AppImage/
+# AUR/Nix recipes ship the DEFAULT feature set (ssh,telnet) like
+# packaging/debian/rules (DEB proven). Keep this divergence when touching
+# the build-commands below.
 runtime: org.freedesktop.Platform
 runtime-version: "25.08"
 sdk: org.freedesktop.Sdk

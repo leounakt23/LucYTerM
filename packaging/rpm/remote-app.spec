@@ -1,9 +1,21 @@
+# Feature-set note (distribution matrix): this spec builds the DEFAULT
+# feature set (ssh,telnet) via plain `cargo build --release --locked`,
+# matching packaging/debian/rules (DEB proven). The Flatpak recipe
+# (packaging/flatpak/...) is the intentional exception and builds
+# `--all-features`. Keep this divergence when touching build flags.
 Name:           remote-app
 Version:        0.1.0
 Release:        1%{?dist}
 Summary:        Secure native remote computing client
 License:        MIT OR Apache-2.0
-URL:            https://github.com/LucYTerM/mbxt
+URL:            https://github.com/leounakt23/LucYTerM
+BuildRequires:  cargo
+BuildRequires:  rust
+BuildRequires:  pkg-config
+BuildRequires:  dbus-devel
+BuildRequires:  systemd-devel
+# packaging/scripts/generate-icons.sh also needs one of: ImageMagick
+# (magick/convert) or librsvg2-tools (rsvg-convert).
 Requires:       dbus-libs
 Requires:       systemd-libs
 
@@ -18,6 +30,7 @@ Native SSH, SFTP, Telnet, VNC, RDP, serial, and terminal client.
 
 %install
 install -Dpm0755 target/release/remote-app %{buildroot}%{_bindir}/remote-app
+install -Dpm0755 target/release/remote-app-headless %{buildroot}%{_bindir}/remote-app-headless
 install -Dpm0644 assets/remote-app.desktop %{buildroot}%{_datadir}/applications/remote-app.desktop
 install -Dpm0644 assets/remote-app.metainfo.xml %{buildroot}%{_datadir}/metainfo/remote-app.metainfo.xml
 install -Dpm0644 docs/remote-app.1 %{buildroot}%{_mandir}/man1/remote-app.1
@@ -26,6 +39,7 @@ for size in 48 128 256 512; do install -Dpm0644 target/package-icons/${size}x${s
 
 %files
 %{_bindir}/remote-app
+%{_bindir}/remote-app-headless
 %{_datadir}/applications/remote-app.desktop
 %{_datadir}/metainfo/remote-app.metainfo.xml
 %{_datadir}/icons/hicolor/scalable/apps/remote-app.svg

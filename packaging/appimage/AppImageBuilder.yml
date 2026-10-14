@@ -1,4 +1,9 @@
 version: 1
+# Feature-set note (distribution matrix): this recipe builds the DEFAULT
+# feature set (ssh,telnet) and ships the GUI binary only on amd64,
+# matching packaging/debian/rules for features (DEB proven). The Flatpak
+# recipe (packaging/flatpak/...) is the intentional `--all-features`
+# exception; build-all.sh additionally covers aarch64 + headless.
 script:
   - cargo build --release --locked
 AppDir:
@@ -21,4 +26,4 @@ AppDir:
       - assets/remote-app.metainfo.xml: usr/share/metainfo/remote-app.metainfo.xml
       - assets/icon.svg: usr/share/icons/hicolor/scalable/apps/remote-app.svg
 AppImage:
-  update-information: zsync|https://github.com/LucYTerM/mbxt/releases/latest/download/remote-app-x86_64.AppImage.zsync
+  update-information: zsync|https://github.com/leounakt23/LucYTerM/releases/latest/download/remote-app-x86_64.AppImage.zsync

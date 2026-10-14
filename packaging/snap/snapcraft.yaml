@@ -1,3 +1,7 @@
+# Feature-set note (distribution matrix): the rust plugin builds the DEFAULT
+# feature set (ssh,telnet), matching packaging/debian/rules (DEB proven).
+# The Flatpak recipe (packaging/flatpak/...) is the intentional exception
+# and builds `--all-features`. Keep this divergence when touching the build.
 name: remote-app
 base: core22
 version: '0.1.0'
@@ -13,6 +17,9 @@ apps:
   remote-app:
     command: bin/remote-app
     plugs: [network, network-bind, home, ssh-keys, password-manager-service, opengl, x11, wayland]
+  remote-app-headless:
+    command: bin/remote-app-headless
+    plugs: [network, network-bind, home, ssh-keys, password-manager-service]
 parts:
   remote-app:
     plugin: rust

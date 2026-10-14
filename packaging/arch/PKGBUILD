@@ -1,13 +1,18 @@
+# Feature-set note (distribution matrix): this PKGBUILD builds the DEFAULT
+# feature set (ssh,telnet) via plain `cargo build --release --locked`,
+# matching packaging/debian/rules (DEB proven). The Flatpak recipe
+# (packaging/flatpak/...) is the intentional exception and builds
+# `--all-features`. Keep this divergence when touching build flags.
 pkgname=remote-app
 pkgver=0.1.0
 pkgrel=1
 pkgdesc='Secure native remote computing client'
 arch=('x86_64' 'aarch64')
-url='https://github.com/LucYTerM/mbxt'
+url='https://github.com/leounakt23/LucYTerM'
 license=('MIT' 'Apache-2.0')
-depends=('libdbus' 'systemd' 'glibc')
+depends=('dbus' 'systemd' 'glibc')
 makedepends=('rust' 'cargo' 'pkgconf')
-source=("remote-app-$pkgver.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
 sha256sums=('SKIP')
 
 build() {
@@ -18,6 +23,7 @@ build() {
 package() {
   cd "$srcdir/remote-app-$pkgver"
   install -Dm755 target/release/remote-app "$pkgdir/usr/bin/remote-app"
+  install -Dm755 target/release/remote-app-headless "$pkgdir/usr/bin/remote-app-headless"
   install -Dm644 assets/remote-app.desktop "$pkgdir/usr/share/applications/remote-app.desktop"
   install -Dm644 assets/remote-app.metainfo.xml "$pkgdir/usr/share/metainfo/remote-app.metainfo.xml"
   install -Dm644 docs/remote-app.1 "$pkgdir/usr/share/man/man1/remote-app.1"
