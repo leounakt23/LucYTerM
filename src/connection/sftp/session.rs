@@ -20,6 +20,39 @@ use super::file_info::FileInfo;
 use super::transfer::{self, CancelToken, TransferOptions};
 use super::SftpError;
 
+/// Split `[offset, offset + remainder)` into at most `worker_count`
+/// contiguous segments, balanced within one byte (first `remainder %
+/// worker_count` segments get one extra byte).
+///
+/// Pure arithmetic so the partitioning is unit-testable; the downloader
+/// hands one segment to each parallel file handle and relies on the
+/// segments being disjoint, contiguous, and exactly covering the range.
+fn segment_plan(offset: u64, remainder: u64, worker_count: usize) -> Vec<(u64, u64)> {
+    let worker_count = worker_count.max(1);
+    if remainder == 0 {
+        return Vec::new();
+    }
+    let mut segments = Vec::with_capacity(worker_count);
+    let base = remainder / worker_count as u64;
+    let extra = (remainder % worker_count as u64) as usize;
+    let mut cursor = offset;
+    for slot in 0..worker_count {
+        let mut len = base;
+        if slot < extra {
+            len = len.saturating_add(1);
+        }
+        if len == 0 {
+            continue;
+        }
+        segments.push((cursor, len));
+        cursor = cursor.saturating_add(len);
+    }
+    if segments.is_empty() {
+        segments.push((offset, remainder));
+    }
+    segments
+}
+
 /// Live SFTP session (cheap to clone: shares the underlying channel).
 #[derive(Clone)]
 pub struct SftpSession {
@@ -184,6 +217,9 @@ impl SftpSession {
         cancel: &CancelToken,
         mut on_progress: impl FnMut(u64, Option<u64>) + Send,
     ) -> Result<u64, SftpError> {
+        use futures::future::join_all;
+        use std::io::SeekFrom;
+
         let total = self
             .inner
             .metadata(remote)
@@ -193,44 +229,170 @@ impl SftpSession {
         let local_len = fs::metadata(local).await.map(|m| m.len()).unwrap_or(0);
         let offset = transfer::resume_offset(local_len, total);
 
-        let mut remote_file = self
-            .inner
-            .open(remote)
-            .await
-            .map_err(SftpError::from_sftp)?;
-        remote_file
-            .seek(std::io::SeekFrom::Start(offset))
-            .await
-            .map_err(SftpError::io)?;
+        // Unknown size: keep a single sequential read (no way to
+        // partition work without an authoritative total).  This is the
+        // rare (metadata-less) fallback and mirrors the previous path.
+        if total.is_none() {
+            let mut remote_file = self
+                .inner
+                .open(remote)
+                .await
+                .map_err(SftpError::from_sftp)?;
+            remote_file
+                .seek(SeekFrom::Start(offset))
+                .await
+                .map_err(SftpError::io)?;
 
-        let mut local_file = fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(offset == 0)
-            .open(local)
-            .await
-            .map_err(SftpError::io)?;
-        local_file
-            .seek(std::io::SeekFrom::Start(offset))
-            .await
-            .map_err(SftpError::io)?;
+            let mut local_file = fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(offset == 0)
+                .open(local)
+                .await
+                .map_err(SftpError::io)?;
+            local_file
+                .seek(SeekFrom::Start(offset))
+                .await
+                .map_err(SftpError::io)?;
+
+            if offset > 0 {
+                on_progress(offset, total);
+            }
+            let pipeline_depth = options.pipeline_depth.clamp(1, 64);
+            let chunk = transfer::chunk_size_for_depth(pipeline_depth);
+            let copied = transfer::copy_stream_limited(
+                &mut remote_file,
+                &mut local_file,
+                total,
+                chunk,
+                cancel,
+                options.throttle_bps,
+                &mut on_progress,
+            )
+            .await?;
+            remote_file.shutdown().await.map_err(SftpError::io)?;
+            return Ok(offset + copied);
+        }
+
+        let total = total.unwrap_or(0);
+        let pipeline_depth = options.pipeline_depth.clamp(1, 64) as usize;
+        let chunk = transfer::chunk_size_for_depth(pipeline_depth as u32);
+        let throttle_bps = options.throttle_bps;
+
+        // Prepare the destination (truncate on fresh start) and seek to the
+        // resume offset.  Each segment below re-opens the local file at its
+        // own offset, so this only establishes the file's initial length.
+        {
+            let mut local_file = fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(offset == 0)
+                .open(local)
+                .await
+                .map_err(SftpError::io)?;
+            local_file
+                .seek(SeekFrom::Start(offset))
+                .await
+                .map_err(SftpError::io)?;
+        }
 
         if offset > 0 {
-            on_progress(offset, total);
+            on_progress(offset, Some(total));
         }
-        let chunk = transfer::chunk_size_for_depth(options.pipeline_depth);
-        let copied = transfer::copy_stream_limited(
-            &mut remote_file,
-            &mut local_file,
-            total,
-            chunk,
-            cancel,
-            options.throttle_bps,
-            &mut on_progress,
-        )
-        .await?;
-        remote_file.shutdown().await.map_err(SftpError::io)?;
-        Ok(offset + copied)
+
+        let remainder = total.saturating_sub(offset);
+        if remainder == 0 {
+            return Ok(offset);
+        }
+
+        // Partition the remaining bytes into one contiguous range per file
+        // handle.  russh-sftp (2.x) serialises each individual `File` to one
+        // outstanding SFTP READ at a time (round-trips per chunk), so the
+        // only way to get parallel READ requests on 0.45 is to open several
+        // handles and let each one drive its own slice concurrently.
+        let segments = segment_plan(offset, remainder, pipeline_depth);
+
+        // Progress aggregation: each segment reports its own cumulative
+        // count; a shared counter guarded by the same mutex as the callback
+        // converts those to strictly monotonic global progress so UI bars
+        // and resume accounting never observe values moving backwards.
+        let progress = Arc::new(std::sync::Mutex::new((offset, on_progress)));
+
+        let cancel = cancel.clone();
+        let remote = remote.to_string();
+        let local = local.to_path_buf();
+        let session = self.clone();
+
+        let tasks: Vec<_> = segments
+            .into_iter()
+            .map(|(seg_start, seg_len)| {
+                let session = session.clone();
+                let cancel = cancel.clone();
+                let progress = progress.clone();
+                let remote = remote.clone();
+                let local = local.clone();
+                async move {
+                    let mut remote_file = session
+                        .inner
+                        .open(&remote)
+                        .await
+                        .map_err(SftpError::from_sftp)?;
+                    remote_file
+                        .seek(SeekFrom::Start(seg_start))
+                        .await
+                        .map_err(SftpError::io)?;
+
+                    let mut local_file = fs::OpenOptions::new()
+                        .write(true)
+                        .create(true)
+                        .truncate(false)
+                        .open(&local)
+                        .await
+                        .map_err(SftpError::io)?;
+                    local_file
+                        .seek(SeekFrom::Start(seg_start))
+                        .await
+                        .map_err(SftpError::io)?;
+                    let mut writer = tokio::io::BufWriter::new(local_file);
+
+                    let progress_cb = progress.clone();
+                    let mut seg_reported = 0u64;
+                    let cb = move |done: u64, _total: Option<u64>| {
+                        let delta = done.saturating_sub(seg_reported);
+                        seg_reported = done;
+                        if let Ok(mut guard) = progress_cb.lock() {
+                            let (aggregate, callback) = &mut *guard;
+                            *aggregate = aggregate.saturating_add(delta);
+                            callback(*aggregate, Some(total));
+                        }
+                    };
+
+                    // Bound this handle to its slice so it stops (and reports
+                    // EOF) exactly at the segment end.
+                    let mut taken = (&mut remote_file).take(seg_len);
+                    let copied = transfer::copy_stream_limited(
+                        &mut taken,
+                        &mut writer,
+                        None,
+                        chunk,
+                        &cancel,
+                        throttle_bps,
+                        cb,
+                    )
+                    .await?;
+                    writer.flush().await.map_err(SftpError::io)?;
+                    let _ = remote_file.shutdown().await;
+                    Ok::<u64, SftpError>(copied)
+                }
+            })
+            .collect();
+
+        let results = join_all(tasks).await;
+        let mut copied_total = 0u64;
+        for result in results {
+            copied_total = copied_total.saturating_add(result?);
+        }
+        Ok(offset + copied_total)
     }
 
     /// Upload `local` → `remote` with resume + progress + cancellation.
@@ -413,5 +575,51 @@ impl SftpSession {
             }
         }
         Ok((files, bytes))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::segment_plan;
+
+    fn assert_covering(offset: u64, remainder: u64, depth: usize, expected_max: usize) {
+        let segments = segment_plan(offset, remainder, depth);
+        assert!(!segments.is_empty());
+        assert!(segments.len() <= expected_max);
+        assert_eq!(segments[0].0, offset, "first segment starts at offset");
+        let mut expected_start = offset;
+        let mut covered = 0u64;
+        for (start, len) in &segments {
+            assert_eq!(*start, expected_start, "segments are contiguous");
+            assert!(*len > 0, "no empty segments");
+            expected_start = expected_start.saturating_add(*len);
+            covered = covered.saturating_add(*len);
+        }
+        assert_eq!(covered, remainder, "segments cover exactly the range");
+    }
+
+    #[test]
+    fn segment_plan_covers_range_boundaries() {
+        assert_covering(0, 512 * 1024 * 1024, 16, 16);
+        assert_covering(7, 1000, 16, 16);
+        assert_covering(0, 3, 64, 3);
+        assert_covering(5, 1, 3, 1);
+        assert_covering(1024, 4096, 1, 1);
+    }
+
+    #[test]
+    fn segment_plan_zero_remainder_is_empty() {
+        assert!(segment_plan(0, 0, 16).is_empty());
+        assert!(segment_plan(123, 0, 4).is_empty());
+    }
+
+    #[test]
+    fn segment_plan_balances_within_one_byte() {
+        let segments = segment_plan(0, 10, 3);
+        let lengths: Vec<u64> = segments.iter().map(|(_, len)| *len).collect();
+        assert_eq!(lengths, vec![4, 3, 3]);
+        let segments = segment_plan(0, 9, 2);
+        let lengths: Vec<u64> = segments.iter().map(|(_, len)| *len).collect();
+        assert_eq!(lengths, vec![5, 4]);
     }
 }
