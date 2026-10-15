@@ -64,7 +64,7 @@ rand = "0.10"
 hickory-resolver = "0.24.1"
 
 # System integration
-nix = "0.29.0"
+nix = "0.31.3"
 directories = "5.0.1"
 serialport = { version = "4.7.2", default-features = false }
 dbus = { version = "0.9.7", features = ["vendored"] }
