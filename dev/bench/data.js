@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792097000178,
+  "lastUpdate": 1792097342875,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2489,6 +2489,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 5556180,
             "range": "± 61283",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "1e728198dc4e14299e9ddfca0e1a8bdc6a0c9f6d",
+          "message": "docs: close CI matrix, actionlint, and coverage checklist items\n\nAlso refresh the final_report performance table rows that still said\nUNMEASURED: 60 FPS (headless CPU path), SSH connect (disposable\ncontainer N=10), and 10 sessions (8 h soak, 14.8 MiB peak).",
+          "timestamp": "2026-10-15T22:43:43+02:00",
+          "tree_id": "12c79f7b55b0e70b74a5b449ac933bbf91980ec6",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/1e728198dc4e14299e9ddfca0e1a8bdc6a0c9f6d"
+        },
+        "date": 1792097342347,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 72356,
+            "range": "± 831",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 97161,
+            "range": "± 233",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 205372,
+            "range": "± 728",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 380161,
+            "range": "± 1752",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 13019,
+            "range": "± 145",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 2929,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 53,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1708,
+            "range": "± 43",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000403986,
+            "range": "± 48518",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 805016,
+            "range": "± 14463",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1403615,
+            "range": "± 23250",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 22132511,
+            "range": "± 126115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 12848893,
+            "range": "± 359130",
             "unit": "ns/iter"
           }
         ]
