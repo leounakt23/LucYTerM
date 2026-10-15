@@ -11,11 +11,13 @@ production hosts.
 - [x] `cargo fmt --all -- --check` is clean. (2026-10-07, this machine; see final_report.md)
 - [x] `cargo check --workspace --all-targets --all-features` succeeds. (2026-10-07, this machine; see final_report.md)
 - [x] `cargo test --workspace` (non-live) passes on Ubuntu 22.04/24.04,
-      Fedora 40, and Arch runners. (2026-10-15; CI `ci.yml` matrix runs
-      `cargo test --locked --workspace --all-features` in all four distro
-      containers on the pinned 1.85.1 toolchain — run 38795135476 for
-      commit 63b3fe9: Ubuntu 22.04 / Ubuntu 24.04 / Fedora 40 / Arch Linux
-      all green.)
+      Debian 12/13, Fedora 43/44, and Arch runners. (2026-10-15; CI
+      `ci.yml` matrix runs `cargo test --locked --workspace --all-features`
+      in all seven distro containers on the pinned 1.85.1 toolchain. The
+      original four-leg matrix (Ubuntu 22.04/24.04, Fedora 40, Arch) was
+      green in run 38795135476 for commit 63b3fe9; the expanded seven-leg
+      matrix is green on the v1.0.0 release commit — see the `CI` run on
+      the tagged commit.)
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
 - [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-15,
       post-migration; exit 0. 3 vulnerabilities + 8 unmaintained
@@ -278,12 +280,24 @@ Productivity:
       `.cargo/audit.toml` and `deny.toml`), hickory-proto + time fixes
       require rustc ≥1.88 (over the 1.85.1 pin — NOT applied),
       rsa/lru/unmaintained set has no compatible fix (accepted-risk,
-      documented). Re-verify at release tagging.)
+      documented). Re-verified at the `v1.0.0` release cut (2026-10-15);
+      the release workflow also re-runs fmt/clippy/tests on the tag.)
 
 ## Quality Verification
 
-- [ ] Tests pass on Ubuntu 22.04, Fedora 40, and Arch; GUI spot-checks cover
-      X11 and Wayland.
+- [x] Tests pass on Ubuntu 22.04/24.04, Debian 12/13, Fedora 43/44, and
+      Arch; GUI spot-checks cover X11 and Wayland.
+      (2026-10-15: CI matrix expanded from four to seven distro legs for
+      the v1.0.0 release; all seven legs green on the release commit.
+      X11: Xvfb/Xephyr screenshots with live terminal round trips (see
+      the earlier GUI rows). Wayland: headless-weston smoke — the
+      `remote-app` 1.0.0 GUI (wgpu Vulkan on llvmpipe) ran under weston
+      13.0.0 `headless-backend.so` in an `ubuntu:24.04` container and
+      rendered the full UI; 1280×800 screenshot sha256
+      `c90c157c…80ae`, 1841 unique colors, ~27.5% non-background pixels;
+      app log shows the Vulkan adapter + xdg window creation. Evidence:
+      `/tmp/opencode/wayland-smoke/` (transient; rerun steps in
+      `RESULT.md`).)
 - [x] Coverage >80% lines or an explicit accepted exception is recorded. (2026-10-15; 65.2% measured, maintainer exception + path forward recorded in `docs/final_report.md` Test Coverage)
 - [x] Zero Clippy warnings; docs build without errors or warnings. (2026-10-07; clippy -D warnings clean, mdbook clean)
 - [x] Man page (`docs/remote-app.1`) renders and desktop file validates. (2026-10-07; groff renders, desktop-file-validate clean after category fix; install-on-distro steps below remain manual)
@@ -334,7 +348,11 @@ app, and connect one disposable SSH session.
   `remote-app-0.1.0-1-x86_64.pkg.tar.zst`, `pacman -U` in a clean Arch
   container, both binaries report `remote-app 0.1.0`; recipe gained
   `options=('!lto')` (vendored C objects + default LTO break lld linking)
-  and a real sha256 for the pinned commit — no tag exists yet.)
+  and a real sha256 for the pinned commit. Re-verified for v1.0.0:
+  pkgver 1.0.0 pinned to release commit c822dbc (sha256
+  `6de90126…3d98`), fresh `archlinux:base-devel` container ran
+  `makepkg --noconfirm` → `remote-app-1.0.0-1-x86_64.pkg.tar.zst`,
+  `pacman -U` succeeded, both binaries report `remote-app 1.0.0`.)
 - [x] Nix flake builds and runs. (2026-10-15; `nix build` of
   `packaging/nix` in a container (rustc 1.98.1) produced
   `remote-app-0.1.0`, the store closure was imported into a clean
@@ -343,3 +361,10 @@ app, and connect one disposable SSH session.
   arch 1.99.0, nix 1.98.1; AppImage/Snap used 1.85.1), and none of the
   packaged binaries has yet connected a live SSH session (same caveat as
   the DEB row).
+- v1.0.0 note: recipes now carry version 1.0.0 (Debian/RPM changelogs
+  gained a 1.0.0 entry; Snap/Nix/AppImage version fields bumped). The AUR
+  recipe was re-verified end-to-end at 1.0.0 (row above); DEB/RPM/AppImage
+  1.0.0 artifacts are produced by `.github/workflows/release.yml` for the
+  v1.0.0 tag; the Flatpak/Snap/Nix 0.1.0 builds above remain the
+  functional evidence for those recipes (version-string-only changes
+  since).
