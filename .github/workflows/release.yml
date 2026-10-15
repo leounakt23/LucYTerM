@@ -135,7 +135,10 @@ jobs:
           mv package-root AppDir
           cp assets/icon.svg AppDir/remote-app.svg
           cp assets/remote-app.desktop AppDir/remote-app.desktop
-          printf '#!/bin/sh\nexec "$APPDIR/usr/bin/remote-app" "$@"\n' > AppDir/AppRun
+          cat > AppDir/AppRun <<'APPRUN'
+          #!/bin/sh
+          exec "$APPDIR/usr/bin/remote-app" "$@"
+          APPRUN
           chmod +x AppDir/AppRun
           curl -fsSLo appimagetool.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           echo "${{ vars.APPIMAGETOOL_SHA256 }}  appimagetool.AppImage" | sha256sum --check --strict
@@ -197,9 +200,12 @@ jobs:
           CATEGORY_ID: ${{ vars.RELEASE_DISCUSSION_CATEGORY_ID }}
           TAG: ${{ needs.validate.outputs.tag }}
         run: |
+          # The GraphQL variables ($repo, $category, ...) are literal, not
+          # shell variables.
+          # shellcheck disable=SC2016
           gh api graphql \
             -f query='mutation($repo:ID!,$category:ID!,$title:String!,$body:String!){createDiscussion(input:{repositoryId:$repo,categoryId:$category,title:$title,body:$body}){discussion{url}}}' \
-            -f repo="$(gh api repos/$GITHUB_REPOSITORY --jq .node_id)" \
+            -f repo="$(gh api "repos/$GITHUB_REPOSITORY" --jq .node_id)" \
             -f category="$CATEGORY_ID" \
             -f title="Remote App $TAG" \
             -f body="Release notes: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
