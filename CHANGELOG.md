@@ -6,6 +6,8 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-15
+
 ### Added
 
 - User, developer, packaging, security, and reproducible-build documentation.
@@ -20,6 +22,16 @@ Semantic Versioning.
 ### Security
 
 - Process hardening, secret wrappers, host-key policy, and secure file writes.
+- Migrated `russh` 0.45 → 0.61.1, clearing the high-severity SSH advisory set and retiring its `cargo audit` / `cargo deny` ignores.
+
+### Fixed
+
+- Large SFTP downloads aborted when the server initiated a mid-session SSH rekey (`StrictKeyExchangeViolation`); transfers now complete across rekeys.
+
+### Performance
+
+- Parallel-handle SFTP download pipeline with monotonic progress: 512 MiB download 37 → 517 MB/s; 1 GiB download no longer stalls (672 MB/s, checksum-verified).
+- Ten-session 8 h soak: peak VmHWM 14.8 MiB, VmRSS slope 177.8 KiB/h, 0 reconnects, 2.75 TB transferred.
 
 ## [0.1.0] - 2026-01-01
 
@@ -28,5 +40,5 @@ Semantic Versioning.
 - Initial native remote application workspace and session model.
 - SSH, terminal, SFTP, forwarding, macro, and multi-exec foundations.
 
-[Unreleased]: https://github.com/leounakt23/LucYTerM/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/leounakt23/LucYTerM/releases/tag/v0.1.0
+[Unreleased]: https://github.com/leounakt23/LucYTerM/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/leounakt23/LucYTerM/releases/tag/v1.0.0

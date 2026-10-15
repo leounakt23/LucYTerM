@@ -12,7 +12,7 @@ AppDir:
     id: com.github.LucYTerM.remote-app
     name: remote-app
     icon: remote-app
-    version: 0.1.0
+    version: 1.0.0
     exec: usr/bin/remote-app
   apt:
     arch: amd64

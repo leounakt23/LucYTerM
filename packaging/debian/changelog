@@ -1,3 +1,10 @@
+remote-app (1.0.0-1) unstable; urgency=medium
+
+  * First stable release: russh 0.61.1 (mid-session rekey fix),
+    parallel SFTP download pipeline, expanded CI matrix.
+
+ -- LucYTerM maintainers <maintainers@example.com>  Thu, 15 Oct 2026 00:00:00 +0000
+
 remote-app (0.1.0-1) unstable; urgency=medium
 
   * Initial packaged release.

@@ -1,19 +1,20 @@
 # Final Report: Remote App v1.0
 
-> Status 2026-10-07: working tree at Phase 6. Repository version is
-> `0.1.0`; no v1.0 tag has been cut. Every number below was measured in
+> Status 2026-10-15: v1.0.0 released. Repository version is `1.0.0`; the
+> `v1.0.0` tag was cut on 2026-10-15. Every number below was measured in
 > this repository on the stated machine; targets are never copied into
 > results, and unmeasured rows stay UNMEASURED.
 
 ## Project Summary
 
-- Report date: 2026-10-07
-- Release tag: none (no v1.0 release cut; version `0.1.0`)
-- Lines of code: 37,189 Rust lines (`src` + `crates` + `tests` +
+- Report date: 2026-10-15
+- Release tag: `v1.0.0` (2026-10-15)
+- Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
-- Dependencies: 852 lock entries (`Cargo.lock`); `cargo deny check`
-  licenses/bans/sources passes; `cargo audit` reports 5 unpatched
-  advisories (see Security Posture)
+- Dependencies: 908 lock entries (`Cargo.lock`); `cargo deny check`
+  licenses/bans/sources passes; `cargo audit` reports 3 unpatched
+  advisories + 8 unmaintained warnings, all ignore-listed with reasons
+  (see Security Posture)
 - Toolchain: Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.80
 
 ## Features Delivered
@@ -142,20 +143,23 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   exists; the Rust side spawns the external `xfreerdp` client, so CI
   wiring stays manual for now), and key/agent live logins stay
   ignored/skipped by default.
-- Platforms exercised: Ubuntu 24.04 x86_64 only. Fedora/Arch/
-  Windows targets compile-check in CI; this machine cannot run them.
+- Platforms exercised: Ubuntu 24.04 x86_64 (host, incl. Xvfb/Xephyr GUI
+  runs), plus container builds/installs on Ubuntu 22.04/24.04, Fedora 40,
+  Arch, and the Flatpak/Snap/AppImage/Nix runtimes. Windows targets
+  compile-check in CI only.
 
 ## Known Limitations
 
 The following are true at the time of writing and must not be edited into
 successes without evidence:
 
-- Version is `0.1.0`; no v1.0 release has been cut.
+- Version is `1.0.0`; released as `v1.0.0` on 2026-10-15.
 - Single maintainer (bus factor 1); backup seats vacant.
-- Private GitHub vulnerability reporting returned 404 during review; enabling
-  it (or a verified private contact) is a release blocker.
-- CI covers Ubuntu 22.04/24.04, Fedora 40, and Arch; Debian and
-  current/previous Fedora need release smoke tests until permanent jobs exist.
+- Private GitHub vulnerability reporting is enabled (verified 2026-10-15);
+  GitHub security advisories are the only private contact channel.
+- CI covers Ubuntu 22.04/24.04, Debian 12/13, Fedora 43/44, and Arch;
+  Debian and current/previous Fedora smoke tests now run as permanent CI
+  jobs.
 - Local full-test linking is constrained on Windows-GNU hosts without
   `dlltool.exe`; CI is authoritative for the full suite.
 - No official chat, social, blog, Weblate, funding, or meeting cadence exists.

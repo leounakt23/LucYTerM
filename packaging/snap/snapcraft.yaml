@@ -4,7 +4,7 @@
 # and builds `--all-features`. Keep this divergence when touching the build.
 name: remote-app
 base: core22
-version: '0.1.0'
+version: '1.0.0'
 summary: Secure native remote computing client
 description: |
   Native SSH, SFTP, Telnet, VNC, RDP, serial, and terminal client.

@@ -4,7 +4,7 @@
 # (packaging/flatpak/...) is the intentional exception and builds
 # `--all-features`. Keep this divergence when touching build flags.
 Name:           remote-app
-Version:        0.1.0
+Version:        1.0.0
 Release:        1%{?dist}
 Summary:        Secure native remote computing client
 License:        MIT OR Apache-2.0
@@ -63,5 +63,8 @@ for size in 48 128 256 512; do install -Dpm0644 target/package-icons/${size}x${s
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database >/dev/null 2>&1 || :
 
 %changelog
+* Thu Oct 15 2026 LucYTerM maintainers <maintainers@example.com> - 1.0.0-1
+- First stable release: russh 0.61.1 (mid-session rekey fix), parallel
+  SFTP download pipeline, expanded CI matrix.
 * Thu Jan 01 2026 LucYTerM maintainers <maintainers@example.com> - 0.1.0-1
 - Initial packaged release.

@@ -8,9 +8,9 @@
 ## Honesty Rules (Binding)
 
 - Never claim a version, platform, integration, or metric that was not
-  measured in this repository. Current version is `0.1.0`; there is no v1.0
-  release yet. Performance numbers are targets until measured and recorded in
-  `docs/final_report.md`.
+  measured in this repository. Current version is `1.0.0`; the first stable
+  release is `v1.0.0` (2026-10-15). Performance numbers are targets until
+  measured and recorded in `docs/final_report.md`.
 - Single-maintainer project (bus factor 1). Do not invent co-maintainers,
   moderators, chat rooms, social accounts, funding channels, or partnerships.
 - Response times and roadmaps are best-effort targets, not SLAs or contracts.

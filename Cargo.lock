@@ -3726,14 +3726,14 @@ checksum = "4facc753ae494aeb6e3c22f839b158aebd4f9270f55cd3c79906c45476c47ab4"
 
 [[package]]
 name = "mbxt-cli"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "clap",
 ]
 
 [[package]]
 name = "mbxt-connections"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "mbxt-core",
@@ -3749,7 +3749,7 @@ dependencies = [
 
 [[package]]
 name = "mbxt-core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "serde",
  "thiserror 2.0.20",
@@ -3758,7 +3758,7 @@ dependencies = [
 
 [[package]]
 name = "mbxt-storage"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm 0.10.3",
  "argon2 0.5.3",
@@ -3776,7 +3776,7 @@ dependencies = [
 
 [[package]]
 name = "mbxt-system"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "copypasta",
  "dbus",
@@ -3791,7 +3791,7 @@ dependencies = [
 
 [[package]]
 name = "mbxt-terminal"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "bytemuck",
  "mbxt-core",
@@ -5683,7 +5683,7 @@ checksum = "ba39f3699c378cd8970968dcbff9c43159ea4cfbd88d43c00b22f2ef10a435d2"
 
 [[package]]
 name = "remote-app"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "aes-gcm 0.10.3",
  "anyhow",
@@ -9194,7 +9194,7 @@ checksum = "e450f9b2ed1dff33c94c12589a87338689467b9c4f5d8a5710bd09a847d2c8a7"
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
+version = "1.0.0"
 
 [[package]]
 name = "yazi"

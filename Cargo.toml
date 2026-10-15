@@ -16,7 +16,7 @@ name = "performance"
 harness = false
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.80"
 license = "MIT OR Apache-2.0"
@@ -25,12 +25,12 @@ authors = ["LucYTerM"]
 
 [workspace.dependencies]
 # Internal crates
-mbxt-core = { version = "0.1.0", path = "crates/core" }
-mbxt-terminal = { version = "0.1.0", path = "crates/terminal" }
-mbxt-connections = { version = "0.1.0", path = "crates/connections", default-features = false }
-mbxt-storage = { version = "0.1.0", path = "crates/storage" }
-mbxt-system = { version = "0.1.0", path = "crates/system" }
-mbxt-cli = { version = "0.1.0", path = "crates/cli" }
+mbxt-core = { version = "1.0.0", path = "crates/core" }
+mbxt-terminal = { version = "1.0.0", path = "crates/terminal" }
+mbxt-connections = { version = "1.0.0", path = "crates/connections", default-features = false }
+mbxt-storage = { version = "1.0.0", path = "crates/storage" }
+mbxt-system = { version = "1.0.0", path = "crates/system" }
+mbxt-cli = { version = "1.0.0", path = "crates/cli" }
 
 # Async runtime & ecosystem
 tokio = { version = "1.44", features = [

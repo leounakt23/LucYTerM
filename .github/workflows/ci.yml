@@ -37,8 +37,17 @@ jobs:
           - name: Ubuntu 24.04
             image: ubuntu:24.04
             install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libssl-dev libudev-dev libdbus-1-dev ca-certificates git
-          - name: Fedora 40
-            image: fedora:40
+          - name: Debian 12
+            image: debian:12
+            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libssl-dev libudev-dev libdbus-1-dev ca-certificates git
+          - name: Debian 13
+            image: debian:13
+            install: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y curl build-essential pkg-config libssl-dev libudev-dev libdbus-1-dev ca-certificates git
+          - name: Fedora 43
+            image: fedora:43
+            install: dnf install -y curl gcc gcc-c++ make pkgconf-pkg-config openssl-devel systemd-devel dbus-devel git
+          - name: Fedora 44
+            image: fedora:44
             install: dnf install -y curl gcc gcc-c++ make pkgconf-pkg-config openssl-devel systemd-devel dbus-devel git
           - name: Arch Linux
             image: archlinux:base-devel

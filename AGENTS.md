@@ -55,5 +55,5 @@ cargo test --workspace
 
 ## Authoritative docs
 
-- `MASTER_PROMPT.md` — binding spec; includes "honesty rules": version is 0.1.0, never claim unmeasured performance numbers (targets until recorded in `docs/final_report.md`), single-maintainer project.
+- `MASTER_PROMPT.md` — binding spec; includes "honesty rules": version is 1.0.0, never claim unmeasured performance numbers (targets until recorded in `docs/final_report.md`), single-maintainer project.
 - `docs/src/developer/architecture.md` (layering), `docs/src/developer/testing.md` (test tiers), `docs/developer/coding_style.md` (style), `docs/reproducible_builds.md` (release builds).

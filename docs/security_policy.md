@@ -8,11 +8,12 @@ private GitHub Security Advisory:
 
 `https://github.com/leounakt23/LucYTerM/security/advisories/new`
 
-Private vulnerability reporting must be enabled in repository settings before
-v1.0 is declared operational. If the link returns 404, no working private
-channel is configured: do not send vulnerability details publicly. Open a
-detail-free support discussion asking the owner to establish a private channel.
-This is a release blocker, not a reporter responsibility.
+Private vulnerability reporting is enabled in repository settings (verified
+2026-10-15 via the GitHub API, `{"enabled":true}`). If the link returns 404,
+no working private channel is configured: do not send vulnerability details
+publicly. Open a detail-free support discussion asking the owner to establish
+a private channel. An unconfigured private channel is a release blocker, not
+a reporter responsibility.
 
 Include affected versions, platform, prerequisites, impact, a minimal proof of
 concept, and whether credentials or private content may be exposed. Use
