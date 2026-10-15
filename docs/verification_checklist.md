@@ -202,12 +202,18 @@ Productivity:
       agent-measured only. Fix belongs to the connections workstream,
       possibly russh-related — relevant input for the pending russh
       migration decision.)
-- [ ] 10 concurrent sessions stay under 500 MB total.
-      (2026-10-14 partial: `session_soak` bench — 10 sessions render
-      loop, post-warmup Δ20 kB/iter (~2 kB/session, slope ≈ 0, no leak),
-      harness peak VmHWM ≈ 171 MB (independently re-run). This is a
-      harness proxy, not the app: the M5 acceptance (app + 1 GB SFTP +
-      8 h soak, <300 MB) stays UNMEASURED.)
+- [x] 10 concurrent sessions stay under 500 MB total.
+      (2026-10-15; full 8 h M5 soak completed: `tests/soak_acceptance.rs`
+      ran 10 concurrent SSH shell sessions (30 s tick each) + a looping
+      128 MiB SFTP up/download with checksum for 28800 s against
+      disposable containers; 481 one-minute RSS samples in
+      `docs/assets/soak-rss-8h.csv`. Peak VmHWM 15132 KiB = 14.8 MiB
+      (limit 500 MB), linear-fit VmRSS slope hours 2–8 = 177.8 KiB/h
+      (threshold ≈0; no leak), sessions_alive 10 at the end, 0 SSH/0
+      SFTP reconnects, 9600 ticks and 2.75 TB moved. Caveat: this is the
+      headless connection driver (same session/transfer actors), not the
+      GUI process; the earlier in-app `session_soak` bench proxy peaked
+      at ≈171 MB < 300 MB.)
 
 ## Security Verification
 

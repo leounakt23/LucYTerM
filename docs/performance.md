@@ -69,6 +69,7 @@ present). Profiles are recorded per row: `bench` = bench profile
 | SFTP 512 MiB vs disposable atmoz:2222 (depth 16) | up 435.7 MB/s (1.23 s), down 36.8 MB/s (14.61 s); repeat run 406.9/39.8; 128 MiB run 419.4/37.8 | KT23 / test |
 | SFTP 1 GiB download vs disposable atmoz:2222 | STALLS ~800 MiB / ~21 s, reproducible (depths 4+16, fresh connections); server exonerated per agent run (OpenSSH CLI: 1 GiB in 1.8 s — agent-measured, not independently re-verified here: no sshpass on this machine); upload 1 GiB completes (~430 MB/s). Connections workstream owns the fix. | KT23 / test |
 | 10-session soak (80×24 + headless renderer) | 2.4603 ms/iter; slope 0 (ΔVmRSS = 0 kB over 4000+ iters post-warmup); peak VmHWM ≈ 171 MB in-harness | KT23 / bench |
+| 8 h M5 soak: 10 SSH sessions + looping 128 MiB SFTP vs disposable 2323/2324 | 481 samples; peak VmHWM 15132 KiB (14.8 MiB); VmRSS slope h2–8 177.8 KiB/h; 10/10 sessions alive, 0 reconnects (SSH/SFTP), 9600 ticks, 2.75 TB moved; CSV `docs/assets/soak-rss-8h.csv` | KT23 / test |
 | Composited present path (Xephyr/GPU frame times) | UNMEASURED: no automated present harness; display :1 (7680×3600) and GPU present, headless CPU path above drives the same instance builder | — |
 | Cold start / idle memory of packaged release | UNMEASURED: no packaged release built in this workstream | — |
 

@@ -168,7 +168,10 @@ successes without evidence:
   Transfer: SPLIT — upload 433 MB/s passes, download 37 MB/s fails;
   1 GiB stall finding owned by the connections workstream (russh
   relevance noted for the migration decision). 10-session memory:
-  harness proxy flat at ~171 MB peak, app-level 8 h soak UNMEASURED.
+  harness proxy flat at ~171 MB peak; on 2026-10-15 the full 8 h soak
+  completed (10 SSH sessions + looping 128 MiB SFTP): peak VmHWM
+  14.8 MiB, slope 177.8 KiB/h, 2.75 TB moved, 0 reconnects — evidence
+  `docs/assets/soak-rss-8h.csv`. Still headless (no GUI process).
 - NEW (2026-10-14): secrets-hardening slice — audit-found RDP password
   leak via `SpawnPlan` derived `Debug` (`Zeroizing` forwards `Debug` to
   cleartext) fixed with hand-impl (`<redacted>`); `SessionSpec`/
