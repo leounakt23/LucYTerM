@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792093224230,
+  "lastUpdate": 1792097000178,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2387,6 +2387,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 8663416,
             "range": "± 102949",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "48a3d94833a99a8aa8b9c24028cf815bdaa18d15",
+          "message": "build: close all six distro install boxes with container builds\n\nRPM (fedora:40 dnf install), AUR (makepkg !lto + pacman), AppImage\n(extract-and-run), Flatpak (flatpak-builder + Xvfb run), Snap\n(snapcraft --destructive-mode + snap install), Nix (flake build +\nclean-store smoke) all build, install, and launch remote-app 0.1.0.\nRecipes: AUR !lto + real sha256 for pinned commit; RPM _builddir\nstaging + librsvg2-tools; snap libc6-dev build package; flatpak\nrename-icon, appstream host note, cargo net retries.",
+          "timestamp": "2026-10-15T22:38:07+02:00",
+          "tree_id": "0fb397a4b6f2eeb85cd481bfc47b0ef2fcc18cd5",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/48a3d94833a99a8aa8b9c24028cf815bdaa18d15"
+        },
+        "date": 1792096999193,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 61198,
+            "range": "± 291",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 76915,
+            "range": "± 2669",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 156045,
+            "range": "± 350",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 332345,
+            "range": "± 423",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 9269,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 2565,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 51,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1510,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000448400,
+            "range": "± 43057",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 369017,
+            "range": "± 2043",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 939248,
+            "range": "± 5497",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 22477645,
+            "range": "± 294469",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 5556180,
+            "range": "± 61283",
             "unit": "ns/iter"
           }
         ]
