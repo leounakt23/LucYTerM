@@ -124,8 +124,12 @@ human-panic = "2.0"
 fluent-bundle = "0.15"
 unic-langid = "0.9"
 serde_json = "1.0"
-reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "native-tls"] }
-sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "native-tls"] }
+# TLS for the opt-in feedback-network / crash-reporting features: rustls
+# (ring provider) keeps cross and static-musl release builds free of system
+# OpenSSL. Do not switch these back to native-tls without adding OpenSSL to
+# every cross container (the release binaries job builds all four targets).
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "rustls"] }
 minidumper = "0.8"
 symbolic = "12"
 
