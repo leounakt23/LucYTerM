@@ -1,14 +1,14 @@
 # Final Report: Remote App v1.0
 
-> Status 2026-10-15: v1.0.0 released. Repository version is `1.0.0`; the
-> `v1.0.0` tag was cut on 2026-10-15. Every number below was measured in
+> Status 2026-10-16: v1.0.0 released. Repository version is `1.0.0`; the
+> `v1.0.0` tag was cut on 2026-10-16. Every number below was measured in
 > this repository on the stated machine; targets are never copied into
 > results, and unmeasured rows stay UNMEASURED.
 
 ## Project Summary
 
-- Report date: 2026-10-15
-- Release tag: `v1.0.0` (2026-10-15)
+- Report date: 2026-10-16
+- Release tag: `v1.0.0` (2026-10-16)
 - Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
 - Dependencies: 908 lock entries (`Cargo.lock`); `cargo deny check`
@@ -153,7 +153,7 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 The following are true at the time of writing and must not be edited into
 successes without evidence:
 
-- Version is `1.0.0`; released as `v1.0.0` on 2026-10-15.
+- Version is `1.0.0`; released as `v1.0.0` on 2026-10-16.
 - Single maintainer (bus factor 1); backup seats vacant.
 - Private GitHub vulnerability reporting is enabled (verified 2026-10-15);
   GitHub security advisories are the only private contact channel.

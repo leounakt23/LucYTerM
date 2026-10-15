@@ -280,7 +280,7 @@ Productivity:
       `.cargo/audit.toml` and `deny.toml`), hickory-proto + time fixes
       require rustc ≥1.88 (over the 1.85.1 pin — NOT applied),
       rsa/lru/unmaintained set has no compatible fix (accepted-risk,
-      documented). Re-verified at the `v1.0.0` release cut (2026-10-15);
+      documented). Re-verified during v1.0.0 release prep (2026-10-15);
       the release workflow also re-runs fmt/clippy/tests on the tag.)
 
 ## Quality Verification
@@ -349,8 +349,8 @@ app, and connect one disposable SSH session.
   container, both binaries report `remote-app 0.1.0`; recipe gained
   `options=('!lto')` (vendored C objects + default LTO break lld linking)
   and a real sha256 for the pinned commit. Re-verified for v1.0.0:
-  pkgver 1.0.0 pinned to release commit c822dbc (sha256
-  `6de90126…3d98`), fresh `archlinux:base-devel` container ran
+  pkgver 1.0.0 pinned to release commit 8127431 (sha256
+  `44bcd0a2…4d5c`), fresh `archlinux:base-devel` container ran
   `makepkg --noconfirm` → `remote-app-1.0.0-1-x86_64.pkg.tar.zst`,
   `pacman -U` succeeded, both binaries report `remote-app 1.0.0`.)
 - [x] Nix flake builds and runs. (2026-10-15; `nix build` of

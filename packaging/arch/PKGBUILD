@@ -8,11 +8,10 @@ pkgver=1.0.0
 pkgrel=1
 pkgdesc='Secure native remote computing client'
 arch=('x86_64')
-# Pin the v1.0.0 release commit (the tag tree differs from this commit
-# only in this recipe file, and a tag tarball checksum would be
-# self-referential). Recompute the sha256 with `updpkgsums` (or
+# Pin the v1.0.0 release commit; a tag tarball checksum would be
+# self-referential. Recompute the sha256 with `updpkgsums` (or
 # `makepkg -g`) when bumping _commit.
-_commit=c822dbcf43379dd817d10b3db3a9b36b7633ff84
+_commit=8127431eb43e2ad787d4c167c715864d1ee62524
 url='https://github.com/leounakt23/LucYTerM'
 license=('MIT' 'Apache-2.0')
 depends=('dbus' 'systemd' 'glibc')
@@ -25,7 +24,7 @@ makedepends=('rust' 'cargo' 'pkgconf')
 # `!lto` keeps the vendored C objects plain so the link succeeds.
 options=('!lto')
 source=("$url/archive/$_commit.tar.gz")
-sha256sums=('6de901265a650abe55e04604e3a5352c89bd258d9c728b8cd9225498751a3d98')
+sha256sums=('44bcd0a2d5fbd1425fd8ea1e9ab231e9789d5b1b3d6308049a94ddfab3144d5c')
 
 build() {
   cd "$srcdir/LucYTerM-$_commit"
