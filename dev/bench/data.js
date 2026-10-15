@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792097342875,
+  "lastUpdate": 1792102021180,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2591,6 +2591,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 12848893,
             "range": "± 359130",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "0c8b0359580d1b3ae79bcf9334e4da5cf177a564",
+          "message": "docs: close the last checklist item with Wayland and AUR 1.0.0 evidence\n\nQuality item: expanded seven-leg CI matrix, X11 evidence, and the\nheadless-weston Wayland smoke (full UI rendered at 1280x800). AUR row\nre-verified at 1.0.0 end-to-end; distro section notes the 1.0.0 recipe\nbumps and release-workflow artifacts. All checklist boxes are now\nchecked.",
+          "timestamp": "2026-10-15T23:36:19+02:00",
+          "tree_id": "2f5354d6e5c668ac11977b0778cad6cc37d7b35f",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/0c8b0359580d1b3ae79bcf9334e4da5cf177a564"
+        },
+        "date": 1792102020761,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 79915,
+            "range": "± 1563",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 101550,
+            "range": "± 865",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 205216,
+            "range": "± 1587",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 410982,
+            "range": "± 3642",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11722,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3264,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1731,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000494854,
+            "range": "± 212887",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 522745,
+            "range": "± 8677",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1219519,
+            "range": "± 60835",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 26462335,
+            "range": "± 92055",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 9419434,
+            "range": "± 161824",
             "unit": "ns/iter"
           }
         ]
