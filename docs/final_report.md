@@ -76,25 +76,26 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 - `cargo deny check` (licenses/bans/sources): passes. Advisories DB
   is unparsable by the MSRV-pinned deny 0.18.3; `cargo audit`
   covers advisories instead.
-- `cargo audit`: 5 vulnerabilities with no fix inside the pinned
-  stack + MSRV 1.80: hickory-proto RUSTSEC-2026-0119, rsa
-  RUSTSEC-2023-0071, russh RUSTSEC-2026-0154, russh-cryptovec
-  RUSTSEC-2026-0153, time RUSTSEC-2026-0009. Fixing any of them
-  requires a toolchain or stack bump; reassess at release time.
-  8 unmaintained-crate warnings (instant, paste, …) are transitive
-  via pinned GUI/SSH crates.
+- `cargo audit` (2026-10-15, post-migration): exit 0. 3 vulnerabilities
+  with no fix inside the pinned stack + MSRV: hickory-proto
+  RUSTSEC-2026-0119, rsa RUSTSEC-2023-0071, time RUSTSEC-2026-0009 —
+  each ignore-listed with a reason; 8 unmaintained-crate warnings
+  (instant, paste, …) are transitive via pinned GUI/SSH crates. The
+  russh pair (RUSTSEC-2026-0154 / -0153) was retired by the 0.45→0.61.1
+  migration and its ignores were deleted from `.cargo/audit.toml` and
+  `deny.toml`.
 - GitHub's advisory service is broader than the RustSec mirror that
   `cargo audit` consumes: an inventory on 2026-10-10 counted 21
   advisories (6 high, 12 medium, 3 low) against locked versions —
   16 against `russh` 0.45.0 plus `hickory-resolver`,
-  `hickory-proto`, `time`, and `lru`. Every reachable entry needs a
-  malicious or compromised SSH peer (or an accepted host-key
-  mismatch); the impact class is client-side denial of service, not
-  code execution or credential disclosure. Blockers are recorded
-  precisely: `russh` 0.61.1 clears the high-severity set on the
-  current rustc 1.85 and is blocked only by its breaking API
-  migration, while `russh` 0.63.2 and `time` 0.3.47 / `hickory`
-  0.26 additionally need rustc ≥ 1.88/1.89. Per-advisory inventory:
+  `hickory-proto`, `time`, and `lru`. The russh 16 are addressed by the
+  0.61.1 migration (done 2026-10-15; 0.63.2 would clear the remainder
+  but needs rustc ≥1.89). Remaining blockers are recorded precisely:
+  `time` 0.3.47 / `hickory` 0.26 need rustc ≥1.88, `lru` follows a
+  future `iced` bump. Every reachable entry needs a malicious or
+  compromised SSH peer (or an accepted host-key mismatch); the impact
+  class is client-side denial of service, not code execution or
+  credential disclosure. Per-advisory inventory:
   `docs/threat_model.md`; ordered migration: `docs/maintenance.md`.
 - Secrets: passwords travel over stdin pipes or zeroized memory,
   never argv, logs, or fixtures (argv invariant is unit-tested).
@@ -165,9 +166,12 @@ successes without evidence:
   Results Log, all independently re-run except where marked).
   60 FPS: PASS on the headless CPU path (p95 55 µs, 100% ≤ 16.7 ms;
   compositor present unmeasured). SSH: 108 ms median, ~28× headroom.
-  Transfer: SPLIT — upload 433 MB/s passes, download 37 MB/s fails;
-  1 GiB stall finding owned by the connections workstream (russh
-  relevance noted for the migration decision). 10-session memory:
+  Transfer: PASS both directions after the 2026-10-15 russh 0.61.1
+  migration — 512 MiB up 689.8 / down 517.1 MB/s, 1 GiB up 716.8 /
+  down 672.3 MB/s, checksum-verified (the pre-migration download
+  failure was the client rejecting OpenSSH's mid-session rekey; the
+  root-cause trace and the `RekeyLimit 16M` repro are in
+  `docs/performance.md`). 10-session memory:
   harness proxy flat at ~171 MB peak; on 2026-10-15 the full 8 h soak
   completed (10 SSH sessions + looping 128 MiB SFTP): peak VmHWM
   14.8 MiB, slope 177.8 KiB/h, 2.75 TB moved, 0 reconnects — evidence
@@ -197,14 +201,24 @@ successes without evidence:
   Nix (flake build + clean-store import + smoke). Container toolchains
   were newer than the 1.85.1 pin (1.86/1.99/1.98); packaged binaries
   have not yet connected a live SSH session (same caveat as DEB).
+- NEW (2026-10-15): russh 0.45→0.61.1 migration (`maintenance.md`
+  stage 1, the pending decision). Breaking handler/client API adapted
+  (`#[async_trait]` dropped, `AuthResult::success()`,
+  `PrivateKeyWithHashAlg`, agent `AgentIdentity`); workspace tests 470
+  passed; live SSH/SFTP/forward/X11 suites re-run. The migration also
+  fixed the 1 GiB SFTP download stall (the client rejected OpenSSH's
+  mid-session rekey — `StrictKeyExchangeViolation`), so 1 GiB transfers
+  now complete at >500 MB/s both directions. The russh ignore entries
+  were deleted from `.cargo/audit.toml` and `deny.toml`.
 - NEW (2026-10-14): crash-dump behavior inspected, not just read.
   Default hardening yields no dump at all (WCOREDUMP=False, no artifact,
   ptrace EPERM); debuggable-mode live memory does carry secrets
   (positive control — justifies RLIMIT/DUMPABLE/scrub defaults); piped
   handlers need DUMPABLE=0, not just RLIMIT=0. Sentry minidump path
-  untested (no DSN) — ships scrubbed by construction. Audit: 0 vulns
-  with documented ignores, deny clean; russh-pair/hickory/time fixes
-  blocked on approval/toolchain-pin, all recorded.
+  untested (no DSN) — ships scrubbed by construction. Audit: exit 0
+  with documented ignores, deny clean; the russh pair was retired by
+  the 0.61.1 migration (ignores deleted), hickory/time remain blocked
+  on the toolchain pin, all recorded.
 - NEW (2026-10-14): session import closed — was the honest v1.1 MISS.
   Three one-way parsers + published matrix (`docs/
   compatibility_import.md`) + CLI `import --from/--file/--commit` +

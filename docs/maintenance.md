@@ -79,16 +79,19 @@ straight from crates.io version metadata:
 | ----------------- | ------------------- | ------------- | ------------------------------------------------ |
 | `time` 0.3.41     | 0.3.47              | 1.88          | toolchain pin (1.85.1)                           |
 | `hickory` 0.24.4  | 0.26.2 / 0.26.1     | 1.88          | toolchain pin + 0.24 → 0.26 API bump             |
-| `russh` 0.45.0    | 0.61.1              | 1.85          | breaking API migration only                      |
-| `russh` 0.45.0    | 0.63.2 (all 16)     | 1.89          | API migration + toolchain pin                    |
+| `russh` 0.45.0    | 0.61.1              | 1.85          | **DONE 2026-10-15** (migration; rekey fixed)     |
+| `russh` 0.61.1    | 0.63.2 (all 16)     | 1.89          | API migration + toolchain pin                    |
 | `lru` 0.12.5      | 0.16.3              | —             | `iced_glyphon` 0.6 requires `lru` 0.12           |
 
 The ordered migration when maintainership chooses to spend it:
 
-1. Migrate `russh` 0.45 to 0.61.1 — builds on the current toolchain and
-   clears every high-severity SSH advisory. Breaking handler/client API;
-   re-run the live suites (`ssh_loopback`, `sftp_integration`,
-   `forward_integration`) against the disposable Docker services.
+1. **DONE 2026-10-15:** migrated `russh` 0.45 to 0.61.1 on the pinned
+   toolchain (breaking handler/client API: `#[async_trait]` dropped,
+   `AuthResult::success()`, `PrivateKeyWithHashAlg`, agent
+   `AgentIdentity`). Workspace tests, live suites (`ssh_auth_live`,
+   `sftp_integration`, `forward_integration`, `x11_integration`), and a
+   `RekeyLimit 16M` repro (62 rekeys) pass; the two russh ignores were
+   retired from `.cargo/audit.toml` and `deny.toml`.
 2. Raise the toolchain pin to at least 1.89 (MASTER_PROMPT amendment, MSRV
    update, CI images, edition-2024 dependencies), then `cargo update -p
    time` (semver-compatible) and the `hickory` 0.24 → 0.26 bump; finish the
@@ -96,8 +99,8 @@ The ordered migration when maintainership chooses to spend it:
 3. `lru` follows a future `iced` bump; until then it stays recorded in
    `docs/threat_model.md`.
 
-Until then the RustSec-mirrored advisories stay listed with reasons in
-`.cargo/audit.toml`, and the full GitHub inventory lives in
+The remaining RustSec-mirrored advisories stay listed with reasons in
+`.cargo/audit.toml` / `deny.toml`, and the full GitHub inventory lives in
 `docs/threat_model.md`.
 
 ## Documentation

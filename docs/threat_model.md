@@ -48,13 +48,12 @@ advisory landscape for the pinned stack. GitHub's advisory service listed,
 inventory date 2026-10-10, 21 advisories (6 high, 12 medium, 3 low) against
 locked versions:
 
-- `russh` 0.45.0 (SSH transport): 16 advisories. RUSTSEC-2026-0154 and its
-  `russh-cryptovec` twin are RustSec-mirrored and ignored in
-  `.cargo/audit.toml` with reasons; the other 15 exist only on GitHub so far.
-  Highest-impact entries: unbounded post-decompression packet size,
-  allocation-first message-field decoding, and a pre-authentication
-  keyboard-interactive allocation — all reachable only while speaking SSH to
-  a malicious or compromised server.
+- `russh` 0.61.1 (SSH transport): **migrated 2026-10-15** from 0.45.0,
+  which carried 16 advisories (RUSTSEC-2026-0154 and its
+  `russh-cryptovec` twin were RustSec-mirrored). 0.61.1 clears the
+  high-severity set on the pinned toolchain and both ignores were removed
+  from `.cargo/audit.toml` / `deny.toml`; a 0.63.2 follow-up (rustc
+  ≥1.89) would clear the remainder.
 - `hickory-resolver` 0.24.4: the lookup APIs obscure DNSSEC validation
   failures (GHSA-5j98-2g5x-46v6). Only explicitly configured resolvers are
   queried and DNSSEC is not enabled.

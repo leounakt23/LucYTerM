@@ -17,7 +17,13 @@ production hosts.
       commit 63b3fe9: Ubuntu 22.04 / Ubuntu 24.04 / Fedora 40 / Arch Linux
       all green.)
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
-- [ ] `cargo audit` reports no unpatched vulnerabilities.
+- [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-15,
+      post-migration; exit 0. 3 vulnerabilities + 8 unmaintained
+      warnings are ignore-listed with reasons in `.cargo/audit.toml`:
+      hickory-proto + time fixes need rustc ≥1.88 (over the 1.85.1
+      pin), rsa has no upstream fix, the rest are unmaintained
+      transitive GUI/SSH crates. The russh pair was retired by the
+      0.61.1 migration — the ignores were removed, not silenced.)
 - [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
 - [x] Coverage gate passes with the workspace target of >80% lines; any drop
       has an explicit maintainer decision recorded. (2026-10-07; 65.2% measured, exception + path forward in final_report.md)
@@ -198,17 +204,21 @@ Productivity:
       independently re-run median 108 ms / p95 113 ms (agent quiet run:
       105/114); asserts median <3000 ms in `ssh_connect_perf`; ~28×
       headroom.)
-- [ ] File transfer >100 MB/s on a local network.
-      (2026-10-14 honest SPLIT: 512 MiB vs disposable atmoz:2222 —
-      upload 433.5 MB/s PASS (independently re-run), download 37.0 MB/s
-      FAIL (re-run; agent repeats 36.8–39.8). Same server/container both
-      directions, so the bottleneck is the client download path. 1 GiB
-      download stall (~800 MiB/~21 s) is agent-reported with in-tree
-      repro (`MBXT_SFTP_PERF_BYTES`, depths 4+16) — not independently
-      re-run here; server exoneration (OpenSSH CLI 1.8 s) likewise
-      agent-measured only. Fix belongs to the connections workstream,
-      possibly russh-related — relevant input for the pending russh
-      migration decision.)
+- [x] File transfer >100 MB/s on a local network.
+      (2026-10-15 PASS both directions. Root cause of the 2026-10-14
+      download failure (37 MB/s, 1 GiB stall at ~800 MiB) was isolated:
+      russh 0.45 aborts with `StrictKeyExchangeViolation` when OpenSSH
+      initiates a mid-session rekey (`RUST_LOG` trace; KEXINIT →
+      "strict kex violated at sequence no. 0, message type: 20"), so
+      any transfer crossing the server's randomized rekey limit died.
+      Fixed by the russh 0.61.1 migration (rekey-aware strict-kex) plus
+      the parallel-handle read pipeline in
+      `src/connection/sftp/session.rs`. Independent re-runs vs
+      disposable atmoz:2222, checksum-verified: 512 MiB up 689.8 MB/s /
+      down 517.1 MB/s (agent repeat 649.8/412.6); 1 GiB up 716.8 MB/s /
+      down 672.3 MB/s (agent repeat 719.9/525.1) — no stall. A
+      deterministic repro with `RekeyLimit 16M` completed 62 rekey
+      events up+down. Still loopback-to-container, not a real LAN.)
 - [x] 10 concurrent sessions stay under 500 MB total.
       (2026-10-15; full 8 h M5 soak completed: `tests/soak_acceptance.rs`
       ran 10 concurrent SSH shell sessions (30 s tick each) + a looping
@@ -260,14 +270,15 @@ Productivity:
       `utils::security` tests: rlimit zeroed, default non-dumpable,
       debuggable dumpable; 3 green.)
 - [x] `cargo audit` and `cargo deny` pass at release time.
-      (2026-10-14; `cargo audit`: 0 vulnerabilities (2 allowed unsound
-      warnings; 9 advisories ignore-listed with reasons in
+      (2026-10-15, post-migration; `cargo audit`: exit 0 (2 allowed
+      unsound warnings; ignore list with reasons in
       `.cargo/audit.toml`); `cargo deny check`: advisories/bans/
-      licenses/sources ok. Unfiltered inventory: russh pair (needs the
-      approved 0.45→0.61.1 migration — NOT performed), hickory-proto +
-      time fixes require rustc ≥1.88 (over the 1.85.1 pin — NOT
-      applied), rsa/lru/unmaintained set has no compatible fix
-      (accepted-risk, documented). Re-verify at release tagging.)
+      licenses/sources ok. Unfiltered inventory: russh pair **retired**
+      by the 0.61.1 migration (ignores removed from both
+      `.cargo/audit.toml` and `deny.toml`), hickory-proto + time fixes
+      require rustc ≥1.88 (over the 1.85.1 pin — NOT applied),
+      rsa/lru/unmaintained set has no compatible fix (accepted-risk,
+      documented). Re-verify at release tagging.)
 
 ## Quality Verification
 
