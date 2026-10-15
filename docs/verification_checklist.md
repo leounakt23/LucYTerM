@@ -10,15 +10,22 @@ production hosts.
 
 - [x] `cargo fmt --all -- --check` is clean. (2026-10-07, this machine; see final_report.md)
 - [x] `cargo check --workspace --all-targets --all-features` succeeds. (2026-10-07, this machine; see final_report.md)
-- [ ] `cargo test --workspace` (non-live) passes on Ubuntu 22.04/24.04,
-      Fedora 40, and Arch runners.
+- [x] `cargo test --workspace` (non-live) passes on Ubuntu 22.04/24.04,
+      Fedora 40, and Arch runners. (2026-10-15; CI `ci.yml` matrix runs
+      `cargo test --locked --workspace --all-features` in all four distro
+      containers on the pinned 1.85.1 toolchain — run 38795135476 for
+      commit 63b3fe9: Ubuntu 22.04 / Ubuntu 24.04 / Fedora 40 / Arch Linux
+      all green.)
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
 - [ ] `cargo audit` reports no unpatched vulnerabilities.
 - [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
 - [x] Coverage gate passes with the workspace target of >80% lines; any drop
       has an explicit maintainer decision recorded. (2026-10-07; 65.2% measured, exception + path forward in final_report.md)
 - [x] `mdbook build docs` succeeds; `cargo xtask i18n` validates Fluent strings. (2026-10-07; 16 strings)
-- [ ] `git diff --check` is clean; `actionlint` is clean.
+- [x] `git diff --check` is clean; `actionlint` is clean. (2026-10-15;
+      `git diff --check` clean; `rhysd/actionlint` exit 0 after fixing
+      SC2016/SC2086 in `nightly.yml`/`release.yml` — AppRun files are now
+      quoted heredocs and the GraphQL query has an explicit disable.)
 - [x] Fuzz smoke runs pass: (2026-10-07, nightly, 5 targets x 1000 runs, zero findings)
       `cargo fuzz run vte_parser -- -runs=1000` (and siblings per `fuzz.yml`).
 
@@ -266,7 +273,7 @@ Productivity:
 
 - [ ] Tests pass on Ubuntu 22.04, Fedora 40, and Arch; GUI spot-checks cover
       X11 and Wayland.
-- [ ] Coverage >80% lines or an explicit accepted exception is recorded.
+- [x] Coverage >80% lines or an explicit accepted exception is recorded. (2026-10-15; 65.2% measured, maintainer exception + path forward recorded in `docs/final_report.md` Test Coverage)
 - [x] Zero Clippy warnings; docs build without errors or warnings. (2026-10-07; clippy -D warnings clean, mdbook clean)
 - [x] Man page (`docs/remote-app.1`) renders and desktop file validates. (2026-10-07; groff renders, desktop-file-validate clean after category fix; install-on-distro steps below remain manual)
 

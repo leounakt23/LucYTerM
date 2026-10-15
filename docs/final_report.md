@@ -56,10 +56,10 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 |---|---|---|
 | Cold start <2 s | **PASS: 320 ms median** (release; 317 ms debug) | 5 runs, PID-verified first mapped window, Xvfb 1280x800, AMD iGPU, release profile |
 | Idle memory <100 MB | **PARTIAL: 194 MB default, 81 MB on single-driver Vulkan path** (release, 60 s idle) | smaps profile (2026-10-10): app heap only 16 MB — the RSS is the graphics stack. Default `Backends::all()` loaded the full GL/GLX vendor stack for nothing; app now defaults to `WGPU_BACKEND=vulkan` (measured 222→194 MB, hybrid NVIDIA dGPU + AMD iGPU box). Vulkan-loader ICD zoo dominates the rest: with `VK_DRIVER_FILES` trimmed, lavapipe-only = 133 MB, radv-only (real AMD iGPU) = **81 MB PASS**. VmRSS==VmHWM (stable, no leak); the target passes on single-driver systems, misses on multi-driver systems unless ICDs are trimmed — recorded, not faked |
-| Terminal 60 FPS | UNMEASURED | No frame-time method headless; render path proven working (screenshots) |
-| SSH connect <3 s (LAN) | PASS (loopback) | Hermetic `tests/ssh_loopback.rs`: full password handshake + shell echo in 0.09 s for both tests (asserts <3 s); no LAN server available |
-| Transfer >100 MB/s (LAN) | 12.7 GB/s (loopback) | `transfer_loopback` criterion bench, 10×1 s sender blasts, median ≈101.7 Gbit/s, byte-exact vs drain; loopback only, not LAN |
-| 10 sessions <500 MB | UNMEASURED | Needs GUI + servers |
+| Terminal 60 FPS | **PASS (headless CPU path): p50 54 µs, p95 55 µs, 100% ≤16.7 ms** | 240-frame flood through the same instance builder the GPU primitive consumes (`bench`, 2026-10-14); composited present-path unmeasured |
+| SSH connect <3 s (LAN) | **PASS: median 108 ms, p95 113 ms** (hermetic loopback 0.09 s) | `ssh_connect_perf` N=10 vs disposable openssh container + `tests/ssh_loopback.rs`; no real LAN server available |
+| Transfer >100 MB/s (LAN) | 12.7 GB/s (loopback bench); SFTP over SSH: see `docs/performance.md` | `transfer_loopback` criterion bench, 10×1 s sender blasts, byte-exact vs drain; loopback only, not LAN |
+| 10 sessions <500 MB | **PASS: peak VmHWM 14.8 MiB** (8 h, slope 177.8 KiB/h, 0 reconnects) | `tests/soak_acceptance.rs` 10 SSH sessions + looping 128 MiB SFTP; CSV `docs/assets/soak-rss-8h.csv`; headless driver, not the GUI process (in-app bench proxy ≈171 MB peak) |
 | CLI startup (informational, no target) | <10 ms, ~9 MB RSS | `remote-app-headless --version`, median of 5, dev profile; NOT the GUI cold start |
 | GUI launch + main window | PASS (visual) | `docs/assets/main-window-xvfb.png`: toolbar, sidebar, welcome tab, status bar all render under Xvfb |
 | Tools hub run in-app | PASS (visual) | `docs/assets/tools-hub-active-xvfb.png` (tab) + `tools-run-xvfb.png` (subnet run: correct network/broadcast/range/hosts in history) |
