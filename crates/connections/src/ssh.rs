@@ -25,13 +25,12 @@ struct ClientHandler {
     forwarded_tx: Option<mpsc::UnboundedSender<crate::ForwardedTcpIp>>,
 }
 
-#[async_trait]
 impl client::Handler for ClientHandler {
     type Error = russh::Error;
 
     async fn check_server_key(
         &mut self,
-        server_public_key: &russh::keys::key::PublicKey,
+        server_public_key: &russh::keys::PublicKey,
     ) -> Result<bool, Self::Error> {
         match russh::keys::check_known_hosts(&self.host, self.port, server_public_key) {
             Ok(accepted) => Ok(accepted),
@@ -215,6 +214,9 @@ where
     H: russh::client::Handler,
 {
     use russh::keys::agent::client::AgentClient;
+    use russh::keys::agent::AgentIdentity;
+    use russh::keys::HashAlg;
+
     let mut agent = AgentClient::connect_env()
         .await
         .map_err(|error| ConnError::Key(format!("ssh-agent unavailable: {error}")))?;
@@ -223,12 +225,30 @@ where
         .await
         .map_err(|error| ConnError::Key(format!("ssh-agent listed no identities: {error}")))?;
     tracing::debug!(count = identities.len(), "ssh-agent identities offered");
-    for key in identities {
-        let (back, result) = handle.authenticate_future(user, key, agent).await;
-        agent = back;
+    for identity in identities {
+        // `HashAlg::Sha512` keeps the pre-0.61 agent behaviour for RSA
+        // identities (russh-keys parsed agent keys as SHA2-512); it is
+        // ignored for non-RSA keys.
+        let result = match identity {
+            AgentIdentity::PublicKey { key, .. } => {
+                handle
+                    .authenticate_publickey_with(user, key, Some(HashAlg::Sha512), &mut agent)
+                    .await
+            },
+            AgentIdentity::Certificate { certificate, .. } => {
+                handle
+                    .authenticate_certificate_with(
+                        user,
+                        certificate,
+                        Some(HashAlg::Sha512),
+                        &mut agent,
+                    )
+                    .await
+            },
+        };
         match result {
-            Ok(true) => return Ok(true),
-            Ok(false) => continue, // server declined this identity; try the next
+            Ok(result) if result.success() => return Ok(true),
+            Ok(_) => continue, // server declined this identity; try the next
             Err(error) => {
                 return Err(ConnError::Key(format!("ssh-agent signing failed: {error}")));
             },
@@ -273,18 +293,26 @@ impl Connection for SshConn {
         let mut handle = client::connect(config, (host.as_str(), port), handler).await?;
 
         let authenticated = match auth {
-            ConnectionAuth::Password(password) => {
-                handle
-                    .authenticate_password(user.clone(), password.as_str())
-                    .await?
-            },
+            ConnectionAuth::Password(password) => handle
+                .authenticate_password(user.clone(), password.as_str())
+                .await?
+                .success(),
             ConnectionAuth::KeyFile { path, passphrase } => {
                 let key =
                     russh::keys::load_secret_key(path, passphrase.as_deref().map(String::as_str))
                         .map_err(|error| ConnError::Key(error.to_string()))?;
                 handle
-                    .authenticate_publickey(user.clone(), Arc::new(key))
+                    .authenticate_publickey(
+                        user.clone(),
+                        // OpenSSH RSA keys defaulted to SHA2-512 in 0.45
+                        // (`SignatureHash::SHA2_512`); keep that here.
+                        russh::keys::PrivateKeyWithHashAlg::new(
+                            Arc::new(key),
+                            Some(russh::keys::HashAlg::Sha512),
+                        ),
+                    )
                     .await?
+                    .success()
             },
             ConnectionAuth::KeyboardInteractive(response) => {
                 use client::KeyboardInteractiveAuthResponse as Response;
@@ -294,7 +322,7 @@ impl Connection for SshConn {
                 loop {
                     match state {
                         Response::Success => break true,
-                        Response::Failure => break false,
+                        Response::Failure { .. } => break false,
                         Response::InfoRequest { prompts, .. } => {
                             state = handle
                                 .authenticate_keyboard_interactive_respond(

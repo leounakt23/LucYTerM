@@ -1,8 +1,8 @@
 # cargo-audit configuration (used by .github/workflows/security.yml).
 # Every ignore needs a reason — no silent allowances. The full advisory
 # inventory (including GitHub-only advisories that the RustSec mirror
-# does not carry yet) lives in docs/threat_model.md; the migration that
-# retires these ignores lives in docs/maintenance.md.
+# does not carry yet) lives in docs/threat_model.md. The russh
+# 0.45→0.61.1 migration (2026-10-15) retired the two russh ignores.
 [advisories]
 ignore = [
     # hickory-proto is MASTER_PROMPT-pinned (0.24.x). A fix exists
@@ -11,16 +11,6 @@ ignore = [
     # explicitly configured resolvers, so the O(n^2) decode path is not
     # attacker-controlled by default.
     "RUSTSEC-2026-0119",
-    # russh is MASTER_PROMPT-pinned (0.45.x). Fixed releases exist:
-    # 0.61.1 clears the high-severity set and still builds on the
-    # pinned rustc 1.85, while 0.63.2 clears all advisories but needs
-    # rustc >= 1.89. Taking either means a breaking API migration, so
-    # the pin holds until the planned migration (docs/maintenance.md).
-    # In our client usage allocation growth is bounded by negotiated
-    # frame limits.
-    "RUSTSEC-2026-0154",
-    # Same pin story as russh itself (russh-cryptovec 0.7.x).
-    "RUSTSEC-2026-0153",
     # rsa Marvin Attack: genuinely unpatched (the advisory's
     # `patched = []` is intentional, still affected as of 2026-09).
     # RSA keys are opt-in (the default is Ed25519); the side channel

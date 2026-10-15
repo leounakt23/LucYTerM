@@ -75,7 +75,7 @@ async fn remote_listen_granted_and_released() {
     let dial = dial_tunnel(host, port.parse().expect("port"), &user, auth)
         .await
         .expect("tunnel dial");
-    let mut handle = dial.handle;
+    let handle = dial.handle;
     let bound = handle
         .tcpip_forward("127.0.0.1", 0)
         .await

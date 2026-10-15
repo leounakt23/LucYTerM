@@ -58,8 +58,9 @@ vte = "0.13.0"
 bytemuck = { version = "1.14", features = ["derive"] }
 
 # Networking
-russh = "0.45.0"
+russh = "0.61.1"
 russh-sftp = "2.0"
+rand = "0.10"
 hickory-resolver = "0.24.1"
 
 # System integration
@@ -188,7 +189,7 @@ profiling = ["dep:tracing-flame", "dep:puffin"]
 feedback-network = ["dep:reqwest"]
 crash-reporting = ["feedback-network", "dep:sentry", "dep:minidumper", "dep:symbolic"]
 # Protocol gates (P0/P1 matrix rows). `sftp` rides the `ssh` connection.
-ssh = ["mbxt-connections/ssh", "dep:russh", "dep:russh-sftp"]
+ssh = ["mbxt-connections/ssh", "dep:russh", "dep:russh-sftp", "dep:rand"]
 sftp = ["ssh"]
 telnet = ["mbxt-connections/telnet"]
 serial = ["mbxt-connections/serial", "dep:serialport"]
@@ -236,6 +237,7 @@ sha2 = { workspace = true }
 
 russh = { workspace = true, optional = true }
 russh-sftp = { workspace = true, optional = true }
+rand = { workspace = true, optional = true }
 des = { workspace = true, optional = true }
 cipher = { workspace = true, optional = true }
 serialport = { workspace = true, optional = true }

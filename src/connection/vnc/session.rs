@@ -513,12 +513,11 @@ async fn dial_tunnel(
         port: u16,
     }
 
-    #[async_trait::async_trait]
     impl client::Handler for TunnelHandler {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::key::PublicKey,
+            key: &russh::keys::PublicKey,
         ) -> Result<bool, Self::Error> {
             match russh::keys::check_known_hosts(&self.host, self.port, key) {
                 Ok(accepted) => Ok(accepted),
@@ -551,14 +550,23 @@ async fn dial_tunnel(
         crate::connection::ConnectionAuth::Password(password) => handle
             .authenticate_password(&tunnel.ssh_username, password.as_str())
             .await
-            .map_err(|err| VncError::Ssh(err.to_string()))?,
+            .map_err(|err| VncError::Ssh(err.to_string()))?
+            .success(),
         crate::connection::ConnectionAuth::KeyFile { path, passphrase } => {
             let key = russh::keys::load_secret_key(path, passphrase.as_deref().map(String::as_str))
                 .map_err(|err| VncError::Ssh(err.to_string()))?;
             handle
-                .authenticate_publickey(&tunnel.ssh_username, Arc::new(key))
+                .authenticate_publickey(
+                    &tunnel.ssh_username,
+                    // OpenSSH RSA keys defaulted to SHA2-512 in 0.45.
+                    russh::keys::PrivateKeyWithHashAlg::new(
+                        Arc::new(key),
+                        Some(russh::keys::HashAlg::Sha512),
+                    ),
+                )
                 .await
                 .map_err(|err| VncError::Ssh(err.to_string()))?
+                .success()
         },
         _ => return Err(VncError::Ssh("tunnel needs password or key auth".into())),
     };

@@ -143,12 +143,11 @@ fn install_authorized_key(addr: &str, user: &str, password: &str, pubkey: &str) 
         host: String,
         port: u16,
     }
-    #[async_trait::async_trait]
     impl client::Handler for StrictHostKey {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::key::PublicKey,
+            key: &russh::keys::PublicKey,
         ) -> Result<bool, Self::Error> {
             match russh::keys::check_known_hosts(&self.host, self.port, key) {
                 Ok(accepted) => Ok(accepted),
@@ -179,7 +178,8 @@ fn install_authorized_key(addr: &str, user: &str, password: &str, pubkey: &str) 
         assert!(handle
             .authenticate_password(user, password)
             .await
-            .expect("auth call"));
+            .expect("auth call")
+            .success());
         let mut channel = handle.channel_open_session().await.expect("channel");
         channel
             .exec(true, "mkdir -p ~/.ssh && chmod 700 ~/.ssh")
@@ -214,6 +214,44 @@ fn key_login_against_openssh() {
     let key_path = dir.path().join("mbxt-live-ed25519");
     let status = std::process::Command::new("ssh-keygen")
         .args(["-t", "ed25519", "-N", "", "-f"])
+        .arg(&key_path)
+        .arg("-q")
+        .status()
+        .expect("ssh-keygen runs (openssh-client required for live tests)");
+    assert!(status.success(), "ssh-keygen failed");
+    let pubkey = std::fs::read_to_string(key_path.with_extension("pub")).expect("pubkey");
+    install_authorized_key(&addr, &user, &password, pubkey.trim());
+
+    start_and_probe(
+        &spec(
+            &addr,
+            &user,
+            AuthMethod::KeyFile {
+                path: key_path.to_string_lossy().into_owned(),
+            },
+        ),
+        ConnectionAuth::KeyFile {
+            path: key_path,
+            passphrase: None,
+        },
+    );
+}
+
+/// RSA key auth must keep the 0.45 SHA2-512 signature: modern OpenSSH
+/// rejects legacy `ssh-rsa`/SHA-1 signatures by default, so this leg
+/// guards the `PrivateKeyWithHashAlg` mapping in the migration.
+#[test]
+#[ignore = "needs a live OpenSSH server (see module docs)"]
+fn rsa_key_login_against_openssh() {
+    let Some((addr, user, password)) = live_config() else {
+        return;
+    };
+    remote_app::test_utils::learn_live_host_key(&addr);
+
+    let dir = tempfile::tempdir().expect("tempdir");
+    let key_path = dir.path().join("mbxt-live-rsa");
+    let status = std::process::Command::new("ssh-keygen")
+        .args(["-t", "rsa", "-b", "3072", "-N", "", "-f"])
         .arg(&key_path)
         .arg("-q")
         .status()

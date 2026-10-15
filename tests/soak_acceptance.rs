@@ -401,12 +401,11 @@ async fn sftp_loop_task(
         host: String,
         port: u16,
     }
-    #[async_trait::async_trait]
     impl russh::client::Handler for StrictHostKey {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::key::PublicKey,
+            key: &russh::keys::PublicKey,
         ) -> Result<bool, Self::Error> {
             match russh::keys::check_known_hosts(&self.host, self.port, key) {
                 Ok(accepted) => Ok(accepted),
@@ -442,12 +441,9 @@ async fn sftp_loop_task(
         )
         .await
         .ok()?;
-        if !handle
-            .authenticate_password(user, password)
-            .await
-            .unwrap_or(false)
-        {
-            return None;
+        match handle.authenticate_password(user, password).await {
+            Ok(result) if result.success() => {},
+            _ => return None,
         }
         let channel = handle.channel_open_session().await.ok()?;
         channel.request_subsystem(true, "sftp").await.ok()?;

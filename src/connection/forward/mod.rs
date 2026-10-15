@@ -253,13 +253,12 @@ pub struct TunnelHandler {
     forwarded_tx: Option<tokio::sync::mpsc::UnboundedSender<mbxt_connections::ForwardedTcpIp>>,
 }
 
-#[async_trait::async_trait]
 impl russh::client::Handler for TunnelHandler {
     type Error = russh::Error;
 
     async fn check_server_key(
         &mut self,
-        key: &russh::keys::key::PublicKey,
+        key: &russh::keys::PublicKey,
     ) -> Result<bool, Self::Error> {
         match russh::keys::check_known_hosts(&self.host, self.port, key) {
             Ok(accepted) => Ok(accepted),
@@ -322,14 +321,23 @@ pub async fn dial_tunnel(
         super::ConnectionAuth::Password(password) => handle
             .authenticate_password(username, password.as_str())
             .await
-            .map_err(|err| ForwardError::Ssh(err.to_string()))?,
+            .map_err(|err| ForwardError::Ssh(err.to_string()))?
+            .success(),
         super::ConnectionAuth::KeyFile { path, passphrase } => {
             let key = russh::keys::load_secret_key(path, passphrase.as_deref().map(String::as_str))
                 .map_err(|err| ForwardError::Ssh(err.to_string()))?;
             handle
-                .authenticate_publickey(username, Arc::new(key))
+                .authenticate_publickey(
+                    username,
+                    // OpenSSH RSA keys defaulted to SHA2-512 in 0.45.
+                    russh::keys::PrivateKeyWithHashAlg::new(
+                        Arc::new(key),
+                        Some(russh::keys::HashAlg::Sha512),
+                    ),
+                )
                 .await
                 .map_err(|err| ForwardError::Ssh(err.to_string()))?
+                .success()
         },
         _ => {
             return Err(ForwardError::Ssh(

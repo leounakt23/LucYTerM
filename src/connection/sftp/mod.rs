@@ -175,13 +175,12 @@ struct SftpClientHandler {
     port: u16,
 }
 
-#[async_trait::async_trait]
 impl russh::client::Handler for SftpClientHandler {
     type Error = russh::Error;
 
     async fn check_server_key(
         &mut self,
-        server_public_key: &russh::keys::key::PublicKey,
+        server_public_key: &russh::keys::PublicKey,
     ) -> Result<bool, Self::Error> {
         match russh::keys::check_known_hosts(&self.host, self.port, server_public_key) {
             Ok(accepted) => Ok(accepted),
@@ -233,14 +232,23 @@ async fn dial_sftp(spec: SessionSpec, auth: ConnectionAuth) -> Result<SftpSessio
         ConnectionAuth::Password(password) => handle
             .authenticate_password(user.clone(), password.as_str())
             .await
-            .map_err(|err| SftpError::Ssh(err.to_string()))?,
+            .map_err(|err| SftpError::Ssh(err.to_string()))?
+            .success(),
         ConnectionAuth::KeyFile { path, passphrase } => {
             let key = russh::keys::load_secret_key(path, passphrase.as_deref().map(String::as_str))
                 .map_err(|err| SftpError::Ssh(err.to_string()))?;
             handle
-                .authenticate_publickey(user.clone(), Arc::new(key))
+                .authenticate_publickey(
+                    user.clone(),
+                    // OpenSSH RSA keys defaulted to SHA2-512 in 0.45.
+                    russh::keys::PrivateKeyWithHashAlg::new(
+                        Arc::new(key),
+                        Some(russh::keys::HashAlg::Sha512),
+                    ),
+                )
                 .await
                 .map_err(|err| SftpError::Ssh(err.to_string()))?
+                .success()
         },
         ConnectionAuth::KeyboardInteractive(response) => {
             use client::KeyboardInteractiveAuthResponse as Response;
@@ -251,7 +259,7 @@ async fn dial_sftp(spec: SessionSpec, auth: ConnectionAuth) -> Result<SftpSessio
             loop {
                 match state {
                     Response::Success => break true,
-                    Response::Failure => break false,
+                    Response::Failure { .. } => break false,
                     Response::InfoRequest { prompts, .. } => {
                         state = handle
                             .authenticate_keyboard_interactive_respond(

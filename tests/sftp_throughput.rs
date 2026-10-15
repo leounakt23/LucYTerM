@@ -5,14 +5,13 @@
 //! throwaway HOME) and reports up/down MB/s. Default size is 512 MiB
 //! (reliable end-to-end in ~20 s); `MBXT_SFTP_PERF_BYTES` overrides it.
 //!
-//! Known finding (2026-10-14, atmoz/sftp, debug test profile): a 1 GiB
-//! download reproducibly stalls at ~800 MiB / ~21 s (same offset at
-//! pipeline depths 4 and 16, fresh connections; per-request timeout raised
-//! to 120 s still trips). The server is exonerated — OpenSSH `sftp` CLI
-//! downloads the same 1 GiB file in ~2 s (~580 MB/s) — and 512 MiB
-//! up/down completes with verified checksums, so the stall lives in the
-//! russh-sftp read path at scale. Set `MBXT_SFTP_PERF_BYTES=1073741824`
-//! to reproduce; the connections workstream owns the fix.
+//! Resolved finding (2026-10-15, russh 0.61.1): the 1 GiB download stall
+//! recorded on 2026-10-14 under russh 0.45.0 (reproducible at ~800 MiB,
+//! pipeline depths 4 and 16; server exonerated via the OpenSSH `sftp`
+//! CLI) was the client rejecting mid-session rekey
+//! (`StrictKeyExchangeViolation`). 0.61.1 handles rekey; 1 GiB up/down now
+//! completes with verified checksums. Set `MBXT_SFTP_PERF_BYTES=1073741824`
+//! to exercise it.
 //!
 //! ```sh
 //! docker run -d --name sftp-perf -p 2222:22 \
@@ -120,12 +119,11 @@ async fn throughput_up_down_reports_mb_per_s() {
         host: String,
         port: u16,
     }
-    #[async_trait::async_trait]
     impl client::Handler for StrictHostKey {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::key::PublicKey,
+            key: &russh::keys::PublicKey,
         ) -> Result<bool, Self::Error> {
             match russh::keys::check_known_hosts(&self.host, self.port, key) {
                 Ok(accepted) => Ok(accepted),
@@ -208,7 +206,8 @@ async fn throughput_up_down_reports_mb_per_s() {
         assert!(handle
             .authenticate_password(user, password)
             .await
-            .expect("auth call"));
+            .expect("auth call")
+            .success());
         let channel = handle.channel_open_session().await.expect("channel");
         channel
             .request_subsystem(true, "sftp")

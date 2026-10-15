@@ -150,7 +150,7 @@ impl Drop for ThrowawayHome {
 #[cfg(feature = "ssh")]
 pub struct EchoSshServer {
     pub port: u16,
-    pub public: russh::keys::key::PublicKey,
+    pub public: russh::keys::PublicKey,
     pub task: tokio::task::JoinHandle<()>,
 }
 
@@ -167,7 +167,6 @@ impl russh::server::Server for EchoHandler {
 }
 
 #[cfg(feature = "ssh")]
-#[async_trait::async_trait]
 impl russh::server::Handler for EchoHandler {
     type Error = russh::Error;
 
@@ -181,6 +180,7 @@ impl russh::server::Handler for EchoHandler {
         } else {
             Ok(russh::server::Auth::Reject {
                 proceed_with_methods: None,
+                partial_success: false,
             })
         }
     }
@@ -221,7 +221,7 @@ impl russh::server::Handler for EchoHandler {
         data: &[u8],
         session: &mut russh::server::Session,
     ) -> Result<(), Self::Error> {
-        session.data(channel, data.to_vec().into());
+        session.data(channel, data.to_vec())?;
         Ok(())
     }
 }
@@ -230,8 +230,10 @@ impl russh::server::Handler for EchoHandler {
 impl EchoSshServer {
     /// Bind an ephemeral loopback port and serve exactly one connection.
     pub async fn start() -> Self {
-        let host_key = russh::keys::key::KeyPair::generate_ed25519().expect("ed25519 host key");
-        let public = host_key.clone_public_key().expect("host pubkey");
+        let host_key =
+            russh::keys::PrivateKey::random(&mut rand::rng(), russh::keys::Algorithm::Ed25519)
+                .expect("ed25519 host key");
+        let public = host_key.public_key().clone();
         let config = std::sync::Arc::new(russh::server::Config {
             keys: vec![host_key],
             ..Default::default()
@@ -257,6 +259,7 @@ impl EchoSshServer {
 
 /// Learn a loopback echo-server key into the current (throwaway) HOME.
 #[cfg(feature = "ssh")]
-pub fn learn_loopback_key(port: u16, public: &russh::keys::key::PublicKey) {
-    russh::keys::learn_known_hosts("127.0.0.1", port, public).expect("learn loopback key");
+pub fn learn_loopback_key(port: u16, public: &russh::keys::PublicKey) {
+    russh::keys::known_hosts::learn_known_hosts("127.0.0.1", port, public)
+        .expect("learn loopback key");
 }

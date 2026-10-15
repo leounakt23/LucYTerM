@@ -221,13 +221,13 @@ async fn forward_command(paths: &AppPaths, args: &clap::ArgMatches) -> anyhow::R
         },
     };
     let dial = dial_tunnel(&host, port, &username, auth).await?;
-    let mut handle = dial.handle;
+    let handle = dial.handle;
     let cancel = CancelToken::new();
     let mut tasks = Vec::new();
 
-    // Remote listens first (owned handle for `tcpip_forward`, which needs
-    // `&mut`). One dispatcher fans the single channel receiver out to
-    // per-forward loops by listen endpoint.
+    // Remote listens first (owned handle for `tcpip_forward`). One
+    // dispatcher fans the single channel receiver out to per-forward
+    // loops by listen endpoint.
     if !remotes.is_empty() {
         let mut rx = dial.forwarded_rx;
         let mut routes = Vec::new();
@@ -348,12 +348,6 @@ async fn forward_command(paths: &AppPaths, args: &clap::ArgMatches) -> anyhow::R
         task.abort();
     }
     Ok(())
-}
-
-/// `forward` without the ssh feature compiled in.
-#[cfg(not(feature = "ssh"))]
-async fn forward_command(_paths: &AppPaths, _args: &clap::ArgMatches) -> anyhow::Result<()> {
-    anyhow::bail!("tunnels need the ssh feature");
 }
 
 /// `forward` without the ssh feature compiled in.

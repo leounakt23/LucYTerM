@@ -48,12 +48,11 @@ async fn x11_request_sets_remote_display() {
         host: String,
         port: u16,
     }
-    #[async_trait::async_trait]
     impl client::Handler for StrictHostKey {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::key::PublicKey,
+            key: &russh::keys::PublicKey,
         ) -> Result<bool, Self::Error> {
             // Production behavior: fail closed on unknown keys. The key
             // is learned into a throwaway HOME below, never the user's.
@@ -89,7 +88,8 @@ async fn x11_request_sets_remote_display() {
     assert!(handle
         .authenticate_password(user, password)
         .await
-        .expect("auth call"));
+        .expect("auth call")
+        .success());
 
     let mut channel = handle.channel_open_session().await.expect("channel");
     channel
