@@ -81,6 +81,11 @@ jobs:
           tool: cross,cargo-sbom
       - uses: Swatinem/rust-cache@v2
         with:
+          # Per-target key on purpose: the cross images ship different glibc
+          # versions (x86_64-gnu=2.23, musl=2.31). Host artifacts (proc-macros)
+          # built in a newer-glibc container cannot be dlopen'd by the older
+          # gnu container, so a cache shared across targets would break the
+          # gnu build. Keep the matrix.target component in the key.
           shared-key: release-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
       - name: Cross-compile binaries
         run: cross build --locked --release --target ${{ matrix.target }} --package remote-app --features feedback-network,crash-reporting
