@@ -7,21 +7,31 @@ pkgname=remote-app
 pkgver=0.1.0
 pkgrel=1
 pkgdesc='Secure native remote computing client'
-arch=('x86_64' 'aarch64')
+arch=('x86_64')
+# No v0.1.0 tag exists; pin the verified baseline commit instead. Recompute
+# the sha256 with `updpkgsums` (or `makepkg -g`) when bumping _commit.
+_commit=63b3fe95000ce23c466b7d7a89f30a73304217b2
 url='https://github.com/leounakt23/LucYTerM'
 license=('MIT' 'Apache-2.0')
 depends=('dbus' 'systemd' 'glibc')
 makedepends=('rust' 'cargo' 'pkgconf')
-source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('SKIP')
+# makepkg enables LTO by default (LTOFLAGS=-flto=auto). The vendored C code
+# (dbus "vendored" -> libdbus-sys, rusqlite "bundled" -> libsqlite3-sys) then
+# lands in libdbus.a/libsqlite3.a as GCC GIMPLE LTO objects, which the lld
+# linker rustc selects by default on the current Arch toolchain cannot
+# resolve: the final link fails with undefined dbus_*/sqlite3_* symbols.
+# `!lto` keeps the vendored C objects plain so the link succeeds.
+options=('!lto')
+source=("$url/archive/$_commit.tar.gz")
+sha256sums=('3bbc9402233bc3ff3f5f96b8d8c827c4849a24685d4cdf3e4f580bb5a78e9498')
 
 build() {
-  cd "$srcdir/remote-app-$pkgver"
+  cd "$srcdir/LucYTerM-$_commit"
   cargo build --release --locked
 }
 
 package() {
-  cd "$srcdir/remote-app-$pkgver"
+  cd "$srcdir/LucYTerM-$_commit"
   install -Dm755 target/release/remote-app "$pkgdir/usr/bin/remote-app"
   install -Dm755 target/release/remote-app-headless "$pkgdir/usr/bin/remote-app-headless"
   install -Dm644 assets/remote-app.desktop "$pkgdir/usr/share/applications/remote-app.desktop"

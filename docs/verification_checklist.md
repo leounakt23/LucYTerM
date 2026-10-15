@@ -285,9 +285,43 @@ app, and connect one disposable SSH session.
   verification .deb was assembled with `dpkg-deb` + `dpkg-shlibdeps`
   equivalents of the same layout since debhelper is not installed locally;
   a debhelper-built artifact should still be exercised once in CI.)
-- [ ] RPM installs and runs on Fedora.
-- [ ] Flatpak installs and runs.
-- [ ] Snap installs and runs.
-- [ ] AppImage runs without installation.
-- [ ] AUR package builds and installs.
-- [ ] Nix flake builds and runs.
+- [x] RPM installs and runs on Fedora. (2026-10-15; built with
+  `rpmbuild -bb` in `fedora:40` (container rustc 1.86.0), installed via
+  `dnf install` into a clean `fedora:40`, both binaries report
+  `remote-app 0.1.0`, `ldd` resolves all libraries; artifact
+  `remote-app-0.1.0-1.fc40.x86_64.rpm`; spec now stages the checkout into
+  `_builddir` and needs `librsvg2-tools`.)
+- [x] Flatpak installs and runs. (2026-10-15; `flatpak-builder` in an
+  `ubuntu:24.04` container built
+  `com.github.LucYTerM.remote-app.flatpak` (4.8 MB, `--all-features`
+  intentionally), installed into a clean container, and
+  `flatpak run com.github.LucYTerM.remote-app --version` printed
+  `remote-app 0.1.0` (rc=0) under Xvfb `:99` + `dbus-run-session`; host
+  needs `librsvg2-common` for `appstreamcli compose` (documented in the
+  manifest); `rename-icon` added for app-id icon export.)
+- [x] Snap installs and runs. (2026-10-15; `snapcraft 9.1.4
+  --destructive-mode` with snapd 2.77.1 in a privileged `ubuntu:22.04`
+  container built `remote-app_0.1.0_amd64.snap` (7.3 MB, only linter
+  warnings about staged-but-unused libdbus/libudev); `snap install
+  --dangerous` then `snap run remote-app --version` printed
+  `remote-app 0.1.0` (rc=0); `libc6-dev` added to `build-packages`
+  (startup objects Scrt1.o/crti.o were missing without it).)
+- [x] AppImage runs without installation. (2026-10-15; `appimagetool`
+  built `remote-app-0.1.0-x86_64.AppImage` in `ubuntu:22.04` (container
+  rustc 1.85.1); smoke via `--appimage-extract-and-run --version` in a
+  clean container with the runtime deps printed `remote-app 0.1.0`
+  (FUSE-less containers cannot execute AppImages directly).)
+- [x] AUR package builds and installs. (2026-10-15; `makepkg -sf` in
+  `archlinux:base-devel` (container rustc 1.99.0) built
+  `remote-app-0.1.0-1-x86_64.pkg.tar.zst`, `pacman -U` in a clean Arch
+  container, both binaries report `remote-app 0.1.0`; recipe gained
+  `options=('!lto')` (vendored C objects + default LTO break lld linking)
+  and a real sha256 for the pinned commit — no tag exists yet.)
+- [x] Nix flake builds and runs. (2026-10-15; `nix build` of
+  `packaging/nix` in a container (rustc 1.98.1) produced
+  `remote-app-0.1.0`, the store closure was imported into a clean
+  container and `remote-app --version` printed `remote-app 0.1.0`.)
+- Note: container toolchains were newer than the repo pin (rpm 1.86.0,
+  arch 1.99.0, nix 1.98.1; AppImage/Snap used 1.85.1), and none of the
+  packaged binaries has yet connected a live SSH session (same caveat as
+  the DEB row).

@@ -1,4 +1,9 @@
 app-id: com.github.LucYTerM.remote-app
+# Host note: flatpak-builder runs `appstreamcli compose` after the build. On
+# hosts whose AppStream has no SVG image loader (e.g. Ubuntu 24.04 without
+# librsvg2-common) that step fails with "Unrecognized image file format" for
+# the SVG icon, aborting the build; install librsvg2-common (gdk-pixbuf SVG
+# loader) on the build host.
 # Feature-set note (distribution matrix): this Flatpak intentionally builds
 # `--all-features` (full protocol matrix) while the DEB/RPM/Snap/AppImage/
 # AUR/Nix recipes ship the DEFAULT feature set (ssh,telnet) like
@@ -14,6 +19,11 @@ sdk: org.freedesktop.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
 command: remote-app
+# flatpak only exports icons named after the app id; rename-icon renames
+# remote-app.svg to com.github.LucYTerM.remote-app.svg and rewrites the
+# desktop file's Icon= key accordingly (avoids the "Icon not matching app
+# id"/"not exported" warnings at export time).
+rename-icon: remote-app
 finish-args:
   - --share=network
   - --socket=x11
@@ -33,6 +43,12 @@ modules:
       env:
         MBXT_DEFAULT_CHANNEL: nightly
         CARGO_HOME: /run/build/remote-app/cargo-home
+        # Distribution builders can have slow/flaky links; cargo's defaults
+        # abort index/crate transfers after 30s of <10B/s ("transfer too
+        # slow"). Relax the low-speed limit and retry more.
+        CARGO_NET_RETRY: "10"
+        CARGO_HTTP_TIMEOUT: "120"
+        CARGO_HTTP_LOW_SPEED_LIMIT: "1"
     buildsystem: simple
     build-commands:
       - cargo build --release --locked --all-features

@@ -187,13 +187,16 @@ successes without evidence:
   build host — AUR `depends`/`source` real bugs fixed, headless binary
   added to RPM/AUR/Snap/Nix recipes (DEB already had it), feature
   divergence documented per recipe (default everywhere, `--all-features`
-  only Flatpak), new `packaging/scripts/dist-matrix-smoke.sh` probe
-  (currently 0 PASS / 6 MISS, all missing-tool, none broken static
-  refs). The six install-and-run boxes stay honestly unchecked: no
-  builder (rpmbuild/fpm, flatpak-builder, snapcraft, appimagetool,
-  makepkg, nix) exists on this machine; per-artifact follow-ups recorded
-  in the workstream report (Fedora container, flatpak-builder host,
-  snap-LXD, jammy AppImage runner, Arch makepkg+namcap, nix flake check).
+  only Flatpak), new `packaging/scripts/dist-matrix-smoke.sh` probe.
+- NEW (2026-10-15): all six remaining install boxes closed with real
+  container builds — RPM (fedora:40, dnf install + smoke), AUR
+  (archlinux:base-devel, `!lto` + commit sha, pacman install + smoke),
+  AppImage (ubuntu:22.04, extract-and-run smoke), Flatpak
+  (flatpak-builder + install + Xvfb run), Snap (snapcraft
+  --destructive-mode + install + run; `libc6-dev` build package),
+  Nix (flake build + clean-store import + smoke). Container toolchains
+  were newer than the 1.85.1 pin (1.86/1.99/1.98); packaged binaries
+  have not yet connected a live SSH session (same caveat as DEB).
 - NEW (2026-10-14): crash-dump behavior inspected, not just read.
   Default hardening yields no dump at all (WCOREDUMP=False, no artifact,
   ptrace EPERM); debuggable-mode live memory does carry secrets

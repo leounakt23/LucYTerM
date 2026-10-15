@@ -14,6 +14,7 @@ BuildRequires:  rust
 BuildRequires:  pkg-config
 BuildRequires:  dbus-devel
 BuildRequires:  systemd-devel
+BuildRequires:  librsvg2-tools
 # packaging/scripts/generate-icons.sh also needs one of: ImageMagick
 # (magick/convert) or librsvg2-tools (rsvg-convert).
 Requires:       dbus-libs
@@ -23,14 +24,26 @@ Requires:       systemd-libs
 Native SSH, SFTP, Telnet, VNC, RDP, serial, and terminal client.
 
 %prep
+# Stage the mounted source checkout (rpmbuild's build dir is not the
+# source tree). %{getenv:PWD} is the repo root at invocation time; build
+# caches (target/) and VCS metadata are excluded from the copy.
+test -n "%{getenv:PWD}" || { echo "rpmbuild must run with PWD set to the repository root" >&2; exit 1; }
+rm -rf %{_builddir}/%{name}-%{version}
+mkdir -p %{_builddir}/%{name}-%{version}
+tar -C "%{getenv:PWD}" --exclude=.git --exclude=target -cf - . \
+  | tar -C %{_builddir}/%{name}-%{version} -xf -
 
 %build
-	cargo build --release --locked
-	packaging/scripts/generate-icons.sh
+cd %{_builddir}/%{name}-%{version}
+export CARGO_TARGET_DIR=%{_builddir}/cargo-target
+cargo build --release --locked
+packaging/scripts/generate-icons.sh
 
 %install
-install -Dpm0755 target/release/remote-app %{buildroot}%{_bindir}/remote-app
-install -Dpm0755 target/release/remote-app-headless %{buildroot}%{_bindir}/remote-app-headless
+cd %{_builddir}/%{name}-%{version}
+export CARGO_TARGET_DIR=%{_builddir}/cargo-target
+install -Dpm0755 ${CARGO_TARGET_DIR}/release/remote-app %{buildroot}%{_bindir}/remote-app
+install -Dpm0755 ${CARGO_TARGET_DIR}/release/remote-app-headless %{buildroot}%{_bindir}/remote-app-headless
 install -Dpm0644 assets/remote-app.desktop %{buildroot}%{_datadir}/applications/remote-app.desktop
 install -Dpm0644 assets/remote-app.metainfo.xml %{buildroot}%{_datadir}/metainfo/remote-app.metainfo.xml
 install -Dpm0644 docs/remote-app.1 %{buildroot}%{_mandir}/man1/remote-app.1
