@@ -109,7 +109,7 @@ clap = { version = "4.5.23", default-features = false, features = [
 clap_complete = "4.5.23"
 rstest = "0.23"
 proptest = "1.6"
-mockall = "0.13"
+mockall = "0.15"
 insta = "1.42"
 
 # Misc
