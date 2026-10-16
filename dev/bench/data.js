@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792102021180,
+  "lastUpdate": 1792109863021,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2693,6 +2693,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 9419434,
             "range": "± 161824",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "6b3af38565bd70f3d17f9c7e68d5a58bb04182cf",
+          "message": "ci(release): document the per-target cache key in the binaries job\n\nThe four cross images ship different glibc versions (x86_64-gnu=2.23,\nmusl=2.31); host proc-macro artifacts built in a newer-glibc container\ncannot be dlopen'd by the older gnu container, so sharing a rust-cache\nkey across the target matrix would break the gnu build. Keep the\nmatrix.target component in the shared key.",
+          "timestamp": "2026-10-16T01:52:13+02:00",
+          "tree_id": "0b91e24206e56a9f35418b14b749d2fbae4e089a",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/6b3af38565bd70f3d17f9c7e68d5a58bb04182cf"
+        },
+        "date": 1792109862498,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80333,
+            "range": "± 697",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 101914,
+            "range": "± 464",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 207163,
+            "range": "± 1939",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 412647,
+            "range": "± 17033",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11716,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3288,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1729,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000416135,
+            "range": "± 167776",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 508604,
+            "range": "± 5912",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1200360,
+            "range": "± 36575",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 26266834,
+            "range": "± 127706",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 8770081,
+            "range": "± 148183",
             "unit": "ns/iter"
           }
         ]
