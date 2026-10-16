@@ -359,10 +359,11 @@ app, and connect one disposable SSH session.
   container, both binaries report `remote-app 0.1.0`; recipe gained
   `options=('!lto')` (vendored C objects + default LTO break lld linking)
   and a real sha256 for the pinned commit. Re-verified for v1.0.0:
-  pkgver 1.0.0 pinned to release commit 8127431 (sha256
-  `44bcd0a2…4d5c`), fresh `archlinux:base-devel` container ran
+  pkgver 1.0.0 pinned to the advisory-cleared release commit 79799db
+  (sha256 `8198c485…fb72`), fresh `archlinux:base-devel` container ran
   `makepkg --noconfirm` → `remote-app-1.0.0-1-x86_64.pkg.tar.zst`,
-  `pacman -U` succeeded, both binaries report `remote-app 1.0.0`.)
+  `pacman -U` succeeded, both binaries report `remote-app 1.0.0`
+  (final re-run 2026-10-16 on the advisory-cleared tree).)
 - [x] Nix flake builds and runs. (2026-10-15; `nix build` of
   `packaging/nix` in a container (rustc 1.98.1) produced
   `remote-app-0.1.0`, the store closure was imported into a clean

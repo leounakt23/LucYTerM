@@ -11,7 +11,7 @@ arch=('x86_64')
 # Pin the v1.0.0 release commit; a tag tarball checksum would be
 # self-referential. Recompute the sha256 with `updpkgsums` (or
 # `makepkg -g`) when bumping _commit.
-_commit=8127431eb43e2ad787d4c167c715864d1ee62524
+_commit=79799db22623751226987e4b43d03e28c601e44a
 url='https://github.com/leounakt23/LucYTerM'
 license=('MIT' 'Apache-2.0')
 depends=('dbus' 'systemd' 'glibc')
@@ -24,7 +24,7 @@ makedepends=('rust' 'cargo' 'pkgconf')
 # `!lto` keeps the vendored C objects plain so the link succeeds.
 options=('!lto')
 source=("$url/archive/$_commit.tar.gz")
-sha256sums=('44bcd0a2d5fbd1425fd8ea1e9ab231e9789d5b1b3d6308049a94ddfab3144d5c')
+sha256sums=('8198c485171d27817eced105c49b7a9e25660f0b1e582f96f4aad68460f8fb72')
 
 build() {
   cd "$srcdir/LucYTerM-$_commit"
