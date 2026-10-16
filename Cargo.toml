@@ -114,7 +114,7 @@ insta = "1.42"
 
 # Misc
 futures = "0.3"
-criterion = "0.5"
+criterion = "0.7"
 tracing-flame = "0.2"
 puffin = "0.19"
 uuid = { version = "1.10", features = ["v4", "serde"] }
