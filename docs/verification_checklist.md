@@ -19,13 +19,19 @@ production hosts.
       matrix is green on the v1.0.0 release commit — see the `CI` run on
       the tagged commit.)
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
-- [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-15,
-      post-migration; exit 0. 3 vulnerabilities + 8 unmaintained
+- [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-16,
+      post-migration; exit 0. 8 vulnerabilities + 6 unmaintained
       warnings are ignore-listed with reasons in `.cargo/audit.toml`:
       hickory-proto + time fixes need rustc ≥1.88 (over the 1.85.1
       pin), rsa has no upstream fix, the rest are unmaintained
-      transitive GUI/SSH crates. The russh pair was retired by the
-      0.61.1 migration — the ignores were removed, not silenced.)
+      transitive GUI/SSH crates; five quinn-proto advisories are
+      lock-only — the crate is never compiled (reqwest's rustls feature
+      chain resolves it into `Cargo.lock` without activating it) and
+      the minimum fix 0.11.18 requires rustc ≥1.85, above the
+      MSRV-aware lock policy. The russh pair was retired by the 0.61.1
+      migration — the ignores were removed, not silenced. Four rustls
+      advisories published 2026-10-14 (RUSTSEC-2026-0346..-0349) were
+      cleared outright by the 0.23.45 → 0.23.46 bump.)
 - [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
 - [x] Coverage gate passes with the workspace target of >80% lines; any drop
       has an explicit maintainer decision recorded. (2026-10-07; 65.2% measured, exception + path forward in final_report.md)
@@ -272,7 +278,7 @@ Productivity:
       `utils::security` tests: rlimit zeroed, default non-dumpable,
       debuggable dumpable; 3 green.)
 - [x] `cargo audit` and `cargo deny` pass at release time.
-      (2026-10-15, post-migration; `cargo audit`: exit 0 (2 allowed
+      (2026-10-16, post-migration; `cargo audit`: exit 0 (2 allowed
       unsound warnings; ignore list with reasons in
       `.cargo/audit.toml`); `cargo deny check`: advisories/bans/
       licenses/sources ok. Unfiltered inventory: russh pair **retired**
@@ -280,8 +286,12 @@ Productivity:
       `.cargo/audit.toml` and `deny.toml`), hickory-proto + time fixes
       require rustc ≥1.88 (over the 1.85.1 pin — NOT applied),
       rsa/lru/unmaintained set has no compatible fix (accepted-risk,
-      documented). Re-verified during v1.0.0 release prep (2026-10-15);
-      the release workflow also re-runs fmt/clippy/tests on the tag.)
+      documented); five lock-only quinn-proto advisories ignore-listed
+      (never compiled — resolved into `Cargo.lock` by reqwest's rustls
+      feature chain; fix needs rustc ≥1.85); four rustls advisories
+      (published 2026-10-14) cleared by the 0.23.45 → 0.23.46 bump.
+      Re-verified during v1.0.0 release prep (2026-10-16); the release
+      workflow also re-runs fmt/clippy/tests on the tag.)
 
 ## Quality Verification
 

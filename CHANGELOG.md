@@ -23,6 +23,7 @@ Semantic Versioning.
 
 - Process hardening, secret wrappers, host-key policy, and secure file writes.
 - Migrated `russh` 0.45 → 0.61.1, clearing the high-severity SSH advisory set and retiring its `cargo audit` / `cargo deny` ignores.
+- Cleared RustSec advisories published during release prep: `rustls` 0.23.45 → 0.23.46 (RUSTSEC-2026-0346 … -0349); five lock-only `quinn-proto` advisories are ignore-listed with reasons (crate never compiled; fix requires rustc ≥1.85).
 
 ### Fixed
 

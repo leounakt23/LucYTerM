@@ -65,6 +65,19 @@ locked versions:
 - `lru` 0.12.5: two unsoundness advisories that `cargo audit` surfaces as
   warnings; transitive through `iced_glyphon` in the pinned GUI stack, not a
   network-facing path.
+- `quinn-proto` 0.11.14: five advisories published 2026-06-22 … 2026-09-14
+  (RUSTSEC-2026-0185, -0338, -0339, -0340, -0342; minimum fix 0.11.18).
+  The crate is recorded in `Cargo.lock` only — reqwest's `rustls-tls`
+  feature chain references `quinn?/ring`, which resolves the optional
+  dependency without activating it (`cargo tree --all-features -i
+  quinn-proto` prints nothing; the release builds never compile it) — and
+  the minimum fix requires rustc ≥ 1.85, above the workspace MSRV 1.80
+  that the MSRV-aware resolver enforces. All five are ignore-listed with
+  that reason in `.cargo/audit.toml`.
+- `rustls` 0.23.45: four advisories published 2026-10-14 during release
+  prep (RUSTSEC-2026-0346 … -0349: `Debug` TLS-secret exposure, ECH
+  application-data resend, ServerHello downgrade, Brotli decompression
+  allocation) — cleared by the 0.23.45 → 0.23.46 bump before tagging.
 
 Exploitability in this application: every reachable advisory requires a
 malicious or compromised SSH peer, or an accepted host-key mismatch that the

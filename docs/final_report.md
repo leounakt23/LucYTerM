@@ -11,9 +11,9 @@
 - Release tag: `v1.0.0` (2026-10-16)
 - Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
-- Dependencies: 908 lock entries (`Cargo.lock`); `cargo deny check`
-  licenses/bans/sources passes; `cargo audit` reports 3 unpatched
-  advisories + 8 unmaintained warnings, all ignore-listed with reasons
+- Dependencies: 910 lock entries (`Cargo.lock`); `cargo deny check`
+  licenses/bans/sources passes; `cargo audit` reports 8 unpatched
+  advisories + 6 unmaintained warnings, all ignore-listed with reasons
   (see Security Posture)
 - Toolchain: Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.80
 
@@ -77,14 +77,21 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 - `cargo deny check` (licenses/bans/sources): passes. Advisories DB
   is unparsable by the MSRV-pinned deny 0.18.3; `cargo audit`
   covers advisories instead.
-- `cargo audit` (2026-10-15, post-migration): exit 0. 3 vulnerabilities
-  with no fix inside the pinned stack + MSRV: hickory-proto
-  RUSTSEC-2026-0119, rsa RUSTSEC-2023-0071, time RUSTSEC-2026-0009 —
-  each ignore-listed with a reason; 8 unmaintained-crate warnings
-  (instant, paste, …) are transitive via pinned GUI/SSH crates. The
-  russh pair (RUSTSEC-2026-0154 / -0153) was retired by the 0.45→0.61.1
-  migration and its ignores were deleted from `.cargo/audit.toml` and
-  `deny.toml`.
+- `cargo audit` (2026-10-16, post-migration): exit 0. 8 vulnerabilities
+  with no fix inside the pinned stack + MSRV are ignore-listed with
+  reasons: hickory-proto RUSTSEC-2026-0119, rsa RUSTSEC-2023-0071,
+  time RUSTSEC-2026-0009, and five lock-only quinn-proto advisories
+  (RUSTSEC-2026-0185 / -0338 / -0339 / -0340 / -0342 — the crate is
+  resolved into `Cargo.lock` by reqwest's rustls feature chain but
+  never compiled, and its minimum fix 0.11.18 needs rustc ≥1.85, above
+  the MSRV-aware lock policy); 6 unmaintained-crate warnings (instant,
+  paste, rustybuzz, ttf-parser ×3) are transitive via pinned GUI/SSH
+  crates, and 2 unsound `lru` warnings are surfaced (allowed by
+  default). Four rustls advisories published 2026-10-14
+  (RUSTSEC-2026-0346 … -0349) were cleared by the 0.23.45 → 0.23.46
+  bump before tagging. The russh pair (RUSTSEC-2026-0154 / -0153) was
+  retired by the 0.45→0.61.1 migration and its ignores were deleted
+  from `.cargo/audit.toml` and `deny.toml`.
 - GitHub's advisory service is broader than the RustSec mirror that
   `cargo audit` consumes: an inventory on 2026-10-10 counted 21
   advisories (6 high, 12 medium, 3 low) against locked versions —

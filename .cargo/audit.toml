@@ -22,6 +22,21 @@ ignore = [
     # otherwise). The affected parsing path is not reached with
     # attacker-controlled input.
     "RUSTSEC-2026-0009",
+    # quinn-proto 0.11.14: five advisories, minimum fix 0.11.18
+    # (RUSTSEC-2026-0338 / -0340) requires rustc >= 1.85 — above the
+    # workspace MSRV 1.80 that the MSRV-aware resolver
+    # (`.cargo/config.toml`) enforces, so a forced bump would be
+    # downgraded again by the next `cargo update`. The crate is
+    # lock-only: reqwest's rustls-tls feature chain references
+    # `quinn?/ring`, which records it in `Cargo.lock` without ever
+    # activating it (`cargo tree --all-features -i quinn-proto` is
+    # empty), so no shipped binary contains the affected code. Revisit
+    # when the workspace MSRV moves past 1.85.
+    "RUSTSEC-2026-0185", # unbounded out-of-order stream reassembly
+    "RUSTSEC-2026-0338", # panic on zero-length STREAM frames
+    "RUSTSEC-2026-0339", # unbounded connection-ID retirement growth
+    "RUSTSEC-2026-0340", # panic via peer minimum ACK delay
+    "RUSTSEC-2026-0342", # zero-length DATAGRAM receive-buffer bypass
     # Unmaintained transitive crates, none of them security-relevant:
     "RUSTSEC-2024-0384", # instant (via dark-light/parking_lot ecosystem)
     "RUSTSEC-2024-0436", # paste (macro helper)
