@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792115653760,
+  "lastUpdate": 1792127691841,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2897,6 +2897,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 8928349,
             "range": "± 122658",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "04c07b33de46b68823d507f6fa06840abff31c14",
+          "message": "docs: record the published v1.0.0 release and its verification runs\n\nThe v1.0.0 tag now points at ed04d0d and the Release workflow (run\n38851025773) published the GitHub release: 4 static binary tarballs +\nCycloneDX SBOMs, DEB, RPM, AppImage, each GPG-signed, plus a signed\nSHA256SUMS; GHCR remote-app:1.0.0/:latest pushed.\n\nChecklist: CI run 38834040960 and Security run 38834040924 green on the\ntagged commit (fix commit 79799db passed Security in run 38832945626);\nnew Distribution Verification row documents the release pipeline and the\nspot-check of the published x86_64-gnu tarball. Final report gains the\nrelease line in the summary block.",
+          "timestamp": "2026-10-16T07:05:13+02:00",
+          "tree_id": "9616ae0285d696f93c2db95d8b723b5a6424f9d5",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/04c07b33de46b68823d507f6fa06840abff31c14"
+        },
+        "date": 1792127691059,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 79750,
+            "range": "± 303",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 101261,
+            "range": "± 727",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 205041,
+            "range": "± 938",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 406488,
+            "range": "± 11908",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11760,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3286,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1735,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000546865,
+            "range": "± 205699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 510025,
+            "range": "± 5268",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1188963,
+            "range": "± 18988",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 26025026,
+            "range": "± 94473",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 8616559,
+            "range": "± 61744",
             "unit": "ns/iter"
           }
         ]
