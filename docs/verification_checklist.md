@@ -16,8 +16,7 @@ production hosts.
       in all seven distro containers on the pinned 1.85.1 toolchain. The
       original four-leg matrix (Ubuntu 22.04/24.04, Fedora 40, Arch) was
       green in run 38795135476 for commit 63b3fe9; the expanded seven-leg
-      matrix is green on the v1.0.0 release commit — see the `CI` run on
-      the tagged commit.)
+      matrix is green in run 38834040960 on the tagged commit `ed04d0d`.)
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
 - [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-16,
       post-migration; exit 0. 8 vulnerabilities + 6 unmaintained
@@ -290,8 +289,10 @@ Productivity:
       (never compiled — resolved into `Cargo.lock` by reqwest's rustls
       feature chain; fix needs rustc ≥1.85); four rustls advisories
       (published 2026-10-14) cleared by the 0.23.45 → 0.23.46 bump.
-      Re-verified during v1.0.0 release prep (2026-10-16); the release
-      workflow also re-runs fmt/clippy/tests on the tag.)
+      Re-verified during v1.0.0 release prep (2026-10-16): Security run
+      38832945626 on the fix commit 79799db, run 38834040924 on the
+      tagged commit; the release workflow also re-runs fmt/clippy/tests
+      on the tag.)
 
 ## Quality Verification
 
@@ -317,6 +318,15 @@ Productivity:
 Each item means: install the produced artifact on a clean target, launch the
 app, and connect one disposable SSH session.
 
+- [x] Release pipeline publishes the tagged tree. (2026-10-16; Release
+  run 38851025773 on `v1.0.0` (`ed04d0d`): validate + test green, four
+  static binary tarballs with CycloneDX SBOMs (`x86_64`/`aarch64` ×
+  gnu/musl), DEB + RPM + AppImage — 11 artifacts, each GPG-signed, plus
+  a signed `SHA256SUMS`; GHCR image `remote-app:1.0.0`/`:latest` pushed
+  (digest `sha256:3ac5c27f…e377`). Spot-checked the published
+  `x86_64-unknown-linux-gnu` tarball: `sha256sum -c SHA256SUMS` OK,
+  extracted binaries report `remote-app 1.0.0`. Published at
+  https://github.com/leounakt23/LucYTerM/releases/tag/v1.0.0.)
 - [x] DEB installs and runs on Ubuntu. (2026-10-10; `dpkg -i` in a pristine
   `ubuntu:24.04` container: package status `install ok installed`, both
   `remote-app` and `remote-app-headless` report `remote-app 0.1.0`,

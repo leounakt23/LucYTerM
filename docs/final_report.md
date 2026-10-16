@@ -9,6 +9,9 @@
 
 - Report date: 2026-10-16
 - Release tag: `v1.0.0` (2026-10-16)
+- Release: GitHub release published 2026-10-16 (release run 38851025773)
+  — 4 static binary tarballs with CycloneDX SBOMs, DEB, RPM, AppImage,
+  GPG-signed `SHA256SUMS`; GHCR image `remote-app:1.0.0`
 - Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
 - Dependencies: 910 lock entries (`Cargo.lock`); `cargo deny check`
