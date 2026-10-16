@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792109863021,
+  "lastUpdate": 1792115653760,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2795,6 +2795,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 8770081,
             "range": "± 148183",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "ed04d0dd8df8db32cdd53f2bc651bdacf5eeb23f",
+          "message": "build(arch): re-pin the AUR recipe to the advisory-cleared release tree\n\nThe v1.0.0 source tree gained one code commit after the previous pin\n(79799db: rustls 0.23.46 + lock-only quinn-proto advisory ignores).\nRe-pinned the recipe (sha256 8198c485...fb72) and re-ran the full\ncontainer verification: makepkg -> remote-app-1.0.0-1-x86_64.pkg.tar.zst,\npacman -U succeeded, both binaries report remote-app 1.0.0.\n\nChecklist AUR row updated to the final pin.",
+          "timestamp": "2026-10-16T03:14:26+02:00",
+          "tree_id": "5387bb7ccb8fead4af2861f1329d90d62f619890",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/ed04d0dd8df8db32cdd53f2bc651bdacf5eeb23f"
+        },
+        "date": 1792115653019,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80418,
+            "range": "± 3409",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 102150,
+            "range": "± 568",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 207198,
+            "range": "± 914",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 414841,
+            "range": "± 3390",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11789,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 3257,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 59,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1740,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000549421,
+            "range": "± 129378",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 540258,
+            "range": "± 8284",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1186855,
+            "range": "± 26961",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 26053546,
+            "range": "± 151739",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 8928349,
+            "range": "± 122658",
             "unit": "ns/iter"
           }
         ]
