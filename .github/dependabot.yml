@@ -72,3 +72,9 @@ updates:
     groups:
       containers:
         patterns: ['*']
+    # The build images must track the pinned toolchain in
+    # rust-toolchain.toml (1.85.x patches only); a 1.99 bump would
+    # silently diverge from the source pin.
+    ignore:
+      - dependency-name: 'rust'
+        update-types: ['version-update:semver-minor', 'version-update:semver-major']
