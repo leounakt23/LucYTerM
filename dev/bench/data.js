@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792461424020,
+  "lastUpdate": 1792463884470,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -3203,6 +3203,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 3947262,
             "range": "± 187709",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "b5a72e5e4641c1a383c80790b627a761b0d0f988",
+          "message": "ci: tolerate disabled action approvals in PR automation\n\nThe repository deliberately forbids GitHub Actions from approving pull\nrequests, so the patch-update approval step failed every Dependabot\npatch PR with \"GitHub Actions is not permitted to approve pull\nrequests\". Mark the approval and auto-merge convenience steps\ncontinue-on-error: repository policy stays unchanged, and the check no\nlonger blocks otherwise-green patch updates.",
+          "timestamp": "2026-10-20T04:22:00+02:00",
+          "tree_id": "c80598b0a58360f22cb980206da79507a93a2e48",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/b5a72e5e4641c1a383c80790b627a761b0d0f988"
+        },
+        "date": 1792463883599,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80097,
+            "range": "± 2650",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103142,
+            "range": "± 427",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 206297,
+            "range": "± 1382",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 487187,
+            "range": "± 6033",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11775,
+            "range": "± 35",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 10491,
+            "range": "± 45",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 40,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1834,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000534737,
+            "range": "± 123771",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 515395,
+            "range": "± 4581",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1187020,
+            "range": "± 28550",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 26027790,
+            "range": "± 263847",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 9062556,
+            "range": "± 434556",
             "unit": "ns/iter"
           }
         ]
