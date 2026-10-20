@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792458764282,
+  "lastUpdate": 1792461424020,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -3101,6 +3101,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 3051033,
             "range": "± 10445",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "28b4c2b5f1b7dbea6c8237b5f5d6957513e0c10d",
+          "message": "chore(ci): keep the /docker rust image on the pinned toolchain\n\nDependabot targeted the /docker entry, which lacked the toolchain\nignore the / entry already has, and proposed rust 1.99.1. Keep the\nbuild images on the pinned 1.85.x line like rust-toolchain.toml and\nthe source MSRV; patch-level image updates still flow.",
+          "timestamp": "2026-10-20T03:43:29+02:00",
+          "tree_id": "b8d871583d03e606c799f1ca1025f3aa6047e182",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/28b4c2b5f1b7dbea6c8237b5f5d6957513e0c10d"
+        },
+        "date": 1792461423673,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 50104,
+            "range": "± 3051",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 70423,
+            "range": "± 1084",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 142715,
+            "range": "± 1179",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 288130,
+            "range": "± 13679",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 8910,
+            "range": "± 140",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 6310,
+            "range": "± 105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 26,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1076,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000370690,
+            "range": "± 144829",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 264055,
+            "range": "± 25369",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 669736,
+            "range": "± 18704",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 15957775,
+            "range": "± 142075",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 3947262,
+            "range": "± 187709",
             "unit": "ns/iter"
           }
         ]
