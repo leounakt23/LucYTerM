@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792463884470,
+  "lastUpdate": 1792467414655,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -3305,6 +3305,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 9062556,
             "range": "± 434556",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "3000d5fdcc374b9475f9e81202638036803ab55d",
+          "message": "build(deps): bump the actions group across 1 directory with 20 updates (#23)\n\nBumps the actions group with 20 updates in the / directory:\n\n| Package | From | To |\n| --- | --- | --- |\n| [actions/checkout](https://github.com/actions/checkout) | `4` | `7` |\n| [actions/upload-artifact](https://github.com/actions/upload-artifact) | `4` | `7` |\n| [actions/download-artifact](https://github.com/actions/download-artifact) | `4` | `8` |\n| [codecov/codecov-action](https://github.com/codecov/codecov-action) | `5` | `7` |\n| [actions/configure-pages](https://github.com/actions/configure-pages) | `5` | `6` |\n| [actions/upload-pages-artifact](https://github.com/actions/upload-pages-artifact) | `3` | `5` |\n| [actions/deploy-pages](https://github.com/actions/deploy-pages) | `4` | `5` |\n| [mozilla-actions/sccache-action](https://github.com/mozilla-actions/sccache-action) | `0.0.9` | `0.0.11` |\n| [crazy-max/ghaction-import-gpg](https://github.com/crazy-max/ghaction-import-gpg) | `6` | `7` |\n| [actions/labeler](https://github.com/actions/labeler) | `5` | `7` |\n| [actions/github-script](https://github.com/actions/github-script) | `7` | `9` |\n| [dependabot/fetch-metadata](https://github.com/dependabot/fetch-metadata) | `2` | `3` |\n| [release-drafter/release-drafter](https://github.com/release-drafter/release-drafter) | `6` | `7` |\n| [softprops/action-gh-release](https://github.com/softprops/action-gh-release) | `2` | `3` |\n| [docker/setup-buildx-action](https://github.com/docker/setup-buildx-action) | `3` | `4` |\n| [docker/login-action](https://github.com/docker/login-action) | `3` | `4` |\n| [docker/metadata-action](https://github.com/docker/metadata-action) | `5` | `6` |\n| [docker/build-push-action](https://github.com/docker/build-push-action) | `6` | `7` |\n| [github/codeql-action](https://github.com/github/codeql-action) | `3` | `4` |\n| [actions/stale](https://github.com/actions/stale) | `9.1.0` | `11.0.0` |\n\n\n\nUpdates `actions/checkout` from 4 to 7\n- [Release notes](https://github.com/actions/checkout/releases)\n- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/actions/checkout/compare/v4...v7)\n\nUpdates `actions/upload-artifact` from 4 to 7\n- [Release notes](https://github.com/actions/upload-artifact/releases)\n- [Commits](https://github.com/actions/upload-artifact/compare/v4...v7)\n\nUpdates `actions/download-artifact` from 4 to 8\n- [Release notes](https://github.com/actions/download-artifact/releases)\n- [Commits](https://github.com/actions/download-artifact/compare/v4...v8)\n\nUpdates `codecov/codecov-action` from 5 to 7\n- [Release notes](https://github.com/codecov/codecov-action/releases)\n- [Changelog](https://github.com/codecov/codecov-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/codecov/codecov-action/compare/v5...v7)\n\nUpdates `actions/configure-pages` from 5 to 6\n- [Release notes](https://github.com/actions/configure-pages/releases)\n- [Commits](https://github.com/actions/configure-pages/compare/v5...v6)\n\nUpdates `actions/upload-pages-artifact` from 3 to 5\n- [Release notes](https://github.com/actions/upload-pages-artifact/releases)\n- [Commits](https://github.com/actions/upload-pages-artifact/compare/v3...v5)\n\nUpdates `actions/deploy-pages` from 4 to 5\n- [Release notes](https://github.com/actions/deploy-pages/releases)\n- [Commits](https://github.com/actions/deploy-pages/compare/v4...v5)\n\nUpdates `mozilla-actions/sccache-action` from 0.0.9 to 0.0.11\n- [Release notes](https://github.com/mozilla-actions/sccache-action/releases)\n- [Commits](https://github.com/mozilla-actions/sccache-action/compare/v0.0.9...v0.0.11)\n\nUpdates `crazy-max/ghaction-import-gpg` from 6 to 7\n- [Release notes](https://github.com/crazy-max/ghaction-import-gpg/releases)\n- [Commits](https://github.com/crazy-max/ghaction-import-gpg/compare/v6...v7)\n\nUpdates `actions/labeler` from 5 to 7\n- [Release notes](https://github.com/actions/labeler/releases)\n- [Commits](https://github.com/actions/labeler/compare/v5...v7)\n\nUpdates `actions/github-script` from 7 to 9\n- [Release notes](https://github.com/actions/github-script/releases)\n- [Commits](https://github.com/actions/github-script/compare/v7...v9)\n\nUpdates `dependabot/fetch-metadata` from 2 to 3\n- [Release notes](https://github.com/dependabot/fetch-metadata/releases)\n- [Commits](https://github.com/dependabot/fetch-metadata/compare/v2...v3)\n\nUpdates `release-drafter/release-drafter` from 6 to 7\n- [Release notes](https://github.com/release-drafter/release-drafter/releases)\n- [Commits](https://github.com/release-drafter/release-drafter/compare/v6...v7)\n\nUpdates `softprops/action-gh-release` from 2 to 3\n- [Release notes](https://github.com/softprops/action-gh-release/releases)\n- [Changelog](https://github.com/softprops/action-gh-release/blob/master/CHANGELOG.md)\n- [Commits](https://github.com/softprops/action-gh-release/compare/v2...v3)\n\nUpdates `docker/setup-buildx-action` from 3 to 4\n- [Release notes](https://github.com/docker/setup-buildx-action/releases)\n- [Commits](https://github.com/docker/setup-buildx-action/compare/v3...v4)\n\nUpdates `docker/login-action` from 3 to 4\n- [Release notes](https://github.com/docker/login-action/releases)\n- [Commits](https://github.com/docker/login-action/compare/v3...v4)\n\nUpdates `docker/metadata-action` from 5 to 6\n- [Release notes](https://github.com/docker/metadata-action/releases)\n- [Commits](https://github.com/docker/metadata-action/compare/v5...v6)\n\nUpdates `docker/build-push-action` from 6 to 7\n- [Release notes](https://github.com/docker/build-push-action/releases)\n- [Commits](https://github.com/docker/build-push-action/compare/v6...v7)\n\nUpdates `github/codeql-action` from 3 to 4\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/v3...v4)\n\nUpdates `actions/stale` from 9.1.0 to 11.0.0\n- [Release notes](https://github.com/actions/stale/releases)\n- [Changelog](https://github.com/actions/stale/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/actions/stale/compare/5bef64f19d7facfb25b37b414482c7164d639639...4391f3da665fdf50b6810c1a66712fb9ba21aa93)\n\n---\nupdated-dependencies:\n- dependency-name: actions/checkout\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/configure-pages\n  dependency-version: '6'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/deploy-pages\n  dependency-version: '5'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/download-artifact\n  dependency-version: '8'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/github-script\n  dependency-version: '9'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/labeler\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/stale\n  dependency-version: 11.0.0\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/upload-artifact\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: actions/upload-pages-artifact\n  dependency-version: '5'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: codecov/codecov-action\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: crazy-max/ghaction-import-gpg\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: dependabot/fetch-metadata\n  dependency-version: '3'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: docker/build-push-action\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: docker/login-action\n  dependency-version: '4'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: docker/metadata-action\n  dependency-version: '6'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: docker/setup-buildx-action\n  dependency-version: '4'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: github/codeql-action\n  dependency-version: '4'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: mozilla-actions/sccache-action\n  dependency-version: 0.0.11\n  dependency-type: direct:production\n  update-type: version-update:semver-patch\n  dependency-group: actions\n- dependency-name: release-drafter/release-drafter\n  dependency-version: '7'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n- dependency-name: softprops/action-gh-release\n  dependency-version: '3'\n  dependency-type: direct:production\n  update-type: version-update:semver-major\n  dependency-group: actions\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2026-10-20T05:25:55+02:00",
+          "tree_id": "72705e05f5ef6503902a7759959af343ce107c10",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/3000d5fdcc374b9475f9e81202638036803ab55d"
+        },
+        "date": 1792467414113,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 79871,
+            "range": "± 1065",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 100291,
+            "range": "± 283",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 202764,
+            "range": "± 1829",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 423030,
+            "range": "± 2193",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 12018,
+            "range": "± 85",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 9891,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 44,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1942,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000591354,
+            "range": "± 190051",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 489127,
+            "range": "± 7972",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1245475,
+            "range": "± 29506",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 28482074,
+            "range": "± 110125",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 5723227,
+            "range": "± 173629",
             "unit": "ns/iter"
           }
         ]
