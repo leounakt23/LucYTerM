@@ -74,11 +74,19 @@ pub fn fixture(name: &str) -> PathBuf {
         .join(name)
 }
 
-fn unique_suffix() -> u128 {
-    std::time::SystemTime::now()
+fn unique_suffix() -> String {
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    // The clock can be coarse on CI runners (two tests may start in the
+    // same tick), so the process-local counter is what actually
+    // guarantees distinct directories.
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+    let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
+    let nanos = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_nanos())
-        .unwrap_or_default()
+        .unwrap_or_default();
+    format!("{nanos}-{counter}")
 }
 
 /// Learn a live server host key into a throwaway `HOME` so strict
