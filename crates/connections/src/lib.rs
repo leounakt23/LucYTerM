@@ -583,6 +583,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(any(feature = "rdp", feature = "vnc"))]
     fn spawn_plan_debug_redacts_stdin_password() {
         use std::path::PathBuf;
         let plan = spawn::SpawnPlan {
@@ -599,7 +600,8 @@ mod tests {
     }
 
     #[test]
-    fn connection_debugs_redact_host() {
+    #[cfg(feature = "ssh")]
+    fn ssh_debug_redacts_host() {
         let spec = SessionSpec {
             name: "web".to_string(),
             protocol: Protocol::Ssh,
@@ -610,8 +612,32 @@ mod tests {
         let rendered = format!("{:?}", crate::ssh::SshConn::new(&spec));
         assert!(!rendered.contains("canary-host"), "leaked: {rendered}");
         assert!(!rendered.contains("canary-user"), "leaked: {rendered}");
+    }
+
+    #[test]
+    #[cfg(feature = "telnet")]
+    fn telnet_debug_redacts_host() {
+        let spec = SessionSpec {
+            name: "web".to_string(),
+            protocol: Protocol::Ssh,
+            host: Some("canary-host.invalid".to_string()),
+            username: Some("canary-user".to_string()),
+            ..spec(Protocol::Ssh)
+        };
         let rendered = format!("{:?}", crate::telnet::TelnetConn::new(&spec));
         assert!(!rendered.contains("canary-host"), "leaked: {rendered}");
+    }
+
+    #[test]
+    #[cfg(feature = "serial")]
+    fn serial_debug_redacts_host() {
+        let spec = SessionSpec {
+            name: "web".to_string(),
+            protocol: Protocol::Ssh,
+            host: Some("canary-host.invalid".to_string()),
+            username: Some("canary-user".to_string()),
+            ..spec(Protocol::Ssh)
+        };
         let rendered = format!("{:?}", crate::serial::SerialConn::new(&spec));
         assert!(!rendered.contains("canary-host"), "leaked: {rendered}");
     }
