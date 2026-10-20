@@ -48,12 +48,22 @@ advisory landscape for the pinned stack. GitHub's advisory service listed,
 inventory date 2026-10-10, 21 advisories (6 high, 12 medium, 3 low) against
 locked versions:
 
-- `russh` 0.61.1 (SSH transport): **migrated 2026-10-15** from 0.45.0,
-  which carried 16 advisories (RUSTSEC-2026-0154 and its
-  `russh-cryptovec` twin were RustSec-mirrored). 0.61.1 clears the
-  high-severity set on the pinned toolchain and both ignores were removed
-  from `.cargo/audit.toml` / `deny.toml`; a 0.63.2 follow-up (rustc
-  ≥1.89) would clear the remainder.
+- `russh` (SSH transport): **migrated 2026-10-15** from 0.45.0 to
+  0.61.1, which carried 16 advisories (RUSTSEC-2026-0154 and its
+  `russh-cryptovec` twin were RustSec-mirrored); both ignores were
+  removed from `.cargo/audit.toml` / `deny.toml`. **0.61.2 → 0.63.1 on
+  2026-10-20** cleared two GitHub-only advisories that the RustSec
+  mirror does not carry (so `cargo audit` could not see them):
+  GHSA-47hw-gvq5-r2gm / CVE-2026-102823 (high 7.5: client channel-scoped
+  `Handler` callbacks fire for channel IDs the client never opened) and
+  GHSA-p8qx-h547-fjw9 / CVE-2026-102822 (low 3.7: a MAC-requiring block
+  cipher negotiated with `mac=none` panics the session task), both
+  affecting ≤0.63.0 and patched in 0.63.1. Exposure here was bounded:
+  the `Handler` implements no per-channel data/close callbacks (the
+  defaults are no-ops), and every client config leaves the MAC
+  preference list at russh's default, which never offers `none`.
+  0.63.1 is the last release buildable on the pinned 1.85 toolchain;
+  0.63.2/0.64.1 need rustc ≥1.89 (tracked in `docs/maintenance.md`).
 - `hickory-resolver` 0.24.4: the lookup APIs obscure DNSSEC validation
   failures (GHSA-5j98-2g5x-46v6). Only explicitly configured resolvers are
   queried and DNSSEC is not enabled.

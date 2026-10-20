@@ -307,7 +307,16 @@ Productivity:
       39201249957 flagged them), the workspace MSRV moved 1.80 → 1.85,
       clearing the five lock-only quinn-proto advisories (0.11.18) and
       the yanked inout 0.2.3 (0.2.5). Both tools exit 0 with 6
-      vulnerabilities + 9 unmaintained warnings ignore-listed.)
+      vulnerabilities + 9 unmaintained warnings ignore-listed.
+      Post-release security stop (2026-10-20): `russh` 0.61.2 → 0.63.1
+      cleared two GitHub-only advisories absent from the RustSec mirror —
+      GHSA-47hw-gvq5-r2gm / CVE-2026-102823 (high 7.5, invalid
+      channel-ID callbacks) and GHSA-p8qx-h547-fjw9 / CVE-2026-102822
+      (low 3.7, mac=none panic). Dependabot's GitHub feed detected them;
+      `cargo audit` could not. Host certificates are rejected fail-closed
+      and channel-open handlers use the explicit accept API. fmt,
+      clippy, 36 test suites, audit, deny, and no-default-features are
+      green; live suites remain CI-E2E-gated.)
 
 ## Quality Verification
 

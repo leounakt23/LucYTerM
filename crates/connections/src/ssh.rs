@@ -15,6 +15,31 @@ use crate::{
 /// Server-opened `x11` channel stream, handed to the proxy task.
 type X11Stream = ChannelStream<client::Msg>;
 
+/// Verify a server's presented host key against the user's `known_hosts`.
+///
+/// Fails closed for host certificates: this application has no
+/// certificate-authority trust store, so a certificate is rejected
+/// outright rather than being compared as if it were a plain host key
+/// (russh 0.63+ can present one on the certificate path).
+pub fn verify_host_key(
+    host: &str,
+    port: u16,
+    presented: &russh::keys::PublicKeyOrCertificate,
+) -> Result<bool, russh::keys::Error> {
+    let key = match presented {
+        russh::keys::PublicKeyOrCertificate::PublicKey { key, .. } => key,
+        russh::keys::PublicKeyOrCertificate::Certificate(_) => {
+            tracing::warn!(
+                %host,
+                port,
+                "server presented a host certificate; no CA is configured, rejecting"
+            );
+            return Ok(false);
+        },
+    };
+    russh::keys::check_known_hosts(host, port, key)
+}
+
 #[derive(Debug)]
 struct ClientHandler {
     host: String,
@@ -30,9 +55,9 @@ impl client::Handler for ClientHandler {
 
     async fn check_server_key(
         &mut self,
-        server_public_key: &russh::keys::PublicKey,
+        server_public_key: &russh::keys::PublicKeyOrCertificate,
     ) -> Result<bool, Self::Error> {
-        match russh::keys::check_known_hosts(&self.host, self.port, server_public_key) {
+        match verify_host_key(&self.host, self.port, server_public_key) {
             Ok(accepted) => Ok(accepted),
             Err(error) => {
                 tracing::warn!(%error, "known_hosts check failed");
@@ -46,16 +71,19 @@ impl client::Handler for ClientHandler {
         channel: Channel<client::Msg>,
         originator_address: &str,
         originator_port: u32,
+        reply: client::ChannelOpenHandle,
         _session: &mut client::Session,
     ) -> Result<(), Self::Error> {
         tracing::debug!(%originator_address, originator_port, "server opened x11 channel");
         if let Some(tx) = self.x11_tx.as_ref() {
+            reply.accept().await;
             // Receiver gone (shutdown) → drop the channel loudly, not silently.
             if tx.send(channel.into_stream()).is_err() {
                 tracing::warn!("x11 channel dropped: forwarder is gone");
             }
         } else {
-            tracing::warn!("x11 channel opened but forwarding is disabled; dropping");
+            // Dropping `reply` rejects with AdministrativelyProhibited.
+            tracing::warn!("x11 channel opened but forwarding is disabled; rejecting");
         }
         Ok(())
     }
@@ -67,6 +95,7 @@ impl client::Handler for ClientHandler {
         connected_port: u32,
         originator_address: &str,
         originator_port: u32,
+        reply: client::ChannelOpenHandle,
         _session: &mut client::Session,
     ) -> Result<(), Self::Error> {
         tracing::debug!(
@@ -77,6 +106,7 @@ impl client::Handler for ClientHandler {
             "server opened forwarded-tcpip channel"
         );
         if let Some(tx) = self.forwarded_tx.as_ref() {
+            reply.accept().await;
             let opened = crate::ForwardedTcpIp {
                 stream: channel.into_stream(),
                 connected_host: connected_address.to_string(),
@@ -86,7 +116,8 @@ impl client::Handler for ClientHandler {
                 tracing::warn!("forwarded-tcpip channel dropped: no forward running");
             }
         } else {
-            tracing::warn!("forwarded-tcpip channel opened with no forward running; dropping");
+            // Dropping `reply` rejects with AdministrativelyProhibited.
+            tracing::warn!("forwarded-tcpip channel opened with no forward running; rejecting");
         }
         Ok(())
     }

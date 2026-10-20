@@ -103,14 +103,24 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   (RUSTSEC-2026-0346 … -0349) were cleared by the 0.23.45 → 0.23.46
   bump before tagging. The russh pair (RUSTSEC-2026-0154 / -0153) was
   retired by the 0.45→0.61.1 migration and its ignores were deleted
-  from `.cargo/audit.toml` and `deny.toml`.
+  from `.cargo/audit.toml` and `deny.toml`. The `russh` 0.61.2 → 0.63.1
+  security stop on 2026-10-20 cleared two GitHub-only advisories (see
+  the advisory-inventory bullet below); the unfiltered RustSec inventory
+  is unchanged at 6 vulnerabilities + 9 unmaintained + 2 unsound warnings.
 - GitHub's advisory service is broader than the RustSec mirror that
   `cargo audit` consumes: an inventory on 2026-10-10 counted 21
   advisories (6 high, 12 medium, 3 low) against locked versions —
   16 against `russh` 0.45.0 plus `hickory-resolver`,
-  `hickory-proto`, `time`, and `lru`. The russh 16 are addressed by the
-  0.61.1 migration (done 2026-10-15; 0.63.2 would clear the remainder
-  but needs rustc ≥1.89). Remaining blockers are recorded precisely:
+  `hickory-proto`, `time`, and `lru`. The russh 16 were addressed by
+  the 0.61.1 migration (2026-10-15). Two advisories published against
+  `russh` 0.61.x after that inventory — GHSA-47hw-gvq5-r2gm /
+  CVE-2026-102823 (high 7.5) and GHSA-p8qx-h547-fjw9 /
+  CVE-2026-102822 (low 3.7) — were cleared on 2026-10-20 by the
+  0.63.1 bump (the last release buildable on 1.85). The RustSec mirror
+  carried neither, so Dependabot's GitHub feed caught them while
+  `cargo audit` stayed green; host certificates are now rejected
+  fail-closed and channel-open handlers use russh's explicit
+  accept/reject handles. Remaining blockers are recorded precisely:
   `time` 0.3.47 / `hickory` 0.26 need rustc ≥1.88, `lru` follows a
   future `iced` bump. Every reachable entry needs a malicious or
   compromised SSH peer (or an accepted host-key mismatch); the impact

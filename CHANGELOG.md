@@ -15,6 +15,13 @@ Semantic Versioning.
 
 ### Security
 
+- Migrated `russh` 0.61.2 → 0.63.1 for two GitHub-only SSH advisories
+  that the RustSec mirror does not carry: GHSA-47hw-gvq5-r2gm /
+  CVE-2026-102823 (high; channel callbacks for never-opened IDs) and
+  GHSA-p8qx-h547-fjw9 / CVE-2026-102822 (low; `mac=none` panic).
+  Host certificates are now rejected explicitly (no CA trust store),
+  and server-initiated channel opens use russh's explicit accept/reject
+  handles.
 - Triaged the 2026-10-16 RustSec batch: the `zip` extraction advisories
   on the opt-in crash-reporting stack (`symbolic-debuginfo` pins
   `zip ^7.2.0`; the vulnerable `extract()` APIs are never called) and

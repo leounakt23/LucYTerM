@@ -58,7 +58,7 @@ vte = "0.13.0"
 bytemuck = { version = "1.14", features = ["derive"] }
 
 # Networking
-russh = "0.61.1"
+russh = "0.63.1"
 russh-sftp = "2.0"
 rand = "0.10"
 hickory-resolver = "0.24.1"

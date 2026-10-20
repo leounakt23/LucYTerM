@@ -258,9 +258,9 @@ impl russh::client::Handler for TunnelHandler {
 
     async fn check_server_key(
         &mut self,
-        key: &russh::keys::PublicKey,
+        key: &russh::keys::PublicKeyOrCertificate,
     ) -> Result<bool, Self::Error> {
-        match russh::keys::check_known_hosts(&self.host, self.port, key) {
+        match mbxt_connections::ssh::verify_host_key(&self.host, self.port, key) {
             Ok(accepted) => Ok(accepted),
             Err(error) => {
                 tracing::warn!(%error, "tunnel known_hosts check failed");
@@ -276,9 +276,11 @@ impl russh::client::Handler for TunnelHandler {
         connected_port: u32,
         _originator_address: &str,
         _originator_port: u32,
+        reply: russh::client::ChannelOpenHandle,
         _session: &mut russh::client::Session,
     ) -> Result<(), Self::Error> {
         if let Some(tx) = self.forwarded_tx.as_ref() {
+            reply.accept().await;
             let _ = tx.send(mbxt_connections::ForwardedTcpIp {
                 stream: channel.into_stream(),
                 connected_host: connected_address.to_string(),

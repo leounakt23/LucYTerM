@@ -180,9 +180,9 @@ impl russh::client::Handler for SftpClientHandler {
 
     async fn check_server_key(
         &mut self,
-        server_public_key: &russh::keys::PublicKey,
+        server_public_key: &russh::keys::PublicKeyOrCertificate,
     ) -> Result<bool, Self::Error> {
-        match russh::keys::check_known_hosts(&self.host, self.port, server_public_key) {
+        match mbxt_connections::ssh::verify_host_key(&self.host, self.port, server_public_key) {
             Ok(accepted) => Ok(accepted),
             Err(error) => {
                 tracing::warn!(%error, "known_hosts check failed");

@@ -52,11 +52,12 @@ async fn x11_request_sets_remote_display() {
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::PublicKey,
+            key: &russh::keys::PublicKeyOrCertificate,
         ) -> Result<bool, Self::Error> {
-            // Production behavior: fail closed on unknown keys. The key
-            // is learned into a throwaway HOME below, never the user's.
-            match russh::keys::check_known_hosts(&self.host, self.port, key) {
+            // Production behavior: fail closed on unknown keys and on
+            // host certificates (no CA trust store). The key is learned
+            // into a throwaway HOME below, never the user's.
+            match mbxt_connections::ssh::verify_host_key(&self.host, self.port, key) {
                 Ok(accepted) => Ok(accepted),
                 Err(error) => {
                     tracing::warn!(%error, host = %self.host, "known_hosts check failed");

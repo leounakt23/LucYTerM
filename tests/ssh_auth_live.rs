@@ -147,9 +147,9 @@ fn install_authorized_key(addr: &str, user: &str, password: &str, pubkey: &str) 
         type Error = russh::Error;
         async fn check_server_key(
             &mut self,
-            key: &russh::keys::PublicKey,
+            key: &russh::keys::PublicKeyOrCertificate,
         ) -> Result<bool, Self::Error> {
-            match russh::keys::check_known_hosts(&self.host, self.port, key) {
+            match mbxt_connections::ssh::verify_host_key(&self.host, self.port, key) {
                 Ok(accepted) => Ok(accepted),
                 Err(error) => {
                     tracing::warn!(%error, host = %self.host, "known_hosts check failed");
