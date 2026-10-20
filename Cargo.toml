@@ -76,7 +76,7 @@ cipher = "0.4"
 des = "0.8"
 ed25519-dalek = "2.1.0"
 sha2 = "0.10"
-getrandom = "0.2.15"
+getrandom = "0.4.3"
 subtle = "2.6"
 memsec = "0.7"
 zeroize = { version = "1.8.1", features = ["derive"] }
