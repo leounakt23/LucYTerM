@@ -68,14 +68,14 @@ impl SecurePassword {
 /// Generate a fresh random KDF salt.
 pub fn new_salt() -> [u8; SALT_LEN] {
     let mut salt = [0u8; SALT_LEN];
-    getrandom::getrandom(&mut salt).expect("OS entropy unavailable");
+    getrandom::fill(&mut salt).expect("OS entropy unavailable");
     salt
 }
 
 /// Generate a fresh random GCM nonce (never reuse with the same key!).
 pub fn new_nonce() -> [u8; NONCE_LEN] {
     let mut nonce = [0u8; NONCE_LEN];
-    getrandom::getrandom(&mut nonce).expect("OS entropy unavailable");
+    getrandom::fill(&mut nonce).expect("OS entropy unavailable");
     nonce
 }
 

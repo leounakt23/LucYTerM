@@ -81,7 +81,7 @@ straight from crates.io version metadata:
 | `hickory` 0.24.4  | 0.26.2 / 0.26.1     | 1.88          | toolchain pin + 0.24 → 0.26 API bump             |
 | `russh` 0.45.0    | 0.61.1              | 1.85          | **DONE 2026-10-15** (migration; rekey fixed)     |
 | `quinn-proto` 0.11.14 | 0.11.18         | 1.85          | **DONE 2026-10-20** (MSRV bump; lock-only)        |
-| `russh` 0.61.1    | 0.63.2 (all 16)     | 1.89          | API migration + toolchain pin                    |
+| `russh` 0.61.2    | 0.63.2 (all 16)     | 1.89          | API migration + toolchain pin                    |
 | `lru` 0.12.5      | 0.16.3              | —             | `iced_glyphon` 0.6 requires `lru` 0.12           |
 
 The ordered migration when maintainership chooses to spend it:

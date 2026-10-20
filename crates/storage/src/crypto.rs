@@ -57,7 +57,7 @@ impl CryptoVault {
     /// Generate a fresh random salt for a new database.
     pub fn new_salt() -> [u8; SALT_LEN] {
         let mut salt = [0u8; SALT_LEN];
-        getrandom::getrandom(&mut salt).expect("OS entropy unavailable");
+        getrandom::fill(&mut salt).expect("OS entropy unavailable");
         salt
     }
 
@@ -68,7 +68,7 @@ impl CryptoVault {
 
         let cipher = Aes256Gcm::new_from_slice(self.kek.as_ref()).map_err(|_| CryptoError::Kdf)?;
         let mut nonce_bytes = [0u8; NONCE_LEN];
-        getrandom::getrandom(&mut nonce_bytes).map_err(|_| CryptoError::Entropy)?;
+        getrandom::fill(&mut nonce_bytes).map_err(|_| CryptoError::Entropy)?;
         let sealed = cipher
             .encrypt(
                 Nonce::from_slice(&nonce_bytes),

@@ -14,7 +14,7 @@
   GPG-signed `SHA256SUMS`; GHCR image `remote-app:1.0.0`
 - Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
-- Dependencies: 911 lock entries (`Cargo.lock`); `cargo deny check`
+- Dependencies: 914 lock entries (`Cargo.lock`); `cargo deny check`
   licenses/bans/sources passes; `cargo audit` reports 6 unpatched
   advisories + 9 unmaintained warnings, all ignore-listed with reasons
   (see Security Posture)

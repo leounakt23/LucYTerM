@@ -48,7 +48,7 @@ async-trait = "0.1.83"
 
 # Serialization
 serde = { version = "1.0.219", features = ["derive"] }
-ron = "0.8.0"
+ron = "0.12.2"
 rmp-serde = "1.3.0"
 
 # Terminal / GUI stack
@@ -64,7 +64,7 @@ rand = "0.10"
 hickory-resolver = "0.24.1"
 
 # System integration
-nix = "0.29.0"
+nix = "0.31.3"
 directories = "5.0.1"
 serialport = { version = "4.7.2", default-features = false }
 dbus = { version = "0.9.7", features = ["vendored"] }
@@ -76,7 +76,7 @@ cipher = "0.4"
 des = "0.8"
 ed25519-dalek = "2.1.0"
 sha2 = "0.10"
-getrandom = "0.2.15"
+getrandom = "0.4.3"
 subtle = "2.6"
 memsec = "0.7"
 zeroize = { version = "1.8.1", features = ["derive"] }
@@ -88,7 +88,7 @@ keyring = { version = "3.2.0", features = [
 ] }
 
 # Persistence
-rusqlite = { version = "0.32.1", features = ["bundled"] }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 
 # Errors & logging
 thiserror = "2.0.12"
@@ -109,12 +109,12 @@ clap = { version = "4.5.23", default-features = false, features = [
 clap_complete = "4.5.23"
 rstest = "0.23"
 proptest = "1.6"
-mockall = "0.13"
-insta = "1.42"
+mockall = "0.15"
+insta = "1.49"
 
 # Misc
 futures = "0.3"
-criterion = "0.5"
+criterion = "0.7"
 tracing-flame = "0.2"
 puffin = "0.19"
 uuid = { version = "1.10", features = ["v4", "serde"] }

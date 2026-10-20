@@ -553,10 +553,18 @@ impl StdinBridge {
             return Err(std::io::Error::last_os_error());
         }
         let stdin = std::io::stdin();
-        tokio::io::unix::AsyncFd::new(stdin).map(|fd| Self {
-            fd,
-            saved_flags: Some(previous),
-        })
+        // SAFETY: `stdin` is the process's standard-input handle, whose
+        // `as_raw_fd()` is always fd 0. fd 0 stays open and refers to the
+        // same file description for the whole process lifetime (this
+        // binary never closes it), which is the registration contract;
+        // `AsyncFd` does not take ownership of the descriptor, and
+        // dropping `Stdin` does not close it.
+        unsafe { tokio::io::unix::AsyncFd::register(stdin) }
+            .map(|fd| Self {
+                fd,
+                saved_flags: Some(previous),
+            })
+            .map_err(std::io::Error::from)
     }
 }
 
