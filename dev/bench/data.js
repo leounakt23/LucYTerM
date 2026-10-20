@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792127691841,
+  "lastUpdate": 1792458764282,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -2999,6 +2999,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 8616559,
             "range": "± 61744",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "7d6d018ad12cee010c3b85c2486f01287d9933fb",
+          "message": "security: clear the post-1.0 advisory batch and raise MSRV to 1.85\n\n- Ignore-list the 2026-10-16 zip extraction advisories (opt-in\n  crash-reporting stack; symbolic never calls extract()) and the\n  zbus-4.x unmaintained trio (pinned iced -> dark-light), with\n  reachability evidence in audit.toml/deny.toml and the docs.\n- Raise the workspace MSRV 1.80 -> 1.85, which lets the MSRV-aware\n  lock carry quinn-proto 0.11.18 (five advisories cleared; still\n  lock-only) and non-yanked inout 0.2.5 (0.2.3 was yanked). Drop the\n  quinn-proto ignores instead of keeping dead allowances.\n- Update clippy msrv and the is_none_or cleanup it enables;\n  AGENTS/MASTER_PROMPT, threat model, checklist, final report,\n  maintenance plan, and CHANGELOG follow the same state.\n- Verified locally: cargo audit exit 0 (6 vulnerabilities + 9\n  unmaintained warnings ignore-listed; 2 allowed lru warnings),\n  cargo deny advisories/bans/licenses/sources ok, fmt/clippy/tests\n  green, no-default-features check green, mdbook build green.",
+          "timestamp": "2026-10-20T02:54:07+02:00",
+          "tree_id": "d8fd924c69d550afc2ec009d9fa35bc04a2f5df0",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/7d6d018ad12cee010c3b85c2486f01287d9933fb"
+        },
+        "date": 1792458763515,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 45854,
+            "range": "± 152",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 63441,
+            "range": "± 685",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 132264,
+            "range": "± 330",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 251053,
+            "range": "± 921",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 8277,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 1685,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 33,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 996,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000250066,
+            "range": "± 133623",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 244729,
+            "range": "± 444",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 626666,
+            "range": "± 1376",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 14725056,
+            "range": "± 33837",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 3051033,
+            "range": "± 10445",
             "unit": "ns/iter"
           }
         ]
