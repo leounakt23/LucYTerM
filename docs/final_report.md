@@ -14,11 +14,13 @@
   GPG-signed `SHA256SUMS`; GHCR image `remote-app:1.0.0`
 - Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
-- Dependencies: 910 lock entries (`Cargo.lock`); `cargo deny check`
-  licenses/bans/sources passes; `cargo audit` reports 8 unpatched
-  advisories + 6 unmaintained warnings, all ignore-listed with reasons
+- Dependencies: 911 lock entries (`Cargo.lock`); `cargo deny check`
+  licenses/bans/sources passes; `cargo audit` reports 6 unpatched
+  advisories + 9 unmaintained warnings, all ignore-listed with reasons
   (see Security Posture)
-- Toolchain: Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.80
+- Toolchain: Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.85
+  (raised from 1.80 on 2026-10-20 to clear the quinn-proto advisory set
+  and the yanked inout 0.2.3; 1.89 remains the target for time/hickory)
 
 ## Features Delivered
 
@@ -80,17 +82,24 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 - `cargo deny check` (licenses/bans/sources): passes. Advisories DB
   is unparsable by the MSRV-pinned deny 0.18.3; `cargo audit`
   covers advisories instead.
-- `cargo audit` (2026-10-16, post-migration): exit 0. 8 vulnerabilities
-  with no fix inside the pinned stack + MSRV are ignore-listed with
-  reasons: hickory-proto RUSTSEC-2026-0119, rsa RUSTSEC-2023-0071,
-  time RUSTSEC-2026-0009, and five lock-only quinn-proto advisories
-  (RUSTSEC-2026-0185 / -0338 / -0339 / -0340 / -0342 — the crate is
-  resolved into `Cargo.lock` by reqwest's rustls feature chain but
-  never compiled, and its minimum fix 0.11.18 needs rustc ≥1.85, above
-  the MSRV-aware lock policy); 6 unmaintained-crate warnings (instant,
-  paste, rustybuzz, ttf-parser ×3) are transitive via pinned GUI/SSH
-  crates, and 2 unsound `lru` warnings are surfaced (allowed by
-  default). Four rustls advisories published 2026-10-14
+- `cargo audit` (2026-10-20, post-migration + post-release re-check):
+  exit 0. 6 vulnerabilities with no fix inside the pinned stack + MSRV
+  are ignore-listed with reasons: hickory-proto RUSTSEC-2026-0119, rsa
+  RUSTSEC-2023-0071, time RUSTSEC-2026-0009, and three zip extraction
+  advisories (RUSTSEC-2026-0367 / -0368 / -0369, published 2026-10-16)
+  on the opt-in crash-reporting stack — symbolic-debuginfo 12.18.3
+  pins `zip ^7.2.0` and never calls the vulnerable `extract()` APIs,
+  so no attacker-controlled archive path is materialised on disk (no
+  stable symbolic allows zip ≥ 9 yet); 9 unmaintained-crate warnings
+  (instant, paste, rustybuzz, ttf-parser ×3, and the zbus-4.x trio
+  RUSTSEC-2026-0370 … -0372 via pinned iced → dark-light) are
+  transitive via pinned GUI/SSH crates, and the 2 unsound `lru`
+  warnings are surfaced (allowed by default). The five quinn-proto
+  advisories and the yanked `inout` 0.2.3 warning were cleared on
+  2026-10-20 by raising the workspace MSRV to 1.85 and updating
+  `Cargo.lock` (`quinn-proto` 0.11.18 — still lock-only — and
+  `inout` 0.2.5); those ignore entries were deleted, not silenced.
+  Four rustls advisories published 2026-10-14
   (RUSTSEC-2026-0346 … -0349) were cleared by the 0.23.45 → 0.23.46
   bump before tagging. The russh pair (RUSTSEC-2026-0154 / -0153) was
   retired by the 0.45→0.61.1 migration and its ignores were deleted

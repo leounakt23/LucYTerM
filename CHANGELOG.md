@@ -6,6 +6,22 @@ Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Workspace MSRV raised from 1.80 to 1.85 (pinned toolchain unchanged
+  at 1.85.1). The MSRV-aware lock now carries the patched
+  `quinn-proto` 0.11.18 (five advisories cleared; the crate remains
+  lock-only) and non-yanked `inout` 0.2.5.
+
+### Security
+
+- Triaged the 2026-10-16 RustSec batch: the `zip` extraction advisories
+  on the opt-in crash-reporting stack (`symbolic-debuginfo` pins
+  `zip ^7.2.0`; the vulnerable `extract()` APIs are never called) and
+  the unmaintained `zbus`-4.x advisories via the pinned iced stack are
+  ignore-listed with reachability evidence in `.cargo/audit.toml` and
+  `deny.toml`; `cargo audit` and `cargo deny` are green again.
+
 ## [1.0.0] - 2026-10-16
 
 ### Added

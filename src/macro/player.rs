@@ -345,7 +345,7 @@ pub fn evaluate_condition(expression: &str, context: &Context) -> bool {
         .strip_prefix("empty(")
         .and_then(|rest| rest.strip_suffix(')'))
     {
-        return context.get(inner.trim()).map_or(true, |v| v.is_empty());
+        return context.get(inner.trim()).is_none_or(|v| v.is_empty());
     }
     if let Some((left, right)) = expression.split_once("==") {
         let var = left.trim();

@@ -70,14 +70,29 @@ locked versions:
   The crate is recorded in `Cargo.lock` only — reqwest's `rustls-tls`
   feature chain references `quinn?/ring`, which resolves the optional
   dependency without activating it (`cargo tree --all-features -i
-  quinn-proto` prints nothing; the release builds never compile it) — and
-  the minimum fix requires rustc ≥ 1.85, above the workspace MSRV 1.80
-  that the MSRV-aware resolver enforces. All five are ignore-listed with
-  that reason in `.cargo/audit.toml`.
+  quinn-proto` prints nothing; the release builds never compile it).
+  **Cleared 2026-10-20:** the workspace MSRV moved from 1.80 to 1.85
+  (the fix's minimum), `Cargo.lock` now carries quinn-proto 0.11.18, and
+  the five ignore entries were removed from `.cargo/audit.toml`.
 - `rustls` 0.23.45: four advisories published 2026-10-14 during release
   prep (RUSTSEC-2026-0346 … -0349: `Debug` TLS-secret exposure, ECH
   application-data resend, ServerHello downgrade, Brotli decompression
   allocation) — cleared by the 0.23.45 → 0.23.46 bump before tagging.
+- `zip` 7.2.0: three extraction advisories published 2026-10-16
+  (RUSTSEC-2026-0367, -0368, -0369; one rated 9.1 critical). The crate
+  enters only through the opt-in `crash-reporting` feature
+  (`symbolic-debuginfo` 12.18.3 pins `zip ^7.2.0`), and the vulnerable
+  `extract()` APIs are never called: symbolic only reads archives from
+  memory and writes source bundles, so no attacker-controlled archive
+  path is materialised on disk. No stable symbolic release allows
+  zip ≥ 9 (latest stable 12.18.3; only 14.0.0-alpha pre-releases), so
+  the fix is upstream-gated.
+- `zbus_names` 3.0.0 / `zvariant` 4.2.0 / `zvariant_derive` 4.2.0:
+  unmaintained advisories published 2026-10-16
+  (RUSTSEC-2026-0370 … -0372). Transitive through the pinned GUI stack
+  (`iced` 0.13 → `dark-light` 1.1.1 → `zbus` 4.4) and used only for
+  desktop theme detection; clearing them needs `dark-light` 3.x and a
+  newer iced.
 
 Exploitability in this application: every reachable advisory requires a
 malicious or compromised SSH peer, or an accepted host-key mismatch that the

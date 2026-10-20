@@ -18,19 +18,26 @@ production hosts.
       green in run 38795135476 for commit 63b3fe9; the expanded seven-leg
       matrix is green in run 38834040960 on the tagged commit `ed04d0d`.)
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
-- [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-16,
-      post-migration; exit 0. 8 vulnerabilities + 6 unmaintained
+- [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-20,
+      post-migration; exit 0. 6 vulnerabilities + 9 unmaintained
       warnings are ignore-listed with reasons in `.cargo/audit.toml`:
       hickory-proto + time fixes need rustc ≥1.88 (over the 1.85.1
       pin), rsa has no upstream fix, the rest are unmaintained
-      transitive GUI/SSH crates; five quinn-proto advisories are
-      lock-only — the crate is never compiled (reqwest's rustls feature
-      chain resolves it into `Cargo.lock` without activating it) and
-      the minimum fix 0.11.18 requires rustc ≥1.85, above the
-      MSRV-aware lock policy. The russh pair was retired by the 0.61.1
-      migration — the ignores were removed, not silenced. Four rustls
-      advisories published 2026-10-14 (RUSTSEC-2026-0346..-0349) were
-      cleared outright by the 0.23.45 → 0.23.46 bump.)
+      transitive GUI/SSH crates; three zip advisories
+      (RUSTSEC-2026-0367…-0369, published 2026-10-16) ride the opt-in
+      crash-reporting stack, where symbolic 12.18.3 pins zip ^7.2.0 and
+      never calls the vulnerable `extract()` APIs; three zbus-4.x
+      unmaintained advisories (RUSTSEC-2026-0370…-0372) come via the
+      pinned iced → dark-light stack. The russh pair was retired by the
+      0.61.1 migration — the ignores were removed, not silenced. Four
+      rustls advisories published 2026-10-14 (RUSTSEC-2026-0346..-0349)
+      were cleared outright by the 0.23.45 → 0.23.46 bump. On
+      2026-10-20 the workspace MSRV moved 1.80 → 1.85, which cleared
+      the five lock-only quinn-proto advisories (now 0.11.18) and the
+      yanked inout 0.2.3 (now 0.2.5); both ignore sets were removed.
+      The scheduled Security run 39201249957 (2026-10-19) flagged the
+      2026-10-16 batch; it was triaged on 2026-10-20 with the
+      reachability evidence above.)
 - [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
 - [x] Coverage gate passes with the workspace target of >80% lines; any drop
       has an explicit maintainer decision recorded. (2026-10-07; 65.2% measured, exception + path forward in final_report.md)
@@ -286,13 +293,21 @@ Productivity:
       require rustc ≥1.88 (over the 1.85.1 pin — NOT applied),
       rsa/lru/unmaintained set has no compatible fix (accepted-risk,
       documented); five lock-only quinn-proto advisories ignore-listed
-      (never compiled — resolved into `Cargo.lock` by reqwest's rustls
-      feature chain; fix needs rustc ≥1.85); four rustls advisories
-      (published 2026-10-14) cleared by the 0.23.45 → 0.23.46 bump.
+      at release time (never compiled — resolved into `Cargo.lock` by
+      reqwest's rustls feature chain; cleared post-release by the MSRV
+      1.85 bump); four rustls advisories (published 2026-10-14) cleared
+      by the 0.23.45 → 0.23.46 bump.
       Re-verified during v1.0.0 release prep (2026-10-16): Security run
       38832945626 on the fix commit 79799db, run 38834040924 on the
       tagged commit; the release workflow also re-runs fmt/clippy/tests
-      on the tag.)
+      on the tag. Post-release re-check (2026-10-20): after the
+      2026-10-16 advisory batch was ignore-listed (three zip extraction
+      advisories on the opt-in crash-reporting stack, three zbus-4.x
+      unmaintained advisories via pinned iced; scheduled run
+      39201249957 flagged them), the workspace MSRV moved 1.80 → 1.85,
+      clearing the five lock-only quinn-proto advisories (0.11.18) and
+      the yanked inout 0.2.3 (0.2.5). Both tools exit 0 with 6
+      vulnerabilities + 9 unmaintained warnings ignore-listed.)
 
 ## Quality Verification
 

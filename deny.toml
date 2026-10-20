@@ -31,10 +31,13 @@ wildcards = "deny"
 [advisories]
 version = 2
 yanked = "deny"
-# Every ignore needs a reason (mirrors .cargo/audit.toml): the stack
-# crates are MASTER_PROMPT-pinned and upstream has no patched releases
-# yet. Unmaintained transitive crates are recorded, not hidden. The
-# russh 0.45→0.61.1 migration (2026-10-15) retired the two russh ignores.
+# Every ignore needs a reason. This list mirrors .cargo/audit.toml for
+# the crates in cargo-deny's graph; audit.toml additionally carries the
+# opt-in-feature zip crate that this graph never reaches (crash
+# reporting). The stack crates are MASTER_PROMPT-pinned and upstream has
+# no patched releases yet. Unmaintained transitive crates are recorded,
+# not hidden. The russh 0.45→0.61.1 migration (2026-10-15) retired the
+# two russh ignores.
 ignore = [
     # hickory-proto 0.24.x: O(n^2) name compression; resolvers are
     # explicitly configured, decode path not attacker-controlled by default.
@@ -48,6 +51,11 @@ ignore = [
     "RUSTSEC-2024-0436", # paste
     "RUSTSEC-2026-0206", # rustybuzz
     "RUSTSEC-2026-0192", # ttf-parser
+    # zbus 4.x stack via pinned iced 0.13 -> dark-light 1.1.1 (theme
+    # detection only; clearing needs dark-light 3.x and a newer iced):
+    "RUSTSEC-2026-0370", # zvariant
+    "RUSTSEC-2026-0371", # zbus_names
+    "RUSTSEC-2026-0372", # zvariant_derive
 ]
 
 [sources]

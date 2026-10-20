@@ -22,24 +22,31 @@ ignore = [
     # otherwise). The affected parsing path is not reached with
     # attacker-controlled input.
     "RUSTSEC-2026-0009",
-    # quinn-proto 0.11.14: five advisories, minimum fix 0.11.18
-    # (RUSTSEC-2026-0338 / -0340) requires rustc >= 1.85 — above the
-    # workspace MSRV 1.80 that the MSRV-aware resolver
-    # (`.cargo/config.toml`) enforces, so a forced bump would be
-    # downgraded again by the next `cargo update`. The crate is
-    # lock-only: reqwest's rustls-tls feature chain references
-    # `quinn?/ring`, which records it in `Cargo.lock` without ever
-    # activating it (`cargo tree --all-features -i quinn-proto` is
-    # empty), so no shipped binary contains the affected code. Revisit
-    # when the workspace MSRV moves past 1.85.
-    "RUSTSEC-2026-0185", # unbounded out-of-order stream reassembly
-    "RUSTSEC-2026-0338", # panic on zero-length STREAM frames
-    "RUSTSEC-2026-0339", # unbounded connection-ID retirement growth
-    "RUSTSEC-2026-0340", # panic via peer minimum ACK delay
-    "RUSTSEC-2026-0342", # zero-length DATAGRAM receive-buffer bypass
+    # zip 7.2.0: three extraction advisories published 2026-10-16
+    # (RUSTSEC-2026-0367 / -0368 / -0369) against the opt-in
+    # crash-reporting stack. zip is pinned by symbolic-debuginfo 12.18.3
+    # (`zip = "7.2.0"`), and symbolic never calls the vulnerable
+    # `extract()` APIs: it only reads archives from memory
+    # (`ZipArchive` over a `Cursor`) and writes source bundles
+    # (`ZipWriter`), never materialising attacker-controlled archive
+    # paths on disk. No stable symbolic release allows zip >= 9 (latest
+    # stable 12.18.3; only 14.0.0-alpha pre-releases exist), so the fix
+    # is upstream-gated. Re-check when symbolic 13/14 ships stable.
+    "RUSTSEC-2026-0367", # SUID/SGID preservation on extract()
+    "RUSTSEC-2026-0368", # symlink targets outside destination on extract()
+    "RUSTSEC-2026-0369", # permissions through symlinks on extract()
     # Unmaintained transitive crates, none of them security-relevant:
     "RUSTSEC-2024-0384", # instant (via dark-light/parking_lot ecosystem)
     "RUSTSEC-2024-0436", # paste (macro helper)
     "RUSTSEC-2026-0206", # rustybuzz (font shaping)
     "RUSTSEC-2026-0192", # ttf-parser (font parsing, via rustybuzz)
+    # zbus 4.x stack (zbus_names 3.0.0, zvariant 4.2.0, zvariant_derive
+    # 4.2.0): unmaintained as of 2026-10-16. Transitive via the pinned
+    # GUI stack (iced 0.13 -> dark-light 1.1.1 -> zbus 4.4) and used
+    # only for desktop theme detection. Clearing them requires
+    # dark-light 3.x and a newer iced — tracked for the next GUI-stack
+    # refresh.
+    "RUSTSEC-2026-0370", # zvariant
+    "RUSTSEC-2026-0371", # zbus_names
+    "RUSTSEC-2026-0372", # zvariant_derive
 ]

@@ -80,6 +80,7 @@ straight from crates.io version metadata:
 | `time` 0.3.41     | 0.3.47              | 1.88          | toolchain pin (1.85.1)                           |
 | `hickory` 0.24.4  | 0.26.2 / 0.26.1     | 1.88          | toolchain pin + 0.24 → 0.26 API bump             |
 | `russh` 0.45.0    | 0.61.1              | 1.85          | **DONE 2026-10-15** (migration; rekey fixed)     |
+| `quinn-proto` 0.11.14 | 0.11.18         | 1.85          | **DONE 2026-10-20** (MSRV bump; lock-only)        |
 | `russh` 0.61.1    | 0.63.2 (all 16)     | 1.89          | API migration + toolchain pin                    |
 | `lru` 0.12.5      | 0.16.3              | —             | `iced_glyphon` 0.6 requires `lru` 0.12           |
 
@@ -96,6 +97,13 @@ The ordered migration when maintainership chooses to spend it:
    update, CI images, edition-2024 dependencies), then `cargo update -p
    time` (semver-compatible) and the `hickory` 0.24 → 0.26 bump; finish the
    russh move at 0.63.2 to clear the remaining advisories.
+   - **DONE 2026-10-20 (partial step 2):** MSRV raised 1.80 → 1.85
+     (`Cargo.toml`, `.clippy.toml`, `.cargo/config.toml` comment; CI
+     keeps the 1.85.1 pin). This cleared the five lock-only
+     `quinn-proto` advisories (`Cargo.lock` 0.11.14 → 0.11.18; the crate
+     is still never compiled) and the yanked `inout` 0.2.3 (→ 0.2.5,
+     non-yanked); both ignore sets were removed. The 1.89 target is
+     still required for `time`/`hickory` and the russh 0.63.2 move.
 3. `lru` follows a future `iced` bump; until then it stays recorded in
    `docs/threat_model.md`.
 

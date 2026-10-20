@@ -21,7 +21,7 @@
 
 | Layer    | Crate / Tool                                                                                                                  | Notes                                                                        |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Language | Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.80, edition 2021                                                           | Earlier sketches said "latest stable"; pin it. The pin now gates some security fixes (docs/maintenance.md).                               |
+| Language | Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.85, edition 2021                                                           | Earlier sketches said "latest stable"; pin it. MSRV raised from 1.80 on 2026-10-20; the pin still gates some security fixes (docs/maintenance.md). |
 | GUI      | `iced` 0.13.1 (`tokio`, `advanced`), `wgpu` 24                                                                                | Earlier sketches said 0.12; 0.13.1 is implemented.                           |
 | Async    | `tokio` 1.44 with a curated subset (`rt-multi-thread`, `macros`, `sync`, `net`, `time`, `io-util`, `signal`, `fs`, `process`) | Not "full features".                                                         |
 | SSH/SFTP | `russh` 0.45, `russh-sftp` 2.0                                                                                                | Key handling lives in `russh`; there is no separate `russh-keys` dependency. 0.45 carries open advisories; planned migration to 0.61.1 (docs/maintenance.md). |
