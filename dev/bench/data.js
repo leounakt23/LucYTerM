@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792467414655,
+  "lastUpdate": 1792469438871,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -3407,6 +3407,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 5723227,
             "range": "± 173629",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "62116535cc0ba50d7ab9a74edc1fc1e42512e199",
+          "message": "test: make TempConfig directory names collision-proof\n\nThe Ubuntu 22.04 CI leg flaked in config_integration: the round-trip\ntest loaded defaults after writing its config because TempConfig named\ndirectories from PID + nanosecond timestamp only. On a coarse clock two\nparallel tests can receive the same suffix, share a directory, and see\neach other's config.ron (one test deliberately writes malformed RON).\n\nAdd a process-local atomic counter to the suffix so every TempConfig is\ndistinct regardless of clock resolution.",
+          "timestamp": "2026-10-20T06:00:00+02:00",
+          "tree_id": "2de3a5331d06ff5b0a2194b79b2050228af0ce16",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/62116535cc0ba50d7ab9a74edc1fc1e42512e199"
+        },
+        "date": 1792469438564,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 80761,
+            "range": "± 3071",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 103280,
+            "range": "± 2227",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 205274,
+            "range": "± 608",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 441187,
+            "range": "± 10137",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 11808,
+            "range": "± 82",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 10425,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 41,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1908,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000501290,
+            "range": "± 226639",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 535610,
+            "range": "± 3898",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1198786,
+            "range": "± 90656",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 26441395,
+            "range": "± 99686",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 9432081,
+            "range": "± 198259",
             "unit": "ns/iter"
           }
         ]
