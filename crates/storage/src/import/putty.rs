@@ -59,8 +59,10 @@ pub fn parse_putty_reg(
                 flush_builder(open, file_name, &mut sessions, &mut report, &mut rejected);
             }
             match header.strip_suffix(']') {
-                Some(inner) => match session_name_from_key(inner) {
-                    Some(name) => {
+                // Non-session keys (host-key caches, config roots): out of
+                // scope, cleanly ignored.
+                Some(inner) => {
+                    if let Some(name) = session_name_from_key(inner) {
                         blocks += 1;
                         if blocks > MAX_SESSIONS {
                             return Err(ImportError::TooManySessions(MAX_SESSIONS));
@@ -76,10 +78,7 @@ pub fn parse_putty_reg(
                         } else {
                             current = Some(SessionBuilder::new(name, line_no));
                         }
-                    },
-                    // Non-session keys (host-key caches, config roots):
-                    // out of scope, cleanly ignored.
-                    None => {},
+                    }
                 },
                 None => {
                     report.warn(ImportWarning::at_line(

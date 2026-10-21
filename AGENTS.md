@@ -2,7 +2,7 @@
 
 ## Repo facts
 
-- Rust workspace (edition 2021, MSRV 1.85, toolchain pinned to 1.85.1 in `rust-toolchain.toml`). Linux-only desktop app: Iced 0.13 + wgpu GUI (`remote-app`) plus headless CLI (`remote-app-headless`, `src/bin/cli.rs`).
+- Rust workspace (edition 2021, MSRV 1.88, toolchain pinned to 1.88.0 in `rust-toolchain.toml`). Linux-only desktop app: Iced 0.13 + wgpu GUI (`remote-app`) plus headless CLI (`remote-app-headless`, `src/bin/cli.rs`).
 - Linux system deps required to build: `pkg-config`, `libudev-dev`, `libdbus-1-dev` (see CI in `.github/workflows/ci.yml`).
 - `.cargo/config.toml` sets `jobs = 2` on purpose — local builds are slow by design. It also defines the `cargo xtask` alias.
 - `fuzz/` is excluded from the workspace (own crate, cargo-fuzz + nightly).

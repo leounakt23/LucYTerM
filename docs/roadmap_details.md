@@ -91,11 +91,12 @@ as data, never commands.
 instead of documenting them indefinitely. **Scope:** stage 1 (**done
 2026-10-15**) migrated `russh` 0.45 to 0.61.1 on the current toolchain,
 clearing the high-severity SSH advisories and fixing mid-session rekey,
-validated with the full live-server suite; stage 2 raises the Rust
-toolchain pin to at least 1.89 and finishes `russh` 0.63.2, `time`
-0.3.47, and the `hickory` 0.24 → 0.26 bump. Exact blockers and ordering
-live in `docs/maintenance.md`. Stage 2 amends a MASTER_PROMPT pin and
-needs an explicit decision.
+validated with the full live-server suite; stage 2 (**partially done
+2026-10-21**) raised the pin to 1.88 and finished `time` 0.3.47, the
+`hickory` 0.24 → 0.26.3 bump, and the `iced`/`sentry` feature cleanup;
+the remaining `russh` 0.63.2/0.64.1 move needs rustc ≥1.89. Exact
+blockers and ordering live in `docs/maintenance.md`. The remaining stage
+amends a MASTER_PROMPT pin and needs an explicit decision.
 
 ## v1.2: Connectivity
 

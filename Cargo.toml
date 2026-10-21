@@ -18,7 +18,7 @@ harness = false
 [workspace.package]
 version = "1.0.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/leounakt23/LucYTerM"
 authors = ["LucYTerM"]
@@ -52,7 +52,17 @@ ron = "0.12.2"
 rmp-serde = "1.3.0"
 
 # Terminal / GUI stack
-iced = { version = "0.13.1", features = ["tokio", "advanced"] }
+# `default-features = false` drops `auto-detect-theme` (dark-light 1.1.1 ->
+# zbus 4.4, both unmaintained). The application selects its theme explicitly
+# from config, so OS-theme auto-detection is unused; the remaining defaults
+# (wgpu, tiny-skia, fira-sans) are kept explicitly.
+iced = { version = "0.13.1", default-features = false, features = [
+    "wgpu",
+    "tiny-skia",
+    "fira-sans",
+    "tokio",
+    "advanced",
+] }
 wgpu = "24.0.0"
 vte = "0.13.0"
 bytemuck = { version = "1.14", features = ["derive"] }
@@ -61,7 +71,7 @@ bytemuck = { version = "1.14", features = ["derive"] }
 russh = "0.63.1"
 russh-sftp = "2.0"
 rand = "0.10"
-hickory-resolver = "0.24.1"
+hickory-resolver = "0.26.3"
 
 # System integration
 nix = "0.31.3"
@@ -129,7 +139,11 @@ serde_json = "1.0"
 # OpenSSL. Do not switch these back to native-tls without adding OpenSSL to
 # every cross container (the release binaries job builds all four targets).
 reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
-sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest", "rustls"] }
+# Do not add sentry's `rustls` feature: the workspace `reqwest` already
+# enables `rustls-tls` (feature unification applies to sentry's transport),
+# while sentry's own flag additionally pins `webpki-roots` 0.26, whose line
+# has no patched release (RUSTSEC-2026-0381).
+sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest"] }
 minidumper = "0.8"
 symbolic = "12"
 

@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@1.85.1
+      - uses: dtolnay/rust-toolchain@1.88.0
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev jq
       - uses: taiki-e/install-action@v2

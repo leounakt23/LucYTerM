@@ -14,13 +14,15 @@
   GPG-signed `SHA256SUMS`; GHCR image `remote-app:1.0.0`
 - Lines of code: 46,380 Rust lines (`src` + `crates` + `tests` +
   `benches` + `xtask`, `wc -l`, this working tree)
-- Dependencies: 914 lock entries (`Cargo.lock`); `cargo deny check`
-  licenses/bans/sources passes; `cargo audit` reports 6 unpatched
-  advisories + 9 unmaintained warnings, all ignore-listed with reasons
+- Dependencies: 878 lock entries (`Cargo.lock`); `cargo deny check`
+  licenses/bans/sources passes; `cargo audit` exits 0 with the documented
+  ignore set — 4 vulnerability IDs (`rsa` + three `zip` extraction
+  advisories), 4 unmaintained IDs, and 2 allowed `lru` unsound warnings
   (see Security Posture)
-- Toolchain: Rust 1.85.1 pinned (`rust-toolchain.toml`), MSRV 1.85
-  (raised from 1.80 on 2026-10-20 to clear the quinn-proto advisory set
-  and the yanked inout 0.2.3; 1.89 remains the target for time/hickory)
+- Toolchain: Rust 1.88.0 pinned (`rust-toolchain.toml`), MSRV 1.88
+  (raised 1.80 → 1.85 on 2026-10-20, then 1.85 → 1.88 on 2026-10-21;
+  v1.0.0 artifacts were built with 1.85.1; 1.89 remains the target for
+  russh 0.63.2/0.64.1)
 
 ## Features Delivered
 
@@ -82,7 +84,7 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
 - `cargo deny check` (licenses/bans/sources): passes. Advisories DB
   is unparsable by the MSRV-pinned deny 0.18.3; `cargo audit`
   covers advisories instead.
-- `cargo audit` (2026-10-20, post-migration + post-release re-check):
+- `cargo audit` (v1.0.0 snapshot, 2026-10-20, post-migration + post-release re-check):
   exit 0. 6 vulnerabilities with no fix inside the pinned stack + MSRV
   are ignore-listed with reasons: hickory-proto RUSTSEC-2026-0119, rsa
   RUSTSEC-2023-0071, time RUSTSEC-2026-0009, and three zip extraction
@@ -105,10 +107,11 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   retired by the 0.45→0.61.1 migration and its ignores were deleted
   from `.cargo/audit.toml` and `deny.toml`. The `russh` 0.61.2 → 0.63.1
   security stop on 2026-10-20 cleared two GitHub-only advisories (see
-  the advisory-inventory bullet below); the unfiltered RustSec inventory
-  is unchanged at 6 vulnerabilities + 9 unmaintained + 2 unsound warnings.
+  the advisory-inventory bullet below); at that time the unfiltered
+  RustSec inventory stood at 6 vulnerabilities + 9 unmaintained +
+  2 unsound warnings.
 - GitHub's advisory service is broader than the RustSec mirror that
-  `cargo audit` consumes: an inventory on 2026-10-10 counted 21
+  `cargo audit` consumes (v1.0.0 snapshot): an inventory on 2026-10-10 counted 21
   advisories (6 high, 12 medium, 3 low) against locked versions —
   16 against `russh` 0.45.0 plus `hickory-resolver`,
   `hickory-proto`, `time`, and `lru`. The russh 16 were addressed by
@@ -120,13 +123,30 @@ profile is release-optimized; `dev` is unoptimized + debuginfo.
   carried neither, so Dependabot's GitHub feed caught them while
   `cargo audit` stayed green; host certificates are now rejected
   fail-closed and channel-open handlers use russh's explicit
-  accept/reject handles. Remaining blockers are recorded precisely:
-  `time` 0.3.47 / `hickory` 0.26 need rustc ≥1.88, `lru` follows a
-  future `iced` bump. Every reachable entry needs a malicious or
-  compromised SSH peer (or an accepted host-key mismatch); the impact
-  class is client-side denial of service, not code execution or
-  credential disclosure. Per-advisory inventory:
-  `docs/threat_model.md`; ordered migration: `docs/maintenance.md`.
+  accept/reject handles. Post-1.0.0 (2026-10-21): the 1.88 stack cleared
+  hickory/time and removed the zbus chain; `lru` follows a future `iced`
+  bump, and 0.63.2/0.64.1 need rustc ≥1.89. At v1.0.0 every reachable
+  entry needed a malicious or compromised SSH peer (or an accepted
+  host-key mismatch); the impact class was client-side denial of service,
+  not code execution or credential disclosure. The remaining entries are
+  the opt-in `zip` crash-reporting path and the GUI-local `lru`
+  warnings. Per-advisory inventory: `docs/threat_model.md`; ordered
+  migration: `docs/maintenance.md`.
+- **Post-1.0.0 maintenance update (2026-10-21, MSRV 1.88):** toolchain
+  1.88.0; `hickory` 0.24.4 → 0.26.3, `time` 0.3.41 → 0.3.47,
+  `rustls-webpki` 0.103.15 → 0.103.16, `webpki-roots` 1.0.9 → 1.0.10;
+  `iced` default features trimmed (removes `dark-light`/`zbus`) and
+  `sentry`'s redundant `rustls` feature dropped (removes
+  `ureq`/`webpki-roots` 0.26). This cleared RUSTSEC-2026-0119, -0009,
+  -0370…-0372, -0381/-0382 and GitHub-only GHSA-5j98-2g5x-46v6; the
+  remaining ignore set is `rsa`, three `zip` advisories, four
+  unmaintained IDs, and two `lru` unsound warnings. Gates on the
+  integrated tree (fmt, check all-targets/all-features, check
+  no-default/all-targets, clippy `-D warnings`, workspace tests default
+  + all-features, audit, deny, rustdoc, mdBook, 17 MB release build)
+  all pass. Local verification did not include live E2E or
+  cross-distribution packaging; CI E2E is the 1.88 live gate, and the
+  last locally verified packaged artifacts are 1.85.1 evidence.
 - Secrets: passwords travel over stdin pipes or zeroized memory,
   never argv, logs, or fixtures (argv invariant is unit-tested).
 
@@ -234,6 +254,8 @@ successes without evidence:
   Nix (flake build + clean-store import + smoke). Container toolchains
   were newer than the 1.85.1 pin (1.86/1.99/1.98); packaged binaries
   have not yet connected a live SSH session (same caveat as DEB).
+  Post-1.0.0 note: master is now pinned to 1.88.0; only the local 1.88
+  release build was verified, cross-packaging was not rebuilt.
 - NEW (2026-10-15): russh 0.45→0.61.1 migration (`maintenance.md`
   stage 1, the pending decision). Breaking handler/client API adapted
   (`#[async_trait]` dropped, `AuthResult::success()`,
@@ -250,8 +272,9 @@ successes without evidence:
   handlers need DUMPABLE=0, not just RLIMIT=0. Sentry minidump path
   untested (no DSN) — ships scrubbed by construction. Audit: exit 0
   with documented ignores, deny clean; the russh pair was retired by
-  the 0.61.1 migration (ignores deleted), hickory/time remain blocked
-  on the toolchain pin, all recorded.
+  the 0.61.1 migration (ignores deleted); hickory/time were blocked on
+  the toolchain pin at that time and were cleared by the 2026-10-21
+  1.88 update, all recorded.
 - NEW (2026-10-14): session import closed — was the honest v1.1 MISS.
   Three one-way parsers + published matrix (`docs/
   compatibility_import.md`) + CLI `import --from/--file/--commit` +

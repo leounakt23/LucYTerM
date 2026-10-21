@@ -36,26 +36,16 @@ yanked = "deny"
 # opt-in-feature zip crate that this graph never reaches (crash
 # reporting). The stack crates are MASTER_PROMPT-pinned and upstream has
 # no patched releases yet. Unmaintained transitive crates are recorded,
-# not hidden. The russh 0.45→0.61.1 migration (2026-10-15) retired the
-# two russh ignores.
+# not hidden. The russh 0.45→0.61.1 and 0.61.2→0.63.1 migrations retired
+# the russh ignores; the 1.88 stack cleared hickory/time/zbus.
 ignore = [
-    # hickory-proto 0.24.x: O(n^2) name compression; resolvers are
-    # explicitly configured, decode path not attacker-controlled by default.
-    "RUSTSEC-2026-0119",
     # rsa: Marvin Attack; RSA keys are opt-in (default Ed25519).
     "RUSTSEC-2023-0071",
-    # time: DoS via stack exhaustion; affected parse path not attacker-fed.
-    "RUSTSEC-2026-0009",
     # Unmaintained transitive crates:
-    "RUSTSEC-2024-0384", # instant
+    "RUSTSEC-2024-0384", # instant (wasm-only)
     "RUSTSEC-2024-0436", # paste
     "RUSTSEC-2026-0206", # rustybuzz
     "RUSTSEC-2026-0192", # ttf-parser
-    # zbus 4.x stack via pinned iced 0.13 -> dark-light 1.1.1 (theme
-    # detection only; clearing needs dark-light 3.x and a newer iced):
-    "RUSTSEC-2026-0370", # zvariant
-    "RUSTSEC-2026-0371", # zbus_names
-    "RUSTSEC-2026-0372", # zvariant_derive
 ]
 
 [sources]

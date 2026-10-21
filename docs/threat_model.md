@@ -62,20 +62,25 @@ locked versions:
   the `Handler` implements no per-channel data/close callbacks (the
   defaults are no-ops), and every client config leaves the MAC
   preference list at russh's default, which never offers `none`.
-  0.63.1 is the last release buildable on the pinned 1.85 toolchain;
-  0.63.2/0.64.1 need rustc ≥1.89 (tracked in `docs/maintenance.md`).
-- `hickory-resolver` 0.24.4: the lookup APIs obscure DNSSEC validation
-  failures (GHSA-5j98-2g5x-46v6). Only explicitly configured resolvers are
-  queried and DNSSEC is not enabled.
-- `hickory-proto` 0.24.4: O(n^2) name compression (mirrored as
-  RUSTSEC-2026-0119, ignored with reason).
-- `time` 0.3.41: stack-exhaustion denial of service during parsing (mirrored
-  as RUSTSEC-2026-0009, ignored with reason); those parsing entry points are
-  not fed attacker-controlled input.
+  0.63.1 is current on the 1.88 toolchain; 0.63.2/0.64.1 need rustc
+  ≥1.89 (tracked in `docs/maintenance.md`).
+- `hickory-resolver` 0.26.3 / `hickory-proto` 0.26.3: **cleared
+  2026-10-21** by the 0.24 → 0.26.3 bump. The resolver advisory
+  (GHSA-5j98-2g5x-46v6) affects versions `< 0.26.2`; the O(n²) name
+  compression advisory (RUSTSEC-2026-0119) no longer matches the lock.
+  Both ignore entries were removed from `.cargo/audit.toml`/`deny.toml`.
+- `time` 0.3.47: **cleared 2026-10-21**; the `RUSTSEC-2026-0009`
+  stack-exhaustion fix is in this release (requires rustc ≥1.88). The
+  ignore was removed.
+- `webpki-roots` 1.0.10 / `rustls-webpki` 0.103.16: **cleared
+  2026-10-21**. RUSTSEC-2026-0381/-0382 allowed certificate paths
+  through distrusted emSign roots/intermediates whose private keys are
+  well known; the patched releases remove/reject them. No ignore was
+  added. These crates sit on the opt-in crash-reporting/network path.
 - `lru` 0.12.5: two unsoundness advisories that `cargo audit` surfaces as
   warnings; transitive through `iced_glyphon` in the pinned GUI stack, not a
   network-facing path.
-- `quinn-proto` 0.11.14: five advisories published 2026-06-22 … 2026-09-14
+- `quinn-proto` 0.11.18 (was 0.11.14): five advisories published 2026-06-22 … 2026-09-14
   (RUSTSEC-2026-0185, -0338, -0339, -0340, -0342; minimum fix 0.11.18).
   The crate is recorded in `Cargo.lock` only — reqwest's `rustls-tls`
   feature chain references `quinn?/ring`, which resolves the optional
@@ -95,19 +100,19 @@ locked versions:
   `extract()` APIs are never called: symbolic only reads archives from
   memory and writes source bundles, so no attacker-controlled archive
   path is materialised on disk. No stable symbolic release allows
-  zip ≥ 9 (latest stable 12.18.3; only 14.0.0-alpha pre-releases), so
-  the fix is upstream-gated.
-- `zbus_names` 3.0.0 / `zvariant` 4.2.0 / `zvariant_derive` 4.2.0:
-  unmaintained advisories published 2026-10-16
-  (RUSTSEC-2026-0370 … -0372). Transitive through the pinned GUI stack
-  (`iced` 0.13 → `dark-light` 1.1.1 → `zbus` 4.4) and used only for
-  desktop theme detection; clearing them needs `dark-light` 3.x and a
-  newer iced.
+  zip ≥ 9 (symbolic 12.18.3 and 13.9.0 still pin `zip ^7.2.0`; only
+  14.0.0-alpha pre-releases use a newer zip), so the fix is
+  upstream-gated.
+- `zbus` 4.x stack (`zbus_names`, `zvariant`, `zvariant_derive`):
+  **cleared 2026-10-21** by the `iced` default-features trim, which
+  removed `dark-light` 1.1.1 → `zbus` 4.4 from the lock; the three
+  unmaintained ignores (RUSTSEC-2026-0370 … -0372) were removed.
 
-Exploitability in this application: every reachable advisory requires a
-malicious or compromised SSH peer, or an accepted host-key mismatch that the
-default policy rejects. The impact class is client-side denial of service —
-memory exhaustion or panics inside the SSH session task — not remote code
+Exploitability in this application: the remaining SSH-path advisory
+(`rsa`) requires a malicious or compromised SSH peer, or an accepted
+host-key mismatch that the default policy rejects; the `zip` advisories
+are on the opt-in crash-reporting stack and never call `extract()`; the
+`lru` warnings are GUI-local. No remaining advisory gives remote code
 execution or credential disclosure. Strict host-key verification and the
 opt-in, audit-visible relaxation mode remain the primary mitigations. Exact
 fix availability per crate and the ordered migration are tracked in

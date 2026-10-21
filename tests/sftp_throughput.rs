@@ -27,6 +27,8 @@
 //! less than size + 512 MiB headroom. Only TEST-NET / disposable docker
 //! hosts: never point this at production.
 
+#![cfg(feature = "sftp")]
+
 use std::env;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};

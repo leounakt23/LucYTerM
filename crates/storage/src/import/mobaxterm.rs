@@ -887,7 +887,7 @@ fn process_session(
         }
     }
     // Duplicate names within one file: first kept, later rejected.
-    if seen_names.iter().any(|n| *n == name) {
+    if seen_names.contains(&name) {
         *rejected += 1;
         report.warn(ImportWarning::at_line(
             WarningCode::DuplicateNameInImport,

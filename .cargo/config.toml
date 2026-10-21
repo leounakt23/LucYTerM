@@ -21,5 +21,5 @@ rustflags = ["-C", "target-feature=+crt-static"]
 rustflags = ["-C", "target-feature=+crt-static"]
 
 [resolver]
-# Keep Cargo.lock MSRV-aware (workspace rust-version = 1.85, pinned toolchain 1.85.1).
+# Keep Cargo.lock MSRV-aware (workspace rust-version = 1.88, pinned toolchain 1.88.0).
 incompatible-rust-versions = "fallback"

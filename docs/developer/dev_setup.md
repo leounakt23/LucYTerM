@@ -2,7 +2,7 @@
 
 ## Toolchain
 
-Use the pinned toolchain in `rust-toolchain.toml` (currently 1.85.1 with
+Use the pinned toolchain in `rust-toolchain.toml` (currently 1.88.0 with
 rustfmt and clippy). The repository's local validation for this line uses
 `stable-x86_64-pc-windows-gnu` only as a fallback when MSVC linkers are
 missing; Linux builds and CI remain authoritative.

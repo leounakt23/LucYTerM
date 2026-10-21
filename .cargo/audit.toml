@@ -2,26 +2,16 @@
 # Every ignore needs a reason — no silent allowances. The full advisory
 # inventory (including GitHub-only advisories that the RustSec mirror
 # does not carry yet) lives in docs/threat_model.md. The russh
-# 0.45→0.61.1 migration (2026-10-15) retired the two russh ignores.
+# 0.45→0.61.1 and 0.61.2→0.63.1 migrations retired the russh ignores;
+# the 1.88 toolchain bump cleared the hickory/time ignores.
 [advisories]
 ignore = [
-    # hickory-proto is MASTER_PROMPT-pinned (0.24.x). A fix exists
-    # (0.26.1) but requires rustc >= 1.88 plus a 0.24 -> 0.26
-    # resolver-stack bump. DNS responses are only accepted from
-    # explicitly configured resolvers, so the O(n^2) decode path is not
-    # attacker-controlled by default.
-    "RUSTSEC-2026-0119",
     # rsa Marvin Attack: genuinely unpatched (the advisory's
     # `patched = []` is intentional, still affected as of 2026-09).
     # RSA keys are opt-in (the default is Ed25519); the side channel
     # requires a malicious SSH server observing many signatures of the
     # same key.
     "RUSTSEC-2023-0071",
-    # time DoS via stack exhaustion: the fix (0.3.47) requires rustc
-    # >= 1.88, above the pinned 1.85.1 toolchain (semver-compatible
-    # otherwise). The affected parsing path is not reached with
-    # attacker-controlled input.
-    "RUSTSEC-2026-0009",
     # zip 7.2.0: three extraction advisories published 2026-10-16
     # (RUSTSEC-2026-0367 / -0368 / -0369) against the opt-in
     # crash-reporting stack. zip is pinned by symbolic-debuginfo 12.18.3
@@ -36,17 +26,8 @@ ignore = [
     "RUSTSEC-2026-0368", # symlink targets outside destination on extract()
     "RUSTSEC-2026-0369", # permissions through symlinks on extract()
     # Unmaintained transitive crates, none of them security-relevant:
-    "RUSTSEC-2024-0384", # instant (via dark-light/parking_lot ecosystem)
+    "RUSTSEC-2024-0384", # instant (wasm-only: iced_futures -> wasm-timer -> parking_lot 0.11)
     "RUSTSEC-2024-0436", # paste (macro helper)
     "RUSTSEC-2026-0206", # rustybuzz (font shaping)
     "RUSTSEC-2026-0192", # ttf-parser (font parsing, via rustybuzz)
-    # zbus 4.x stack (zbus_names 3.0.0, zvariant 4.2.0, zvariant_derive
-    # 4.2.0): unmaintained as of 2026-10-16. Transitive via the pinned
-    # GUI stack (iced 0.13 -> dark-light 1.1.1 -> zbus 4.4) and used
-    # only for desktop theme detection. Clearing them requires
-    # dark-light 3.x and a newer iced — tracked for the next GUI-stack
-    # refresh.
-    "RUSTSEC-2026-0370", # zvariant
-    "RUSTSEC-2026-0371", # zbus_names
-    "RUSTSEC-2026-0372", # zvariant_derive
 ]

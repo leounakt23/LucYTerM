@@ -17,27 +17,26 @@ production hosts.
       original four-leg matrix (Ubuntu 22.04/24.04, Fedora 40, Arch) was
       green in run 38795135476 for commit 63b3fe9; the expanded seven-leg
       matrix is green in run 38834040960 on the tagged commit `ed04d0d`.)
+- [x] MSRV 1.88 integration gate (2026-10-21, this machine): fmt, check
+      all-targets/all-features, check no-default/all-targets, clippy
+      `-D warnings`, workspace tests (default + all-features), rustdoc,
+      mdBook, `cargo audit`, `cargo deny`, and a 17 MB release build all
+      exit 0 on rustc 1.88.0. Local verification did not include live
+      E2E or cross-distro packaging; CI E2E is the 1.88 live gate, and
+      the last packaged evidence is 1.85.1.
 - [x] `cargo clippy --workspace --all-targets -- -D warnings` is clean. (2026-10-07, this machine; see final_report.md)
-- [x] `cargo audit` reports no unpatched vulnerabilities. (2026-10-20,
-      post-migration; exit 0. 6 vulnerabilities + 9 unmaintained
-      warnings are ignore-listed with reasons in `.cargo/audit.toml`:
-      hickory-proto + time fixes need rustc ≥1.88 (over the 1.85.1
-      pin), rsa has no upstream fix, the rest are unmaintained
-      transitive GUI/SSH crates; three zip advisories
-      (RUSTSEC-2026-0367…-0369, published 2026-10-16) ride the opt-in
+- [x] `cargo audit` reports no unignored vulnerabilities. (2026-10-21,
+      MSRV 1.88; exit 0. Ignore-listed with reasons in
+      `.cargo/audit.toml`: rsa RUSTSEC-2023-0071 and the three zip
+      extraction advisories (RUSTSEC-2026-0367…-0369) on the opt-in
       crash-reporting stack, where symbolic 12.18.3 pins zip ^7.2.0 and
-      never calls the vulnerable `extract()` APIs; three zbus-4.x
-      unmaintained advisories (RUSTSEC-2026-0370…-0372) come via the
-      pinned iced → dark-light stack. The russh pair was retired by the
-      0.61.1 migration — the ignores were removed, not silenced. Four
-      rustls advisories published 2026-10-14 (RUSTSEC-2026-0346..-0349)
-      were cleared outright by the 0.23.45 → 0.23.46 bump. On
-      2026-10-20 the workspace MSRV moved 1.80 → 1.85, which cleared
-      the five lock-only quinn-proto advisories (now 0.11.18) and the
-      yanked inout 0.2.3 (now 0.2.5); both ignore sets were removed.
-      The scheduled Security run 39201249957 (2026-10-19) flagged the
-      2026-10-16 batch; it was triaged on 2026-10-20 with the
-      reachability evidence above.)
+      never calls `extract()`; the unmaintained instant/paste/rustybuzz/
+      ttf-parser set; and 2 allowed lru unsound warnings. hickory-proto
+      -0119 and time -0009 were cleared by 1.88 + hickory 0.26.3/time
+      0.3.47; zbus -0370…-0372 was removed with iced's default features;
+      webpki -0381/-0382 was fixed by rustls-webpki 0.103.16/webpki-roots
+      1.0.10; quinn-proto 0.11.18 and inout 0.2.5 were cleared earlier.
+      1.89 + russh 0.63.2/0.64.1 remain future work.)
 - [x] `cargo deny check` passes (licenses, bans, sources). (2026-10-07, this machine; see final_report.md)
 - [x] Coverage gate passes with the workspace target of >80% lines; any drop
       has an explicit maintainer decision recorded. (2026-10-07; 65.2% measured, exception + path forward in final_report.md)
@@ -306,8 +305,8 @@ Productivity:
       unmaintained advisories via pinned iced; scheduled run
       39201249957 flagged them), the workspace MSRV moved 1.80 → 1.85,
       clearing the five lock-only quinn-proto advisories (0.11.18) and
-      the yanked inout 0.2.3 (0.2.5). Both tools exit 0 with 6
-      vulnerabilities + 9 unmaintained warnings ignore-listed.
+      the yanked inout 0.2.3 (0.2.5). At that time both tools exited 0
+      with 6 vulnerabilities + 9 unmaintained warnings ignore-listed.
       Post-release security stop (2026-10-20): `russh` 0.61.2 → 0.63.1
       cleared two GitHub-only advisories absent from the RustSec mirror —
       GHSA-47hw-gvq5-r2gm / CVE-2026-102823 (high 7.5, invalid
@@ -316,7 +315,10 @@ Productivity:
       `cargo audit` could not. Host certificates are rejected fail-closed
       and channel-open handlers use the explicit accept API. fmt,
       clippy, 36 test suites, audit, deny, and no-default-features are
-      green; live suites remain CI-E2E-gated.)
+      green; live suites remain CI-E2E-gated. Post-release maintenance
+      (2026-10-21): the 1.88 stack applied the hickory/time fixes and
+      removed the zbus/webpki advisories; see the updated gate entry
+      above.)
 
 ## Quality Verification
 

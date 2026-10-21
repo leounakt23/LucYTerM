@@ -5,7 +5,10 @@
 //! every record renders on its own output line for the viewer.
 
 use futures::StreamExt as _;
+use hickory_resolver::config::{ConnectionConfig, NameServerConfig, ResolverConfig};
+use hickory_resolver::net::runtime::TokioRuntimeProvider;
 use hickory_resolver::proto::rr::{RData, RecordType};
+use hickory_resolver::TokioResolver;
 
 use super::{remote_exec, shell_quote, BoxStream, CancelToken, OutputLevel, ToolEvent};
 
@@ -25,29 +28,30 @@ pub fn parse_record_type(text: &str) -> Result<RecordType, String> {
 }
 
 /// Build a resolver: explicit `server` override or the system config.
-fn build_resolver(server: &str) -> Result<hickory_resolver::TokioAsyncResolver, String> {
-    use hickory_resolver::config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts};
+fn build_resolver(server: &str) -> Result<TokioResolver, String> {
     use std::net::SocketAddr;
 
     if server.trim().is_empty() {
-        return hickory_resolver::TokioAsyncResolver::tokio_from_system_conf()
+        return TokioResolver::builder_tokio()
+            .map_err(|err| err.to_string())?
+            .build()
             .map_err(|err| err.to_string());
     }
     let address: SocketAddr = server
         .parse()
         .map_err(|_| format!("bad DNS server address: {server:?}"))?;
-    let mut config = ResolverConfig::new();
-    config.add_name_server(NameServerConfig {
-        socket_addr: address,
-        protocol: Protocol::Udp,
-        tls_dns_name: None,
-        trust_negative_responses: true,
-        bind_addr: None,
-    });
-    Ok(hickory_resolver::TokioAsyncResolver::tokio(
-        config,
-        ResolverOpts::default(),
-    ))
+    // `NameServerConfig` carries the address without a port in 0.26; keep an
+    // explicit `host:port` override intact by configuring the UDP connection.
+    let mut connection = ConnectionConfig::udp();
+    connection.port = address.port();
+    let config = ResolverConfig::from_name_servers(vec![NameServerConfig::new(
+        address.ip(),
+        true,
+        vec![connection],
+    )]);
+    TokioResolver::builder_with_config(config, TokioRuntimeProvider::default())
+        .build()
+        .map_err(|err| err.to_string())
 }
 
 /// Render one record for the output view.
@@ -55,10 +59,10 @@ pub fn render_record(record_type: RecordType, data: &RData) -> String {
     match data {
         RData::A(address) => format!("A {address}"),
         RData::AAAA(address) => format!("AAAA {address}"),
-        RData::MX(mx) => format!("MX {} {}", mx.preference(), mx.exchange()),
+        RData::MX(mx) => format!("MX {} {}", mx.preference, mx.exchange),
         RData::TXT(txt) => format!(
             "TXT {}",
-            txt.txt_data()
+            txt.txt_data
                 .iter()
                 .map(|bytes| String::from_utf8_lossy(bytes))
                 .collect::<Vec<_>>()
@@ -66,13 +70,10 @@ pub fn render_record(record_type: RecordType, data: &RData) -> String {
         ),
         RData::NS(name) => format!("NS {name}"),
         RData::PTR(name) => format!("PTR {name}"),
-        RData::SOA(soa) => format!("SOA {} {}", soa.mname(), soa.rname()),
+        RData::SOA(soa) => format!("SOA {} {}", soa.mname, soa.rname),
         RData::SRV(srv) => format!(
             "SRV {}:{} prio={} weight={}",
-            srv.target(),
-            srv.port(),
-            srv.priority(),
-            srv.weight()
+            srv.target, srv.port, srv.priority, srv.weight
         ),
         RData::CNAME(name) => format!("CNAME {name}"),
         other => format!("{record_type:?} {other}"),
@@ -101,17 +102,14 @@ pub fn run_lookup(
             match resolver.lookup(name.clone(), record_type).await {
                 Ok(lookup) => {
                     let mut count = 0u32;
-                    for record in lookup.record_iter() {
+                    for record in lookup.answers() {
                         if cancel.is_cancelled() {
                             events.push(ToolEvent::Cancelled);
                             return events;
                         }
                         count += 1;
                         events.push(ToolEvent::Output {
-                            line: record.data().map_or_else(
-                                || format!("{:?}", record.record_type()),
-                                |data| render_record(record.record_type(), data),
-                            ),
+                            line: render_record(record.record_type(), &record.data),
                             level: OutputLevel::Info,
                         });
                     }
@@ -157,11 +155,13 @@ pub fn run_reverse(
             let mut events = vec![ToolEvent::Started];
             match resolver.reverse_lookup(ip).await {
                 Ok(lookup) => {
-                    for name in lookup.iter() {
-                        events.push(ToolEvent::Output {
-                            line: format!("PTR {name}"),
-                            level: OutputLevel::Info,
-                        });
+                    for record in lookup.answers() {
+                        if let RData::PTR(name) = &record.data {
+                            events.push(ToolEvent::Output {
+                                line: format!("PTR {name}"),
+                                level: OutputLevel::Info,
+                            });
+                        }
                     }
                     events.push(ToolEvent::Completed { summary: None });
                 },

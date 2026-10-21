@@ -5,7 +5,7 @@ scratch, phase by phase, without inheriting unverified claims.
 
 ## Prerequisites
 
-- Linux with Rust 1.85.1 (via `rust-toolchain.toml`), pkg-config, DBus/udev
+- Linux with Rust 1.88.0 (via `rust-toolchain.toml`), pkg-config, DBus/udev
   development headers, and a graphics stack (`docs/installation.md`).
 - Optional: `mdbook`, `cargo-fuzz` (nightly), Docker for live-server tests.
 - On Windows-GNU hosts without MSVC linkers, set

@@ -77,8 +77,8 @@ straight from crates.io version metadata:
 
 | Crate (locked)    | Fixed in            | Minimum rustc | Blocker                                          |
 | ----------------- | ------------------- | ------------- | ------------------------------------------------ |
-| `time` 0.3.41     | 0.3.47              | 1.88          | toolchain pin (1.85.1)                           |
-| `hickory` 0.24.4  | 0.26.2 / 0.26.1     | 1.88          | toolchain pin + 0.24 → 0.26 API bump             |
+| `time` 0.3.41     | 0.3.47              | 1.88          | **DONE 2026-10-21** (1.88 bump)                  |
+| `hickory` 0.24.4  | 0.26.3              | 1.88          | **DONE 2026-10-21** (1.88 bump + API migration)  |
 | `russh` 0.45.0    | 0.61.1              | 1.85          | **DONE 2026-10-15** (migration; rekey fixed)     |
 | `quinn-proto` 0.11.14 | 0.11.18         | 1.85          | **DONE 2026-10-20** (MSRV bump; lock-only)        |
 | `russh` 0.61.2    | 0.63.1              | 1.85          | **DONE 2026-10-20** (2 GitHub GHSAs)             |
@@ -94,18 +94,18 @@ The ordered migration when maintainership chooses to spend it:
    `sftp_integration`, `forward_integration`, `x11_integration`), and a
    `RekeyLimit 16M` repro (62 rekeys) pass; the two russh ignores were
    retired from `.cargo/audit.toml` and `deny.toml`.
-2. Raise the toolchain pin to at least 1.89 (MASTER_PROMPT amendment, MSRV
-   update, CI images, edition-2024 dependencies), then `cargo update -p
-   time` (semver-compatible) and the `hickory` 0.24 → 0.26 bump; finish the
-   russh move at 0.63.2/0.64.1 (the two 2026-10-20 GHSAs are already
-   cleared by 0.63.1).
+2. Raise the toolchain pin to 1.88 (MASTER_PROMPT amendment, MSRV update,
+   CI images), then `cargo update -p time` (semver-compatible) and the
+   `hickory` 0.24 → 0.26 bump; finish the russh move at 0.63.2/0.64.1 on
+   rustc ≥1.89 (the two 2026-10-20 GHSAs are already cleared by 0.63.1).
    - **DONE 2026-10-20 (partial step 2):** MSRV raised 1.80 → 1.85
      (`Cargo.toml`, `.clippy.toml`, `.cargo/config.toml` comment; CI
      keeps the 1.85.1 pin). This cleared the five lock-only
      `quinn-proto` advisories (`Cargo.lock` 0.11.14 → 0.11.18; the crate
      is still never compiled) and the yanked `inout` 0.2.3 (→ 0.2.5,
-     non-yanked); both ignore sets were removed. The 1.89 target is
-     still required for `time`/`hickory` and the russh 0.63.2 move.
+     non-yanked); both ignore sets were removed. The 1.88 target was
+     still required for `time`/`hickory`; the 1.89 target remains
+     required for the russh 0.63.2 move.
     - **DONE 2026-10-20 (russh security stop):** migrated `russh`
       0.61.2 → 0.63.1, the last release compatible with 1.85, for
       GHSA-47hw-gvq5-r2gm (CVE-2026-102823, high 7.5) and
@@ -118,12 +118,27 @@ The ordered migration when maintainership chooses to spend it:
       test suites, `cargo audit`, and `cargo deny` pass; live suites
       remain CI-E2E-gated. 0.63.2/0.64.1 need rustc ≥1.89 and stay on
       the toolchain track.
+    - **DONE 2026-10-21 (1.88 stack):** toolchain 1.88.0
+      (`rust-toolchain.toml`, `Cargo.toml`, `.clippy.toml`,
+      `.cargo/config.toml`, CI, Docker images); `time` 0.3.41 →
+      0.3.47 and `hickory` 0.24.4 → 0.26.3 (API migration in
+      `src/tools/dns.rs`); `iced` default features trimmed (removes
+      `dark-light`/`zbus`); `sentry` `rustls` feature dropped (removes
+      `ureq`/`webpki-roots` 0.26); `rustls-webpki` 0.103.16 and
+      `webpki-roots` 1.0.10 fix RUSTSEC-2026-0381/-0382. Gates on this
+      tree: fmt, check all-targets/all-features, check
+      no-default/all-targets, clippy `-D warnings`, workspace tests
+      (default + all-features), audit, deny, doc, mdbook, and the
+      17 MB release build all pass. Local verification did not include
+      live E2E or cross-packaging; CI E2E is the 1.88 live gate.
 3. `lru` follows a future `iced` bump; until then it stays recorded in
    `docs/threat_model.md`.
 
-The remaining RustSec-mirrored advisories stay listed with reasons in
-`.cargo/audit.toml` / `deny.toml`, and the full GitHub inventory lives in
-`docs/threat_model.md`.
+The remaining ignore-listed advisories are `rsa` and the three `zip`
+extraction advisories, the unmaintained `instant`/`paste`/`rustybuzz`/
+`ttf-parser` set, and two `lru` unsound warnings; hickory, time, zbus,
+and the webpki advisories are cleared. The full GitHub inventory lives
+in `docs/threat_model.md`.
 
 ## Documentation
 

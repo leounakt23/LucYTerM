@@ -59,7 +59,7 @@ updates:
     groups:
       containers:
         patterns: ['*']
-    # The rust base image tracks the pinned toolchain (1.85.x patches
+    # The rust base image tracks the pinned toolchain (1.88.x patches
     # flow; anything bigger is a deliberate toolchain decision).
     ignore:
       - dependency-name: 'rust'
@@ -73,7 +73,7 @@ updates:
       containers:
         patterns: ['*']
     # The build images must track the pinned toolchain in
-    # rust-toolchain.toml (1.85.x patches only); a 1.99 bump would
+    # rust-toolchain.toml (1.88.x patches only); a 1.99 bump would
     # silently diverge from the source pin.
     ignore:
       - dependency-name: 'rust'

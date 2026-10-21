@@ -12,6 +12,13 @@ Semantic Versioning.
   at 1.85.1). The MSRV-aware lock now carries the patched
   `quinn-proto` 0.11.18 (five advisories cleared; the crate remains
   lock-only) and non-yanked `inout` 0.2.5.
+- Workspace MSRV raised from 1.85 to 1.88 (pinned toolchain 1.88.0).
+  The lock now carries `hickory-proto`/`hickory-resolver` 0.26.3,
+  `time` 0.3.47, `rustls-webpki` 0.103.16, and `webpki-roots` 1.0.10.
+  `iced` now uses `default-features = false` with explicit `wgpu`,
+  `tiny-skia`, `fira-sans`, `tokio`, and `advanced`, removing the
+  unmaintained `dark-light` → `zbus` 4.x chain; `sentry` drops its
+  redundant `rustls` feature, removing `ureq`/`webpki-roots` 0.26.
 
 ### Security
 
@@ -24,10 +31,16 @@ Semantic Versioning.
   handles.
 - Triaged the 2026-10-16 RustSec batch: the `zip` extraction advisories
   on the opt-in crash-reporting stack (`symbolic-debuginfo` pins
-  `zip ^7.2.0`; the vulnerable `extract()` APIs are never called) and
-  the unmaintained `zbus`-4.x advisories via the pinned iced stack are
+  `zip ^7.2.0`; the vulnerable `extract()` APIs are never called) are
   ignore-listed with reachability evidence in `.cargo/audit.toml` and
-  `deny.toml`; `cargo audit` and `cargo deny` are green again.
+  `deny.toml`; the unmaintained `zbus`-4.x advisories were removed by
+  the iced default-features change on 2026-10-21, not silenced.
+- Cleared the hickory-proto/time advisories and the webpki certificate
+  advisories: RUSTSEC-2026-0119/-0009 no longer match the 1.88 lock, and
+  RUSTSEC-2026-0381/-0382 (distrusted emSign roots/intermediates) are
+  fixed by `webpki-roots` 1.0.10 and `rustls-webpki` 0.103.16.
+  `cargo audit`/`deny` exit 0 with only the documented `rsa`, `zip`,
+  unmaintained, and `lru` entries.
 
 ## [1.0.0] - 2026-10-16
 

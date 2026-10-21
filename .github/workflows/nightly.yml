@@ -37,7 +37,7 @@ jobs:
           df -h /
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/swift
           df -h /
-      - uses: dtolnay/rust-toolchain@1.85.1
+      - uses: dtolnay/rust-toolchain@1.88.0
       - name: Install system and package dependencies
         run: |
           sudo apt-get update

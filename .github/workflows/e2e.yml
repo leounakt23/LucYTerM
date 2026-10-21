@@ -34,7 +34,7 @@ jobs:
       MBXT_X11_TEST_PASSWORD: test
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@1.85.1
+      - uses: dtolnay/rust-toolchain@1.88.0
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libudev-dev libdbus-1-dev busybox xvfb
       - uses: Swatinem/rust-cache@v2
