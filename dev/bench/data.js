@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792469438871,
+  "lastUpdate": 1792547196180,
   "repoUrl": "https://github.com/leounakt23/LucYTerM",
   "entries": {
     "Criterion benchmarks": [
@@ -3509,6 +3509,108 @@ window.BENCHMARK_DATA = {
             "name": "session_soak_10x80x24_rss",
             "value": 9432081,
             "range": "± 198259",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "committer": {
+            "email": "ms2k25@pm.me",
+            "name": "leounakt23",
+            "username": "leounakt23"
+          },
+          "distinct": true,
+          "id": "928f98ab37bd3359cca04868fd952a30c8045585",
+          "message": "build: raise MSRV to 1.88 and clear stack advisories\n\n- Pin Rust 1.88.0 (MSRV 1.88) in the toolchain, Cargo, clippy, CI,\n  Docker, and Dependabot settings.\n- Upgrade hickory-proto/resolver 0.24.4 -> 0.26.3 and migrate the DNS\n  tool to the 0.26 API.\n- Update time 0.3.47, rustls-webpki 0.103.16, and webpki-roots 1.0.10;\n  this clears RUSTSEC-2026-0119, -0009, -0381, -0382 and the\n  GitHub-only hickory-resolver GHSA-5j98-2g5x-46v6.\n- Disable iced default features (explicit wgpu/tiny-skia/fira-sans/\n  tokio/advanced), dropping the unmaintained dark-light -> zbus 4.x\n  chain; drop sentry's redundant rustls feature, removing ureq and\n  webpki-roots 0.26.\n- Remove the cleared advisory ignores from audit/deny; keep rsa, zip,\n  lru, and the unmaintained GUI/text-stack entries with reasons.\n- Gate the SFTP throughput test behind the sftp feature so the\n  no-default-features build is warning-free.\n- Record the 1.88 gate and residual risks in the docs.\n\nVerified on rustc 1.88.0: fmt, check all-targets/all-features, check\nno-default/all-targets, clippy -D warnings, workspace tests (default +\nall-features), audit, deny, rustdoc, mdBook, and a 17 MB release build.\nLocal verification did not include live E2E or cross-distribution\npackaging; CI E2E remains the live gate.",
+          "timestamp": "2026-10-21T02:07:03+02:00",
+          "tree_id": "f0e7b1569c13023e94e3d5fc72c5a27b9b777bf5",
+          "url": "https://github.com/leounakt23/LucYTerM/commit/928f98ab37bd3359cca04868fd952a30c8045585"
+        },
+        "date": 1792547195609,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "terminal/scroll_region_up/24",
+            "value": 74591,
+            "range": "± 222",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/100",
+            "value": 102534,
+            "range": "± 1992",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal/scroll_region_up/500",
+            "value": 212660,
+            "range": "± 954",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_search_160x500",
+            "value": 570981,
+            "range": "± 9892",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_vte_output",
+            "value": 13277,
+            "range": "± 30",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "config_ron_serialization",
+            "value": 8583,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "subnet_calculate",
+            "value": 40,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "tool_export_json",
+            "value": 1948,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "transfer_loopback/bandwidth_sender_1s",
+            "value": 1000489730,
+            "range": "± 144100",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_80x24",
+            "value": 808737,
+            "range": "± 1420",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_render_160x50",
+            "value": 1378228,
+            "range": "± 11131",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "terminal_frame/headless_flood_240frames",
+            "value": 23115242,
+            "range": "± 96944",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "session_soak_10x80x24_rss",
+            "value": 16196519,
+            "range": "± 564693",
             "unit": "ns/iter"
           }
         ]
