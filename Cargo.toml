@@ -83,7 +83,7 @@ dbus = { version = "0.9.7", features = ["vendored"] }
 aes-gcm = "0.10.3"
 argon2 = "0.5.3"
 cipher = "0.4"
-des = "0.8"
+des = "0.9"
 ed25519-dalek = "2.1.0"
 sha2 = "0.10"
 getrandom = "0.4.3"
