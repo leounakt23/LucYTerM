@@ -80,7 +80,7 @@ serialport = { version = "4.7.2", default-features = false }
 dbus = { version = "0.9.7", features = ["vendored"] }
 
 # Cryptography & security
-aes-gcm = "0.10.3"
+aes-gcm = "0.11.1"
 argon2 = "0.5.3"
 cipher = "0.4"
 des = "0.8"
