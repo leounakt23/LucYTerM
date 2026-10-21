@@ -5427,7 +5427,7 @@ dependencies = [
  "argon2 0.5.3",
  "async-trait",
  "bytemuck",
- "cipher 0.4.4",
+ "cipher 0.5.2",
  "clap",
  "clap_complete",
  "copypasta",
