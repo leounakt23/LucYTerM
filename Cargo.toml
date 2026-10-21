@@ -143,7 +143,7 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "mul
 # enables `rustls-tls` (feature unification applies to sentry's transport),
 # while sentry's own flag additionally pins `webpki-roots` 0.26, whose line
 # has no patched release (RUSTSEC-2026-0381).
-sentry = { version = "0.36", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest"] }
+sentry = { version = "0.49", default-features = false, features = ["backtrace", "contexts", "panic", "reqwest"] }
 minidumper = "0.8"
 symbolic = "12"
 
